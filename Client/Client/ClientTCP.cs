@@ -1,0 +1,123 @@
+﻿using System;
+using System.Net.Sockets;
+using Bindings;
+
+namespace Client
+{
+    class ClientTCP
+    {
+        public TcpClient PlayerSocket;
+        public static NetworkStream myStream;
+        private HandleData chd;
+        private byte[] asyncBuff;
+        private bool connecting;
+        private bool connected;
+        public bool isOnline = false;
+
+        public void ConnectToServer()
+        {
+            // Already connected.  Destroy connection and re-connect
+            if(PlayerSocket != null)
+            {
+                if(PlayerSocket.Connected || connected)
+                {
+                    PlayerSocket.Close();
+                    PlayerSocket = null;
+                }
+            }
+
+            PlayerSocket = new TcpClient();
+            chd = new HandleData();
+            PlayerSocket.ReceiveBufferSize = 4096;
+            PlayerSocket.SendBufferSize = 4096;
+            PlayerSocket.NoDelay = false;
+            Array.Resize(ref asyncBuff, 8192);
+            PlayerSocket.BeginConnect("127.0.0.1", 8000, new AsyncCallback(ConnectCallback), PlayerSocket);
+            connecting = true;
+        }
+
+        private void ConnectCallback(IAsyncResult ar)
+        {
+            try
+            {
+                PlayerSocket.EndConnect(ar);
+                isOnline = true;
+            } catch
+            {
+                isOnline = false;
+                ConnectToServer();
+            }
+            if(PlayerSocket.Connected == false)
+            {
+                connecting = false;
+                connected = false;
+                return;
+
+            } else {
+                PlayerSocket.NoDelay = true;
+                myStream = PlayerSocket.GetStream();
+                myStream.BeginRead(asyncBuff, 0, 8192, OnReceive, null);
+                connected = true;
+                connecting = false;
+            }
+        }
+
+        private void OnReceive(IAsyncResult ar)
+        {
+            int byteAmt = myStream.EndRead(ar);
+            byte[] myBytes = null;
+            Array.Resize(ref myBytes, byteAmt);
+            Buffer.BlockCopy(asyncBuff, 0, myBytes, 0, byteAmt);
+
+            if(byteAmt == 0)
+            {
+                // Destroy game; empty packet received
+                return;
+            }
+
+            // Handle network packets
+            chd.HandleNetworkMessages(myBytes);
+            myStream.BeginRead(asyncBuff, 0, 8192, OnReceive, null);
+        }
+
+        public void SendData(byte[] data)
+        {
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            myStream.Write(buffer.ToArray(), 0, buffer.ToArray().Length);
+            buffer.Dispose();
+        }
+
+        public void SendLogin()
+        {
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddInteger((int)ClientPackets.CLogin);
+            buffer.AddString(Globals.loginUsername);
+            buffer.AddString(Globals.loginPassword);
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void SendRegister()
+        {
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddInteger((int)ClientPackets.CRegister);
+            buffer.AddString(Globals.registerUsername);
+            buffer.AddString(Globals.registerPassword);
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void XFerPlayer()
+        {
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddInteger((int)ClientPackets.CPlayerData);
+            buffer.AddFloat(Types.Player[0].X);
+            buffer.AddFloat(Types.Player[0].Y);
+            buffer.AddFloat(Types.Player[0].Rotation);
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+    }
+}
