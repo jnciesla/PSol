@@ -9,16 +9,19 @@ namespace Client
     class HandleData
     {
         public PacketBuffer buffer = new PacketBuffer();
+        private ClientTCP ctcp;
         private delegate void Packet_(byte[] data);
         private static Dictionary<int, Packet_> packets;
 
 
         public void InitializeMesssages()
         {
+            ctcp = new ClientTCP();
             packets = new Dictionary<int, Packet_>();
             packets.Add((int)ServerPackets.SMessage, HandleMessage);
             packets.Add((int)ServerPackets.SAckLogin, HandleLogin);
             packets.Add((int)ServerPackets.SPlayerData, DownloadData);
+            packets.Add((int)ServerPackets.SAckRegister, GoodRegister);
         }
 
         public void HandleNetworkMessages(byte[] data)
@@ -48,6 +51,17 @@ namespace Client
             buffer.AddBytes(data);
             buffer.GetInteger();
             buffer.GetInteger(); // Index on server side
+            MenuManager.Clear();
+        }
+
+        private void GoodRegister(byte[] data)
+        {
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            buffer.GetInteger(); // Index on server side
+
+            ctcp.SendLogin();
             MenuManager.Clear();
         }
 

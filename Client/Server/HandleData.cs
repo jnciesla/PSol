@@ -75,6 +75,7 @@ namespace Server
             if (!db.AccountExists(username))
             {
                 db.AddAccount(index, username, password);
+                AcknowledgeRegister(index);
             }
             else
             {
@@ -128,6 +129,15 @@ namespace Server
         {
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SAckLogin);
+            buffer.AddInteger(index);
+            SendData(index, buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void AcknowledgeRegister(int index)
+        {
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddInteger((int)ServerPackets.SAckRegister);
             buffer.AddInteger(index);
             SendData(index, buffer.ToArray());
             buffer.Dispose();

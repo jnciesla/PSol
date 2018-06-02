@@ -8,7 +8,8 @@ namespace Bindings
     {
         SMessage = 1,
         SAckLogin = 2,
-        SPlayerData = 3,
+        SAckRegister = 3,
+        SPlayerData = 4,
     }
 
     public enum ClientPackets

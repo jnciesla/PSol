@@ -25,7 +25,7 @@ namespace Client
         public static new int Tick;
         public static int ElapsedTime;
         public static int FrameTime;
-        
+
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
@@ -92,7 +92,8 @@ namespace Client
             if (ctcp.isOnline)
             {
                 IGUI.lblStatus.Text = "Server status:{{GREEN}} online";
-            }else
+            }
+            else
             {
                 IGUI.lblStatus.Text = "Server status:{{RED}} offline";
             }
@@ -113,7 +114,7 @@ namespace Client
             ElapsedTime = Tick - FrameTime;
             FrameTime = Tick;
 
-            if(WalkTimer < Tick)
+            if (WalkTimer < Tick)
             {
                 GameLogic.CheckMovement();
                 camera.ZoomController();
@@ -144,6 +145,18 @@ namespace Client
                 Globals.ZoomIn = Keyboard.GetState().IsKeyDown(Keys.Q);
                 Globals.ZoomOut = Keyboard.GetState().IsKeyDown(Keys.E);
                 Globals.ZoomDefault = Keyboard.GetState().IsKeyDown(Keys.R);
+            }
+            else
+            {
+                if (Keyboard.GetState().IsKeyDown(Keys.Tab))
+                {
+                    Globals.Tab = true;
+                }
+                if (Keyboard.GetState().IsKeyUp(Keys.Tab) && Globals.Tab)
+                {
+                    IGUI.TabThrough();
+                    Globals.Tab = false;
+                }
             }
         }
     }
