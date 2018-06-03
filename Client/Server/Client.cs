@@ -2,6 +2,7 @@
 using System.Net.Sockets;
 using System.Net;
 using System.IO;
+using System.Threading;
 
 namespace Server
 {
@@ -52,8 +53,11 @@ namespace Server
         private void CloseSocket(int index)
         {
             Console.WriteLine("Connection from " + IP + " has been terminated.");
+			var db = new Database();
+			db.SaveGame(index);
             Socket.Close();
             Socket = null;
         }
+		
     }
 }

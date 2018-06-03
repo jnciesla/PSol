@@ -112,9 +112,9 @@ namespace Client
         {
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddInteger((int)ClientPackets.CPlayerData);
-            buffer.AddFloat(Types.Player[0].X);
-            buffer.AddFloat(Types.Player[0].Y);
-            buffer.AddFloat(Types.Player[0].Rotation);
+            buffer.AddFloat(Types.Player[GameLogic.PlayerIndex].X);
+            buffer.AddFloat(Types.Player[GameLogic.PlayerIndex].Y);
+            buffer.AddFloat(Types.Player[GameLogic.PlayerIndex].Rotation);
             SendData(buffer.ToArray());
             buffer.Dispose();
         }

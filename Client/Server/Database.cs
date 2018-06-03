@@ -55,9 +55,28 @@ namespace Server
             Types.Player[index].Login = "";
             Types.Player[index].Password = "";
             Types.Player[index].Name = "";
-        }
+		}
 
-        public void SavePlayer(int index)
+	    public void SaveGame(int index = -1)
+	    {
+		    if (index == -1)
+		    {
+			    Console.WriteLine("Saving database...");
+			    for (var i = 1; i < Constants.MAX_PLAYERS; i++)
+			    {
+				    if (Types.Player[i].Login != null)
+				    {
+					    SavePlayer(i);
+				    }
+			    }
+		    }
+		    else
+		    {
+			    SavePlayer(index);
+		    }
+	    }
+
+		private void SavePlayer(int index)
         {
             string filename = "Data/Accounts/" + Types.Player[index].Login + ".save";
             BinaryFormatter bf = new BinaryFormatter();
