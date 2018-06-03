@@ -25,6 +25,7 @@ namespace Client
         public static bool ZoomDefault;
 
         public static bool Tab;
+        public static bool Enter;
 
     }
 }

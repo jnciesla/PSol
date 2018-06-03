@@ -21,6 +21,7 @@ namespace Client
         public TextInput txtUserReg;
         public TextInput txtPassReg;
         public TextInput txtPas2Reg;
+        public Button btnLogin;
 
         private string mask = "*";
 
@@ -73,11 +74,65 @@ namespace Client
 
         }
 
+        public void Enter()
+        {
+            if (Windows[0].Visible == true) // Enter on login window when visible
+            {
+                Login();
+            }
+            if (Windows[1].Visible == true) // Enter on register window when visible
+            {
+                Register();
+            }
+        }
+
+        private void Login()
+        {
+            if (Globals.loginUsername == string.Empty || Globals.loginPassword == string.Empty)
+            {
+                MessageBox.ShowMsgBox("No credentials", "Please enter a valid username and password before logging in!", new MessageBox.MsgBoxOption[]
+                {
+                        new MessageBox.MsgBoxOption("Okay" ,() => {return true; })
+                });
+            }
+            else
+            {
+                ctcp.SendLogin();
+            }
+        }
+
+        private void Register()
+        {
+            if (Globals.registerUsername == string.Empty || Globals.registerPassword == string.Empty || Globals.registerValidate == string.Empty)
+            {
+                MessageBox.ShowMsgBox("No credentials", "Please enter a valid username and password, and confirm your password, before attempting to register!", new MessageBox.MsgBoxOption[]
+                {
+                        new MessageBox.MsgBoxOption("Okay" ,() => {return true; })
+                });
+            }
+            else
+            {
+                if (Globals.registerPassword != Globals.registerValidate)
+                {
+                    MessageBox.ShowMsgBox("Passwords do not match", "The passwords you have entered to not match.  Please try again.", new MessageBox.MsgBoxOption[]
+                    {
+                        new MessageBox.MsgBoxOption("Okay" ,() => {return true; })
+                    });
+                }
+                else
+                {
+                    Globals.loginUsername = Globals.registerUsername;
+                    Globals.loginPassword = Globals.registerPassword;
+                    ctcp.SendRegister();
+                }
+            }
+        }
+
         public void CreateWindow_Login()
         {
             //  Create Entities
             Panel panel = new Panel(new Vector2(500, 430));
-            Button btnLogin = new Button("Login");
+            btnLogin = new Button("Login");
             txtUser = new TextInput(false);
             txtUser.Validators.Add(new Validators.AlphaNumValidator());
             Header headerUser = new Header("Username", Anchor.TopCenter);
@@ -122,17 +177,7 @@ namespace Client
 
             btnLogin.OnClick += (Entity entity) =>
             {
-                if (Globals.loginUsername == string.Empty || Globals.loginPassword == string.Empty)
-                {
-                    MessageBox.ShowMsgBox("No credentials", "Please enter a valid username and password before logging in!", new MessageBox.MsgBoxOption[]
-                    {
-                        new MessageBox.MsgBoxOption("Okay" ,() => {return true; })
-                    });
-                }
-                else
-                {
-                    ctcp.SendLogin();
-                }
+                Login();
             };
 
             txtUser.OnValueChange = (Entity textUser) => { Globals.loginUsername = txtUser.Value; };
@@ -198,29 +243,7 @@ namespace Client
             };
             btnRegister.OnClick += (Entity entity) =>
             {
-                if (Globals.registerUsername == string.Empty || Globals.registerPassword == string.Empty || Globals.registerValidate == string.Empty)
-                {
-                    MessageBox.ShowMsgBox("No credentials", "Please enter a valid username and password, and confirm your password, before attempting to register!", new MessageBox.MsgBoxOption[]
-                    {
-                        new MessageBox.MsgBoxOption("Okay" ,() => {return true; })
-                    });
-                }
-                else
-                {
-                    if (Globals.registerPassword != Globals.registerValidate)
-                    {
-                        MessageBox.ShowMsgBox("Passwords do not match", "The passwords you have entered to not match.  Please try again.", new MessageBox.MsgBoxOption[]
-                        {
-                        new MessageBox.MsgBoxOption("Okay" ,() => {return true; })
-                        });
-                    }
-                    else
-                    {
-                        Globals.loginUsername = Globals.registerUsername;
-                        Globals.loginPassword = Globals.registerPassword;
-                        ctcp.SendRegister();
-                    }
-                }
+                Register();
             };
 
             txtUserReg.OnValueChange = (Entity textUserReg) => { Globals.registerUsername = txtUserReg.Value; };

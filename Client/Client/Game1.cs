@@ -157,6 +157,15 @@ namespace Client
                     IGUI.TabThrough();
                     Globals.Tab = false;
                 }
+                if (Keyboard.GetState().IsKeyDown(Keys.Enter))
+                {
+                    Globals.Tab = true;
+                }
+                if (Keyboard.GetState().IsKeyUp(Keys.Enter) && Globals.Enter)
+                {
+                    IGUI.Enter();
+                    Globals.Tab = false;
+                }
             }
         }
     }
