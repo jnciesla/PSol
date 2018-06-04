@@ -8,7 +8,7 @@ using Bindings;
 
 namespace Server
 {
-	class General
+    internal class General
 	{
 		private ServerTCP stcp;
 		private HandleData shd;

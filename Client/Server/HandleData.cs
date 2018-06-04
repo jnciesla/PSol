@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace Server
 {
-	class HandleData
+    internal class HandleData
 	{
 		private delegate void Packet_(int index, byte[] data);
 		private static Dictionary<int, Packet_> packets;
@@ -85,7 +85,7 @@ namespace Server
 			}
 		}
 
-		private void RecvPlayer(int index, byte[] data)
+		private static void RecvPlayer(int index, byte[] data)
 		{
 			PacketBuffer buffer = new PacketBuffer();
 			buffer.AddBytes(data);
@@ -102,8 +102,16 @@ namespace Server
 		{
 			PacketBuffer buffer = new PacketBuffer();
 			buffer.AddBytes(data);
-			ServerTCP.Clients[index].Stream.BeginWrite(buffer.ToArray(), 0, buffer.ToArray().Length, null, null);
-			buffer.Dispose();
+		    try
+		    {
+		        ServerTCP.Clients[index].Stream.BeginWrite(buffer.ToArray(), 0, buffer.ToArray().Length, null, null);
+		    }
+		    catch
+		    {
+                Console.WriteLine("Unable to send packet- client disconnected");
+		    }
+
+		    buffer.Dispose();
 		}
 
 		public void BroadcastData(byte[] data)

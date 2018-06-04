@@ -4,25 +4,26 @@ using Microsoft.Xna.Framework.Input;
 using GeonBit.UI;
 using Microsoft.Xna.Framework.Content;
 using System;
+using System.Diagnostics.CodeAnalysis;
 
 namespace Client
 {
     public class Game1 : Game
     {
-        GraphicsDeviceManager graphics;
+        public static GraphicsDeviceManager graphics;
         public static SpriteBatch spriteBatch;
-        Texture2D backGroundTexture;
-        Vector2 backgroundPos;
-        Rectangle backgroundRect;
+        private Texture2D backGroundTexture;
+        private Vector2 backgroundPos;
 
-        ClientTCP ctcp;
-        HandleData chd;
-        Camera camera;
+        private ClientTCP ctcp;
+        private HandleData chd;
+        private Camera camera;
 
-        InterfaceGUI IGUI = new InterfaceGUI();
+        private readonly InterfaceGUI IGUI = new InterfaceGUI();
+        private static readonly KeyControl KC = new KeyControl();
 
-        float WalkTimer;
-        public static new int Tick;
+        private float WalkTimer;
+        public new static int Tick;
         public static int ElapsedTime;
         public static int FrameTime;
 
@@ -30,8 +31,8 @@ namespace Client
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            graphics.PreferredBackBufferWidth = 1024;
-            graphics.PreferredBackBufferHeight = 768;
+            graphics.PreferredBackBufferWidth = Globals.PreferredBackBufferWidth;
+            graphics.PreferredBackBufferHeight = Globals.PreferredBackBufferHeight;
         }
 
         /// <summary>
@@ -59,6 +60,7 @@ namespace Client
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
         /// </summary>
+        [SuppressMessage("ReSharper", "PossibleLossOfFraction")]
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
@@ -66,8 +68,8 @@ namespace Client
 
             // TODO: use this.Content to load your game content here
             backGroundTexture = Content.Load<Texture2D>("stars3");
-            backgroundPos = new Vector2(-400, 0);
-            backgroundRect = new Rectangle(0, 0, 100000, 100000);
+            backgroundPos = new Vector2(-Globals.PreferredBackBufferWidth / 2, -Globals.PreferredBackBufferHeight / 2);
+
         }
 
         /// <summary>
@@ -124,10 +126,11 @@ namespace Client
 
             // TODO: Add your drawing code here
 
-            Game1.spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, camera.transform);
-            spriteBatch.Draw(backGroundTexture, backgroundPos, backgroundRect, Color.White);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, camera.transform);
+            spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
+            Graphics.DrawBorder(Globals.playArea, 1, Color.DarkOliveGreen);
             Graphics.RenderGraphics();
-            Game1.spriteBatch.End();
+            spriteBatch.End();
             Graphics.DrawHud(Content);
             UserInterface.Active.Draw(spriteBatch);
 
@@ -145,27 +148,15 @@ namespace Client
                 Globals.ZoomIn = Keyboard.GetState().IsKeyDown(Keys.Q);
                 Globals.ZoomOut = Keyboard.GetState().IsKeyDown(Keys.E);
                 Globals.ZoomDefault = Keyboard.GetState().IsKeyDown(Keys.R);
+                if (KC.KeyPress(Keys.T)) { MenuManager.ChangeMenu(MenuManager.Menu.Message);
+                    InterfaceGUI.messageText.IsFocused = true;
+                }
             }
             else
             {
-                if (Keyboard.GetState().IsKeyDown(Keys.Tab))
-                {
-                    Globals.Tab = true;
-                }
-                if (Keyboard.GetState().IsKeyUp(Keys.Tab) && Globals.Tab)
-                {
-                    IGUI.TabThrough();
-                    Globals.Tab = false;
-                }
-                if (Keyboard.GetState().IsKeyDown(Keys.Enter))
-                {
-                    Globals.Tab = true;
-                }
-                if (Keyboard.GetState().IsKeyUp(Keys.Enter) && Globals.Enter)
-                {
-                    IGUI.Enter();
-                    Globals.Tab = false;
-                }
+                if (KC.KeyPress(Keys.Tab)) { IGUI.TabThrough(); }
+                if (KC.KeyPress(Keys.Enter)) { IGUI.Enter(); }
+                if (KC.KeyPress(Keys.Escape)) { MenuManager.Clear(3); }
             }
         }
     }

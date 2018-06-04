@@ -9,12 +9,12 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Client
 {
-	class Camera
+    internal class Camera
 	{
 		public float zoom = 1;
 		public Matrix transform;
-		Viewport view;
-		Vector2 center;
+	    private Viewport view;
+	    private Vector2 center;
 
 		public Camera(Viewport newView)
 		{

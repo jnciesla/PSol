@@ -1,13 +1,10 @@
 ﻿using System;
 using Bindings;
-using System.Net.Sockets;
 using System.Collections.Generic;
-using System.ComponentModel;
-using Microsoft.Xna.Framework;
 
 namespace Client
 {
-	class HandleData
+    internal class HandleData
 	{
 		private ClientTCP ctcp;
 		private delegate void Packet_(byte[] data);
@@ -17,21 +14,22 @@ namespace Client
 		public void InitializeMesssages()
 		{
 			ctcp = new ClientTCP();
-			packets = new Dictionary<int, Packet_>();
-			packets.Add((int)ServerPackets.SMessage, HandleMessage);
-			packets.Add((int)ServerPackets.SAckLogin, HandleLogin);
-			packets.Add((int)ServerPackets.SPlayerData, DownloadData);
-			packets.Add((int)ServerPackets.SAckRegister, GoodRegister);
-			packets.Add((int)ServerPackets.SPulse, HandleServerPulse);
+		    packets = new Dictionary<int, Packet_>
+		    {
+		        {(int) ServerPackets.SMessage, HandleMessage},
+		        {(int) ServerPackets.SAckLogin, HandleLogin},
+		        {(int) ServerPackets.SPlayerData, DownloadData},
+		        {(int) ServerPackets.SAckRegister, GoodRegister},
+		        {(int) ServerPackets.SPulse, HandleServerPulse}
+		    };
 		}
 
 		public void HandleNetworkMessages(byte[] data)
 		{
-			int packetNum;
-			PacketBuffer buffer = new PacketBuffer();
+		    PacketBuffer buffer = new PacketBuffer();
 
 			buffer.AddBytes(data);
-			packetNum = buffer.GetInteger();
+			var packetNum = buffer.GetInteger();
 			buffer.Dispose();
 
 			if (packets.TryGetValue(packetNum, out Packet_ Packet))

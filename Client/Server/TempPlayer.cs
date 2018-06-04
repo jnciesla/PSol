@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Server
 {
-    class TempPlayer
+    internal class TempPlayer
     {
         public bool inGame = false;
     }

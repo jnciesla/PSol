@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 
 namespace Bindings
 {
-    class Types
+    internal class Types
     {
         public static PlayerStruct[] Player = new PlayerStruct[Constants.MAX_PLAYERS];
 

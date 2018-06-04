@@ -4,13 +4,14 @@ using System.Threading;
 
 namespace Server
 {
-	class Program
+    internal class Program
 	{
 		private static Thread consoleThread;
 		private static General general;
 		private static Database db;
 		private static HandleData shd;
-		static void Main(string[] args)
+
+	    private static void Main(string[] args)
 		{
 			general = new General();
 			db = new Database();
@@ -19,7 +20,7 @@ namespace Server
 			shd = general.InitializeServer();
 		}
 
-		static void ConsoleThread()
+	    private static void ConsoleThread()
 		{
 			var saveTimer = new Timer(e => db.SaveGame(),
 				null,

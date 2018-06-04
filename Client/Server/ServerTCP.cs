@@ -6,7 +6,7 @@ using Bindings;
 
 namespace Server
 {
-    class ServerTCP
+    internal class ServerTCP
     {
         public static TempPlayer[] tempPlayer = new TempPlayer[Constants.MAX_PLAYERS];
         public static Client[] Clients = new Client[Constants.MAX_PLAYERS];

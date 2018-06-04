@@ -4,7 +4,7 @@ using System.Text;
 
 namespace Bindings
 {
-    class Constants
+    internal class Constants
     {
         public const int MAX_PLAYERS = 100;
 

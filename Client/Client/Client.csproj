@@ -50,6 +50,7 @@
     <Compile Include="Graphics.cs" />
     <Compile Include="HandleData.cs" />
     <Compile Include="InterfaceGUI.cs" />
+    <Compile Include="KeyControl.cs" />
     <Compile Include="MenuManager.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

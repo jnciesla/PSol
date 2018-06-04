@@ -5,7 +5,7 @@ using Bindings;
 
 namespace Server
 {
-    class Database
+    internal class Database
     {
         public bool FileExists(string file_path)
         {

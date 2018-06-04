@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace Server
 {
-    class Client
+    internal class Client
     {
         public int Index;
         public string IP;

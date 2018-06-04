@@ -4,7 +4,7 @@ using Bindings;
 
 namespace Client
 {
-    class ClientTCP
+    internal class ClientTCP
     {
         public TcpClient PlayerSocket;
         public static NetworkStream myStream;

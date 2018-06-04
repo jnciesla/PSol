@@ -8,13 +8,13 @@ namespace Validators
     internal class AlphaNumValidator : ITextValidator
     {
         // the regex to use
-        System.Text.RegularExpressions.Regex _regex;
+        private System.Text.RegularExpressions.Regex _regex;
 
         // regex for slug with spaces
-        static System.Text.RegularExpressions.Regex _slugNoSpaces = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9]+$");
+        private static System.Text.RegularExpressions.Regex _slugNoSpaces = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9]+$");
 
         // regex for slug without spaces
-        static System.Text.RegularExpressions.Regex _slugWithSpaces = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9\ ]+$");
+        private static System.Text.RegularExpressions.Regex _slugWithSpaces = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9\ ]+$");
 
         /// <summary>
         /// Create the slug validator.

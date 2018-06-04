@@ -4,12 +4,12 @@ using System.Text;
 
 namespace Bindings
 {
-    class PacketBuffer : IDisposable
+    internal class PacketBuffer : IDisposable
     {
-        List<byte> buff;
-        byte[] readBuff;
-        int readPos;
-        bool buffUpdate = false;
+        private List<byte> buff;
+        private byte[] readBuff;
+        private int readPos;
+        private bool buffUpdate = false;
 
         public PacketBuffer()
         {

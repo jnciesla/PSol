@@ -1,34 +1,33 @@
 ﻿using GeonBit.UI.Entities;
 using GeonBit.UI;
 using Microsoft.Xna.Framework;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using GeonBit.UI.Utils;
 
 namespace Client
 {
-    class InterfaceGUI
+    internal class InterfaceGUI
     {
         public static List<Panel> Windows = new List<Panel>();
-        private ClientTCP ctcp = new ClientTCP();
-
+        private readonly ClientTCP ctcp = new ClientTCP();
         public MulticolorParagraph lblStatus;
         public TextInput txtUser;
         public TextInput txtPass;
         public TextInput txtUserReg;
         public TextInput txtPassReg;
         public TextInput txtPas2Reg;
+        public static TextInput messageText;
         public Button btnLogin;
+        public bool openBox;
 
-        private string mask = "*";
+        private const string mask = "*";
 
         public void InitializeGUI()
         {
+            CreateChats();
             CreateWindow_Login();
             CreateWindow_Register();
+            CreateMessage();
             // UserInterface.Active.GlobalScale = .75F;
         }
 
@@ -76,13 +75,30 @@ namespace Client
 
         public void Enter()
         {
-            if (Windows[0].Visible == true) // Enter on login window when visible
+            if (Windows[1].Visible) // Enter on login window when visible
             {
                 Login();
             }
-            if (Windows[1].Visible == true) // Enter on register window when visible
+            if (Windows[2].Visible) // Enter on register window when visible
             {
                 Register();
+            }
+
+            if (Windows[3].Visible)
+            {
+                if (messageText.Value != "" || messageText.Value != messageText.ValueWhenEmpty)
+                {
+                    // FOR TESTING PURPOSES
+                    // Send message directly to chats instead of server.  Not hard to implement server-side but I didn't
+                    // sleep well and I need a nap and I just don't feel like doing it right now
+                    AddChats(messageText.Value);
+                    messageText.Value = "";
+                    MenuManager.Clear(3);
+                }
+                else
+                {
+                    MenuManager.Clear(3);
+                }
             }
         }
 
@@ -90,10 +106,19 @@ namespace Client
         {
             if (Globals.loginUsername == string.Empty || Globals.loginPassword == string.Empty)
             {
-                MessageBox.ShowMsgBox("No credentials", "Please enter a valid username and password before logging in!", new MessageBox.MsgBoxOption[]
+                if (openBox == false)
                 {
-                        new MessageBox.MsgBoxOption("Okay" ,() => {return true; })
-                });
+                    openBox = true;
+                    MessageBox.ShowMsgBox("No credentials",
+                        "Please enter a valid username and password before logging in!", new[]
+                        {
+                            new MessageBox.MsgBoxOption("Okay", () =>
+                            {
+                                openBox = false;
+                                return true;
+                            })
+                        });
+                }
             }
             else
             {
@@ -251,6 +276,56 @@ namespace Client
             txtPas2Reg.OnValueChange = (Entity textPas2Reg) => { Globals.registerValidate = txtPas2Reg.Value; };
 
             // Create Window
+            CreateWindow(panel);
+        }
+
+        public void CreateChats()
+        {
+            //  Create Entities
+            Panel panel = new Panel(new Vector2(500, 250), PanelSkin.None, Anchor.TopLeft, new Vector2(-55, -50));
+            Globals.chats = new SelectList(new Vector2(500, 250), Anchor.Auto, null, PanelSkin.None);
+            UserInterface.Active.AddEntity(panel);
+
+            // chats.Scrollbar.Visible = false; Need to figure out how to do this...
+            Globals.chats.ItemsScale = .5F;
+            Globals.chats.OnMouseWheelScroll = (Entity chatScroll) =>
+            {
+                var Delta = new GeonBit.UI.InputHelper();
+                if (Delta.MouseWheelChange == 1 && Globals.chats.ScrollPosition >= 0)
+                {
+                    Globals.chats.ScrollPosition--;
+                }
+                else
+                {
+                    Globals.chats.ScrollPosition++;
+                }
+                Globals.chats.SelectedValue = null;
+            };
+
+            // Add Entities
+            panel.AddChild(Globals.chats);
+
+            // Create Window
+            CreateWindow(panel);
+        }
+
+        public static void AddChats(string message)
+        {
+            Globals.chats.AddItem(message);
+            // If a message is selected, assume they want to lock the list and don't scroll to new.
+            if (Globals.chats.SelectedValue != null)
+            {
+                Globals.chats.scrollToEnd();
+            }
+        }
+
+        public void CreateMessage()
+        {
+            Panel panel = new Panel(new Vector2(500, 50), PanelSkin.None, Anchor.BottomLeft, new Vector2(-10, 40));
+            messageText = new TextInput(false);
+            messageText.Scale = .5F;
+            UserInterface.Active.AddEntity(panel);
+            panel.AddChild(messageText);
             CreateWindow(panel);
         }
     }
