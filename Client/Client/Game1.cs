@@ -2,8 +2,6 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using GeonBit.UI;
-using Microsoft.Xna.Framework.Content;
-using System;
 using System.Diagnostics.CodeAnalysis;
 
 namespace Client
@@ -30,7 +28,9 @@ namespace Client
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
+            // graphics.IsFullScreen = true;
             Content.RootDirectory = "Content";
+            
             graphics.PreferredBackBufferWidth = Globals.PreferredBackBufferWidth;
             graphics.PreferredBackBufferHeight = Globals.PreferredBackBufferHeight;
         }
@@ -88,7 +88,7 @@ namespace Client
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-
+            if (Globals.exitgame) this.Exit();
             UserInterface.Active.Update(gameTime);
             // TODO: Add your update logic here
             if (ctcp.isOnline)
@@ -129,11 +129,11 @@ namespace Client
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, camera.transform);
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
             Graphics.DrawBorder(Globals.playArea, 1, Color.DarkOliveGreen);
-            Graphics.RenderGraphics();
+            Graphics.RenderGraphics(Content);
             spriteBatch.End();
+            
             Graphics.DrawHud(Content);
             UserInterface.Active.Draw(spriteBatch);
-
             base.Draw(gameTime);
         }
 
@@ -145,10 +145,13 @@ namespace Client
                 Globals.DirDn = Keyboard.GetState().IsKeyDown(Keys.S);
                 Globals.DirLt = Keyboard.GetState().IsKeyDown(Keys.A);
                 Globals.DirRt = Keyboard.GetState().IsKeyDown(Keys.D);
-                Globals.ZoomIn = Keyboard.GetState().IsKeyDown(Keys.Q);
-                Globals.ZoomOut = Keyboard.GetState().IsKeyDown(Keys.E);
+                Globals.ZoomIn = Keyboard.GetState().IsKeyDown(Keys.E);
+                Globals.ZoomOut = Keyboard.GetState().IsKeyDown(Keys.Q);
                 Globals.ZoomDefault = Keyboard.GetState().IsKeyDown(Keys.R);
-                if (KC.KeyPress(Keys.T)) { MenuManager.ChangeMenu(MenuManager.Menu.Message);
+                Globals.Details = Keyboard.GetState().IsKeyDown(Keys.LeftAlt);
+                if (KC.KeyPress(Keys.T))
+                {
+                    MenuManager.ChangeMenu(MenuManager.Menu.Message);
                     InterfaceGUI.messageText.IsFocused = true;
                 }
             }

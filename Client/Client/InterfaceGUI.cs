@@ -2,6 +2,7 @@
 using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using GeonBit.UI.DataTypes;
 using GeonBit.UI.Utils;
 
 namespace Client
@@ -86,12 +87,13 @@ namespace Client
 
             if (Windows[3].Visible)
             {
-                if (messageText.Value != "" || messageText.Value != messageText.ValueWhenEmpty)
+                if (messageText.Value != "" && messageText.Value != messageText.ValueWhenEmpty)
                 {
-                    // FOR TESTING PURPOSES
-                    // Send message directly to chats instead of server.  Not hard to implement server-side but I didn't
-                    // sleep well and I need a nap and I just don't feel like doing it right now
-                    AddChats(messageText.Value);
+                    if (messageText.Value == "/exit")
+                    {
+                        Globals.exitgame = true;
+                    }
+                    ctcp.SendChat(messageText.Value);
                     messageText.Value = "";
                     MenuManager.Clear(3);
                 }
@@ -183,30 +185,30 @@ namespace Client
             panel.AddChild(lblStatus);
 
             // MouseEvents
-            lblRegister.OnMouseEnter += (Entity entity) => { lblRegister.FillColor = Color.Red; UserInterface.Active.SetCursor(CursorType.Pointer); };
-            lblRegister.OnMouseLeave += (Entity entity) => { lblRegister.FillColor = Color.White; UserInterface.Active.SetCursor(CursorType.Default); };
+            lblRegister.OnMouseEnter += entity => { lblRegister.FillColor = Color.Red; UserInterface.Active.SetCursor(CursorType.Pointer); };
+            lblRegister.OnMouseLeave += entity => { lblRegister.FillColor = Color.White; UserInterface.Active.SetCursor(CursorType.Default); };
 
-            txtUser.OnMouseEnter += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.IBeam); };
-            txtUser.OnMouseLeave += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            txtUser.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
+            txtUser.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            txtPass.OnMouseEnter += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.IBeam); };
-            txtPass.OnMouseLeave += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            txtPass.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
+            txtPass.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            btnLogin.OnMouseEnter += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Pointer); };
-            btnLogin.OnMouseLeave += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            btnLogin.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.Pointer); };
+            btnLogin.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            lblRegister.OnClick += (Entity entity) =>
+            lblRegister.OnClick += entity =>
             {
                 MenuManager.ChangeMenu(MenuManager.Menu.Register);
             };
 
-            btnLogin.OnClick += (Entity entity) =>
+            btnLogin.OnClick += entity =>
             {
                 Login();
             };
 
-            txtUser.OnValueChange = (Entity textUser) => { Globals.loginUsername = txtUser.Value; };
-            txtPass.OnValueChange = (Entity textPass) => { Globals.loginPassword = txtPass.Value; };
+            txtUser.OnValueChange = textUser => { Globals.loginUsername = txtUser.Value; };
+            txtPass.OnValueChange = textPass => { Globals.loginPassword = txtPass.Value; };
 
             // Create Window
             CreateWindow(panel);
@@ -247,33 +249,33 @@ namespace Client
             panel.AddChild(btnBack);
 
             // MouseEvents
-            txtUserReg.OnMouseEnter += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.IBeam); };
-            txtUserReg.OnMouseLeave += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            txtUserReg.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
+            txtUserReg.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            txtPassReg.OnMouseEnter += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.IBeam); };
-            txtPassReg.OnMouseLeave += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            txtPassReg.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
+            txtPassReg.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            txtPas2Reg.OnMouseEnter += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.IBeam); };
-            txtPas2Reg.OnMouseLeave += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            txtPas2Reg.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
+            txtPas2Reg.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            btnRegister.OnMouseEnter += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Pointer); };
-            btnRegister.OnMouseLeave += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            btnRegister.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.Pointer); };
+            btnRegister.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            btnBack.OnMouseEnter += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Pointer); };
-            btnBack.OnMouseLeave += (Entity entity) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            btnBack.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.Pointer); };
+            btnBack.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            btnBack.OnClick += (Entity entity) =>
+            btnBack.OnClick += entity =>
             {
                 MenuManager.ChangeMenu(MenuManager.Menu.Login);
             };
-            btnRegister.OnClick += (Entity entity) =>
+            btnRegister.OnClick += entity =>
             {
                 Register();
             };
 
-            txtUserReg.OnValueChange = (Entity textUserReg) => { Globals.registerUsername = txtUserReg.Value; };
-            txtPassReg.OnValueChange = (Entity textPassReg) => { Globals.registerPassword = txtPassReg.Value; };
-            txtPas2Reg.OnValueChange = (Entity textPas2Reg) => { Globals.registerValidate = txtPas2Reg.Value; };
+            txtUserReg.OnValueChange = textUserReg => { Globals.registerUsername = txtUserReg.Value; };
+            txtPassReg.OnValueChange = textPassReg => { Globals.registerPassword = txtPassReg.Value; };
+            txtPas2Reg.OnValueChange = textPas2Reg => { Globals.registerValidate = txtPas2Reg.Value; };
 
             // Create Window
             CreateWindow(panel);
@@ -285,10 +287,8 @@ namespace Client
             Panel panel = new Panel(new Vector2(500, 250), PanelSkin.None, Anchor.TopLeft, new Vector2(-55, -50));
             Globals.chats = new SelectList(new Vector2(500, 250), Anchor.Auto, null, PanelSkin.None);
             UserInterface.Active.AddEntity(panel);
-
-            // chats.Scrollbar.Visible = false; Need to figure out how to do this...
-            Globals.chats.ItemsScale = .5F;
-            Globals.chats.OnMouseWheelScroll = (Entity chatScroll) =>
+            Globals.chats.ItemsScale = .6F;
+            Globals.chats.OnMouseWheelScroll = chatScroll =>
             {
                 var Delta = new GeonBit.UI.InputHelper();
                 if (Delta.MouseWheelChange == 1 && Globals.chats.ScrollPosition >= 0)
@@ -313,7 +313,7 @@ namespace Client
         {
             Globals.chats.AddItem(message);
             // If a message is selected, assume they want to lock the list and don't scroll to new.
-            if (Globals.chats.SelectedValue != null)
+            if (Globals.chats.SelectedValue == null)
             {
                 Globals.chats.scrollToEnd();
             }
@@ -323,7 +323,7 @@ namespace Client
         {
             Panel panel = new Panel(new Vector2(500, 50), PanelSkin.None, Anchor.BottomLeft, new Vector2(-10, 40));
             messageText = new TextInput(false);
-            messageText.Scale = .5F;
+            messageText.Skin = PanelSkin.None;
             UserInterface.Active.AddEntity(panel);
             panel.AddChild(messageText);
             CreateWindow(panel);

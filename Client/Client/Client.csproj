@@ -58,7 +58,8 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="DataTypes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GeonBit.UI.3.1.0.2\lib\geonbitui\DataTypes.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>Content\DataTypes.dll</HintPath>
     </Reference>
     <Reference Include="GeonBit.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\GeonBit.UI.3.1.0.2\lib\geonbitui\GeonBit.UI.dll</HintPath>

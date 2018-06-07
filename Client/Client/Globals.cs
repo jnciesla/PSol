@@ -5,6 +5,7 @@ namespace Client
 {
     internal class Globals
     {
+        public static bool exitgame = false;
         public static bool windowOpen;
         public static Rectangle mapSize = new Rectangle(0, 0, 102500, 102500);
         public static Rectangle playArea = new Rectangle(0, 0, 100010, 100010);
@@ -28,6 +29,8 @@ namespace Client
         public static bool ZoomIn;
         public static bool ZoomOut;
         public static bool ZoomDefault;
+
+        public static bool Details;
 
     }
 }

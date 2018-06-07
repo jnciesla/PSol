@@ -19,6 +19,10 @@ namespace Bindings
 
             // General
             public string Name;
+            public int MaxHealth;
+            public int Health;
+            public int MaxShield;
+            public int Shield;
             public int Sprite;
             public int Level;
             public int Exp;

@@ -119,5 +119,14 @@ namespace Client
             buffer.Dispose();
         }
 
+        public void SendChat(string message)
+        {
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddInteger((int)ClientPackets.CChat);
+            buffer.AddString(message);
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
     }
 }

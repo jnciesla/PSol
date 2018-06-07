@@ -41,7 +41,7 @@ namespace Client
 			PacketBuffer buffer = new PacketBuffer();
 			buffer.AddBytes(data);
 			buffer.GetInteger();
-			Graphics.statusMessage = buffer.GetString();
+			InterfaceGUI.AddChats(buffer.GetString());
 		}
 
 		private void HandleLogin(byte[] data)
