@@ -89,7 +89,7 @@ namespace Client
             {
                 if (messageText.Value != "" && messageText.Value != messageText.ValueWhenEmpty)
                 {
-                    if (messageText.Value == "/exit")
+                    if (messageText.Value.ToLower() == "/exit" || messageText.Value.ToLower() == "/quit")
                     {
                         Globals.exitgame = true;
                     }

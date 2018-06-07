@@ -29,7 +29,7 @@ namespace Client
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
-            // graphics.IsFullScreen = true;
+            graphics.IsFullScreen = true;
             Content.RootDirectory = "Content";
 
             graphics.PreferredBackBufferWidth = Globals.PreferredBackBufferWidth;
@@ -180,9 +180,15 @@ namespace Client
                     Globals.Luminosity = Color.White;
                 }
             }
-            Globals.Control = Keyboard.GetState().IsKeyDown(Keys.LeftControl);
 
-            if (!Globals.windowOpen) // Don't allow game input when menus are open
+            if (KC.KeyPress(Keys.Q) && Globals.Control)
+            {
+                Globals.exitgame = true;
+            }
+
+            Globals.Control = KC.CheckCtrl();
+
+            if (!Globals.windowOpen && !Globals.Control) // Don't allow game input when menus are open or CTRL is pressed
             {
                 Globals.DirUp = Keyboard.GetState().IsKeyDown(Keys.W);
                 Globals.DirDn = Keyboard.GetState().IsKeyDown(Keys.S);
@@ -191,7 +197,9 @@ namespace Client
                 Globals.ZoomIn = Keyboard.GetState().IsKeyDown(Keys.E);
                 Globals.ZoomOut = Keyboard.GetState().IsKeyDown(Keys.Q);
                 Globals.ZoomDefault = Keyboard.GetState().IsKeyDown(Keys.R);
-                Globals.Details = Keyboard.GetState().IsKeyDown(Keys.LeftAlt);
+                Globals.Details1 = Keyboard.GetState().IsKeyDown(Keys.LeftAlt);
+                Globals.Details2 = Keyboard.GetState().IsKeyDown(Keys.RightAlt);
+                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { Globals.Selected = -1; }
                 if (KC.KeyPress(Keys.T))
                 {
                     MenuManager.ChangeMenu(MenuManager.Menu.Message);

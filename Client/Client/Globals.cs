@@ -24,6 +24,7 @@ namespace Client
         public static string registerUsername = "";
         public static string registerPassword = "";
         public static string registerValidate = "";
+        public static int Selected = -1;
 
         // Game direction vars
         public static bool DirUp;
@@ -35,7 +36,7 @@ namespace Client
         public static bool ZoomOut;
         public static bool ZoomDefault;
 
-        public static bool Details;
-
+        public static bool Details1;
+        public static bool Details2;
     }
 }

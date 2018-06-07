@@ -4,6 +4,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Bindings;
 using System.IO;
+using System.Runtime.InteropServices;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 
 namespace Client
@@ -11,6 +13,7 @@ namespace Client
     internal class Graphics
     {
         public static Texture2D[] Characters = new Texture2D[2];
+        public static Texture2D Shield;
         public static Texture2D pixel;
         private static Model model;
 
@@ -34,6 +37,8 @@ namespace Client
 
         private static void DrawPlayers(ContentManager manager)
         {
+            var mouseState = Mouse.GetState();
+            var mousePosition = new Point(mouseState.X, mouseState.Y);
             var HealthFont = manager.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size10");
             var ShieldFont = manager.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size8");
             if (GameLogic.PlayerIndex <= -1) return;
@@ -42,17 +47,27 @@ namespace Client
             Types.Player[1].MaxHealth = 500;
             Types.Player[1].Health = 100;
             Types.Player[1].MaxShield = 100;
-            Types.Player[1].Shield = 89;
+            Types.Player[1].Shield = 97;
 
             for (var i = 1; i != Constants.MAX_PLAYERS; i++)
             {
                 if (Types.Player[i].X.CompareTo(0.0f) == 0) continue;
                 var origin = new Vector2(Characters[SpriteNum].Width / 2f, Characters[SpriteNum].Height / 2f);
                 DrawSprite(SpriteNum, new Vector2(Types.Player[i].X, Types.Player[i].Y), Types.Player[i].Rotation, origin);
+                // Draw shield orb on and fade off when being attacked.  Rotation can potentially be extrapolated from angle of attack to make the 'light' side face target
+                // Game1.spriteBatch.Draw(Shield, new Vector2(Types.Player[i].X, Types.Player[i].Y), null, Color.LightBlue * 0.25f, Types.Player[i].Rotation * -1, new Vector2(Shield.Width / 2f, Shield.Height / 2f), 1, SpriteEffects.None, 0);
 
                 // Draw status stuff
-                if (Globals.Details)
+                if (Globals.Details1 || Globals.Details2 || Globals.Selected == i)
                 {
+                    // Draw shield orb overlay when viewing details, if it isn't depleted
+                    if (Types.Player[i].Shield > 0)
+                    {
+                        Game1.spriteBatch.Draw(Shield, new Vector2(Types.Player[i].X, Types.Player[i].Y), null,
+                            Color.LightBlue * 0.25f, Types.Player[i].Rotation * -1,
+                            new Vector2(Shield.Width / 2f, Shield.Height / 2f), 1, SpriteEffects.None, 0);
+                    }
+
                     // Health
                     Color HealthColor1 = Color.Green;
                     Color HealthColor2 = Color.DarkGreen;
@@ -77,7 +92,16 @@ namespace Client
                         Types.Player[i].Y + Characters[SpriteNum].Height / 2, Characters[SpriteNum].Width, 6);
                     Game1.spriteBatch.DrawLine(healthRect.Left + 2, healthRect.Bottom - 2, healthRect.Right - (Characters[SpriteNum].Width * percentHealth), healthRect.Bottom - 2, HealthColor1, 4F);
                     Game1.spriteBatch.DrawRectangle(healthRect, HealthColor2, 2F);
-                    var HealthDisplay = Types.Player[i].Health + "/" + Types.Player[i].MaxHealth;
+                    var HealthDisplay = "";
+                    if (Globals.Details1)
+                    {
+                        HealthDisplay = Types.Player[i].Health + "/" + Types.Player[i].MaxHealth;
+                    }
+                    else if (Globals.Details2)
+                    {
+                        HealthDisplay = (int)((float)Types.Player[i].Health / Types.Player[i].MaxHealth * 100) + "%";
+                    }
+
                     Game1.spriteBatch.DrawString(HealthFont, HealthDisplay, new Vector2(Types.Player[i].X - HealthFont.MeasureString(HealthDisplay).X / 2, healthRect.Bottom + 8), HealthColor2);
 
                     // Shield
@@ -91,14 +115,32 @@ namespace Client
                             shieldRect.Right - (Characters[SpriteNum].Width * percentShield), shieldRect.Bottom - 2,
                             Color.Goldenrod, 4F);
                         Game1.spriteBatch.DrawRectangle(shieldRect, Color.DarkGoldenrod, 2F);
-                        var ShieldDisplay = Types.Player[i].Shield + "/" + Types.Player[i].MaxShield;
+                        var ShieldDisplay = "";
+                        if (Globals.Details1)
+                        {
+                            ShieldDisplay = Types.Player[i].Shield + "/" + Types.Player[i].MaxShield;
+                        }
+                        else if (Globals.Details2)
+                        {
+                            ShieldDisplay = (int)((float)Types.Player[i].Shield / Types.Player[i].MaxShield * 100) + "%";
+                        }
+
                         Game1.spriteBatch.DrawString(ShieldFont, ShieldDisplay,
                             new Vector2(Types.Player[i].X - ShieldFont.MeasureString(ShieldDisplay).X / 2,
                                 shieldRect.Bottom + 13), Color.Goldenrod);
-                    } else if (Types.Player[i].Shield <= 0 && Types.Player[i].MaxShield > 0)
-                    {
-
                     }
+                    else if (Types.Player[i].Shield <= 0 && Types.Player[i].MaxShield > 0)
+                    {
+                        Game1.spriteBatch.DrawString(ShieldFont, "Shield depleted", new Vector2(Types.Player[i].X - ShieldFont.MeasureString("Shield Depleted!").X / 2,
+                            shieldRect.Bottom + 13), Color.DarkGoldenrod);
+                    }
+                }
+                // OnClick
+                Rectangle Bound = new Rectangle((int)Types.Player[i].X - Characters[SpriteNum].Width / 2, (int)Types.Player[i].Y - Characters[SpriteNum].Height / 2, Characters[SpriteNum].Width, Characters[SpriteNum].Height);
+                Game1.spriteBatch.DrawRectangle(Bound,Color.Blue);
+                if (Mouse.GetState().LeftButton == ButtonState.Pressed && Bound.Contains(mousePosition))
+                {
+                    Globals.Selected = i;
                 }
             }
         }
@@ -109,6 +151,8 @@ namespace Client
             {
                 Characters[i] = manager.Load<Texture2D>("Characters/" + i);
             }
+
+            Shield = manager.Load<Texture2D>("Shield");
         }
 
         public static void DrawHud(ContentManager manager)
