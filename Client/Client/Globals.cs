@@ -10,8 +10,8 @@ namespace Client
         public static Rectangle playArea = new Rectangle(0, 0, 100010, 100010);
         public static int PreferredBackBufferWidth = 1024;
         public static int PreferredBackBufferHeight = 768;
-
-        public static SelectList chats;
+		
+	    public static Panel chatPanel;
 
         public static string loginUsername = "";
         public static string loginPassword = "";
