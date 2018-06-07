@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System.Security.Policy;
+using Microsoft.Xna.Framework;
 using GeonBit.UI.Entities;
 
 namespace Client
@@ -12,7 +13,11 @@ namespace Client
         public static int PreferredBackBufferWidth = 1024;
         public static int PreferredBackBufferHeight = 768;
 
-        public static SelectList chats;
+        public static Panel chatPanel;
+        public static bool pauseChat = false;
+
+        public static Color Luminosity = Color.White;
+        public static bool Control = false;
 
         public static string loginUsername = "";
         public static string loginPassword = "";

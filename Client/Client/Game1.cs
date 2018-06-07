@@ -12,6 +12,7 @@ namespace Client
         public static SpriteBatch spriteBatch;
         private Texture2D backGroundTexture;
         private Vector2 backgroundPos;
+        RenderTarget2D renderTarget;
 
         private ClientTCP ctcp;
         private HandleData chd;
@@ -30,7 +31,7 @@ namespace Client
             graphics = new GraphicsDeviceManager(this);
             // graphics.IsFullScreen = true;
             Content.RootDirectory = "Content";
-            
+
             graphics.PreferredBackBufferWidth = Globals.PreferredBackBufferWidth;
             graphics.PreferredBackBufferHeight = Globals.PreferredBackBufferHeight;
         }
@@ -46,13 +47,16 @@ namespace Client
             // TODO: Add your initialization logic here
             ctcp = new ClientTCP();
             chd = new HandleData();
+            renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
             camera = new Camera(GraphicsDevice.Viewport);
             chd.InitializeMesssages();
             ctcp.ConnectToServer();
             Graphics.InitializeGraphics(Content);
             UserInterface.Initialize(Content, BuiltinThemes.editor);
+            UserInterface.Active.UseRenderTarget = true;
             IGUI.InitializeGUI();
             MenuManager.ChangeMenu(MenuManager.Menu.Login);
+
             base.Initialize();
         }
 
@@ -110,6 +114,31 @@ namespace Client
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            DrawSceneToTexture(renderTarget, gameTime);
+
+            GraphicsDevice.Clear(Color.Black);
+            UserInterface.Active.Draw(spriteBatch);
+
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend,
+                SamplerState.LinearClamp, DepthStencilState.Default,
+                RasterizerState.CullNone);
+
+            spriteBatch.Draw(renderTarget, new Rectangle(0, 0, 1024, 768), Globals.Luminosity);
+
+            spriteBatch.End();
+            base.Draw(gameTime);
+        }
+
+        /// <summary>
+        /// Draws the entire scene in the given render target.
+        /// </summary>
+        /// <returns>A texture2D with the scene drawn in it.</returns>
+        protected void DrawSceneToTexture(RenderTarget2D renderTarget, GameTime gameTime)
+        {
+            // Set the render target
+            GraphicsDevice.SetRenderTarget(renderTarget);
+            GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
+            // Draw the scene
             GraphicsDevice.Clear(Color.Black);
 
             Tick = (int)gameTime.TotalGameTime.TotalMilliseconds;
@@ -131,14 +160,30 @@ namespace Client
             Graphics.DrawBorder(Globals.playArea, 1, Color.DarkOliveGreen);
             Graphics.RenderGraphics(Content);
             spriteBatch.End();
-            
+
             Graphics.DrawHud(Content);
-            UserInterface.Active.Draw(spriteBatch);
-            base.Draw(gameTime);
+
+            UserInterface.Active.DrawMainRenderTarget(spriteBatch);
+
+            // Drop the render target
+            GraphicsDevice.SetRenderTarget(null);
         }
 
         private void CheckKeys()
         {
+            if (KC.KeyPress(Keys.L) && Globals.Control)
+            {
+                if (Globals.Luminosity == Color.White)
+                {
+                    Globals.Luminosity = Color.Gray;
+                }
+                else
+                {
+                    Globals.Luminosity = Color.White;
+                }
+            }
+            Globals.Control = Keyboard.GetState().IsKeyDown(Keys.LeftControl);
+
             if (!Globals.windowOpen) // Don't allow game input when menus are open
             {
                 Globals.DirUp = Keyboard.GetState().IsKeyDown(Keys.W);

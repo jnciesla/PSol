@@ -102,7 +102,7 @@ namespace Client
             if (messageTime + 1000 < Game1.Tick)
             {
                 messageTime = Game1.Tick;
-                InterfaceGUI.AddChats("We shouldn't go beyond the edge of the mapped galaxy.");
+                InterfaceGUI.AddChats("We shouldn't go beyond the edge of the mapped galaxy.", Color.DarkGoldenrod);
             }
         }
 

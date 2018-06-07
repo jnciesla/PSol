@@ -20,4 +20,10 @@ namespace Bindings
         CPlayerData = 3,
         CChat = 4
     }
+
+    public enum MessageColors
+    {
+        Chat = 1,
+        Warning = 2
+    }
 }

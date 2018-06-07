@@ -51,7 +51,7 @@ namespace Server
 
             if (!db.PasswordOK(index, username, password))
             {
-                SendMessage(index, "Password incorrect!");
+                SendMessage(index, "Password incorrect!", MessageColors.Warning);
                 return;
             }
 
@@ -123,10 +123,11 @@ namespace Server
             }
         }
 
-        public void SendMessage(int index, string message)
+        public void SendMessage(int index, string message, MessageColors color)
         {
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SMessage);
+            buffer.AddInteger((int)color);
             buffer.AddString(message);
             // There will never be a user -1, so we'll pass that to send something to all players.
             SendData(index, buffer.ToArray());
@@ -189,6 +190,7 @@ namespace Server
             var newString = Types.Player[index].Login + ": " + oldString;
             buffer.Dispose();
             buffer.AddInteger((int)ServerPackets.SMessage);
+            buffer.AddInteger((int)MessageColors.Chat);
             buffer.AddString(newString);
             BroadcastData(buffer.ToArray());
             buffer.Dispose();

@@ -1,6 +1,8 @@
 ﻿using System;
 using Bindings;
 using System.Collections.Generic;
+using System.Diagnostics;
+using Microsoft.Xna.Framework;
 
 namespace Client
 {
@@ -38,10 +40,13 @@ namespace Client
 
 		private void HandleMessage(byte[] data)
 		{
-			PacketBuffer buffer = new PacketBuffer();
+		    Color color = Color.White;
+            PacketBuffer buffer = new PacketBuffer();
 			buffer.AddBytes(data);
 			buffer.GetInteger();
-			InterfaceGUI.AddChats(buffer.GetString());
+		    int colorCode = buffer.GetInteger();
+            if(colorCode == 2) { color = Color.DarkRed; }
+			InterfaceGUI.AddChats(buffer.GetString(), color);
 		}
 
 		private void HandleLogin(byte[] data)

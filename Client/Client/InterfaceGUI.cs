@@ -7,6 +7,7 @@ using GeonBit.UI.Utils;
 
 namespace Client
 {
+
     internal class InterfaceGUI
     {
         public static List<Panel> Windows = new List<Panel>();
@@ -284,38 +285,35 @@ namespace Client
         public void CreateChats()
         {
             //  Create Entities
-            Panel panel = new Panel(new Vector2(500, 250), PanelSkin.None, Anchor.TopLeft, new Vector2(-55, -50));
-            Globals.chats = new SelectList(new Vector2(500, 250), Anchor.Auto, null, PanelSkin.None);
+            Panel panel = new Panel(new Vector2(500, 250), PanelSkin.None, Anchor.TopLeft);
             UserInterface.Active.AddEntity(panel);
-            Globals.chats.ItemsScale = .6F;
-            Globals.chats.OnMouseWheelScroll = chatScroll =>
+
+            panel.PanelOverflowBehavior = PanelOverflowBehavior.VerticalScroll;
+            panel.OnMouseEnter = (chatOver) =>
             {
-                var Delta = new GeonBit.UI.InputHelper();
-                if (Delta.MouseWheelChange == 1 && Globals.chats.ScrollPosition >= 0)
-                {
-                    Globals.chats.ScrollPosition--;
-                }
-                else
-                {
-                    Globals.chats.ScrollPosition++;
-                }
-                Globals.chats.SelectedValue = null;
+                panel.Scrollbar.Opacity = 175;
+                Globals.pauseChat = true;
             };
-
-            // Add Entities
-            panel.AddChild(Globals.chats);
-
-            // Create Window
-            CreateWindow(panel);
+            panel.OnMouseLeave = (chatOver) =>
+            {
+                panel.Scrollbar.Opacity = 0;
+                Globals.pauseChat = false;
+            };
+            panel.Scrollbar.Opacity = 0;
+            Globals.pauseChat = false;
+            Globals.chatPanel = panel;
+            CreateWindow(Globals.chatPanel);
         }
 
-        public static void AddChats(string message)
+        public static void AddChats(string message, Color color)
         {
-            Globals.chats.AddItem(message);
-            // If a message is selected, assume they want to lock the list and don't scroll to new.
-            if (Globals.chats.SelectedValue == null)
+            //Globals.chats.AddItem(message);
+            var para = new MulticolorParagraph(message, Anchor.Auto, color);
+            para.Scale = 0.6f;
+            Globals.chatPanel.AddChild(para);
+            if (!Globals.pauseChat)
             {
-                Globals.chats.scrollToEnd();
+                Globals.chatPanel.Scrollbar.Value = (int)Globals.chatPanel.Scrollbar.Max;
             }
         }
 
