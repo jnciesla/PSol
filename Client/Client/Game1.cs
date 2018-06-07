@@ -154,7 +154,6 @@ namespace Client
             CheckKeys();
 
             // TODO: Add your drawing code here
-
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, camera.transform);
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
             Graphics.DrawBorder(Globals.playArea, 1, Color.DarkOliveGreen);
@@ -162,7 +161,6 @@ namespace Client
             spriteBatch.End();
 
             Graphics.DrawHud(Content);
-
             UserInterface.Active.DrawMainRenderTarget(spriteBatch);
 
             // Drop the render target

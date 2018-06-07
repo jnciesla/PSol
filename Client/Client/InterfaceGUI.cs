@@ -7,7 +7,6 @@ using GeonBit.UI.Utils;
 
 namespace Client
 {
-
     internal class InterfaceGUI
     {
         public static List<Panel> Windows = new List<Panel>();
