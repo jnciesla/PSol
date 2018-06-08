@@ -3,8 +3,6 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Bindings;
-using System.IO;
-using System.Runtime.InteropServices;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 
@@ -37,8 +35,6 @@ namespace Client
 
         private static void DrawPlayers(ContentManager manager)
         {
-            var mouseState = Mouse.GetState();
-            var mousePosition = new Point(mouseState.X, mouseState.Y);
             var HealthFont = manager.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size10");
             var ShieldFont = manager.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size8");
             if (GameLogic.PlayerIndex <= -1) return;
@@ -48,6 +44,12 @@ namespace Client
             Types.Player[1].Health = 100;
             Types.Player[1].MaxShield = 100;
             Types.Player[1].Shield = 97;
+            Types.Player[1].Name = "JCiesla";
+            Types.Player[2].MaxHealth = 400;
+            Types.Player[2].Health = 375;
+            Types.Player[2].MaxShield = 100;
+            Types.Player[2].Shield = 12;
+            Types.Player[2].Name = "Test";
 
             for (var i = 1; i != Constants.MAX_PLAYERS; i++)
             {
@@ -60,13 +62,15 @@ namespace Client
                 // Draw status stuff
                 if (Globals.Details1 || Globals.Details2 || Globals.Selected == i)
                 {
-                    // Draw shield orb overlay when viewing details, if it isn't depleted
-                    if (Types.Player[i].Shield > 0)
+                    // Draw shield orb overlay when viewing details but not selected only on ourselves and when it's not depleted
+                    if (Types.Player[i].Shield > 0 && Globals.Selected != i && GameLogic.PlayerIndex == i)
                     {
                         Game1.spriteBatch.Draw(Shield, new Vector2(Types.Player[i].X, Types.Player[i].Y), null,
                             Color.LightBlue * 0.25f, Types.Player[i].Rotation * -1,
                             new Vector2(Shield.Width / 2f, Shield.Height / 2f), 1, SpriteEffects.None, 0);
                     }
+
+                    Game1.spriteBatch.DrawString(HealthFont, Types.Player[i].Name, new Vector2(Types.Player[i].X - HealthFont.MeasureString(Types.Player[i].Name).X / 2, Types.Player[i].Y - (Characters[SpriteNum].Height /2) - 10), Color.AntiqueWhite);
 
                     // Health
                     Color HealthColor1 = Color.Green;
@@ -93,7 +97,7 @@ namespace Client
                     Game1.spriteBatch.DrawLine(healthRect.Left + 2, healthRect.Bottom - 2, healthRect.Right - (Characters[SpriteNum].Width * percentHealth), healthRect.Bottom - 2, HealthColor1, 4F);
                     Game1.spriteBatch.DrawRectangle(healthRect, HealthColor2, 2F);
                     var HealthDisplay = "";
-                    if (Globals.Details1)
+                    if (Globals.Details1 || Globals.Selected == i)
                     {
                         HealthDisplay = Types.Player[i].Health + "/" + Types.Player[i].MaxHealth;
                     }
@@ -137,10 +141,16 @@ namespace Client
                 }
                 // OnClick
                 Rectangle Bound = new Rectangle((int)Types.Player[i].X - Characters[SpriteNum].Width / 2, (int)Types.Player[i].Y - Characters[SpriteNum].Height / 2, Characters[SpriteNum].Width, Characters[SpriteNum].Height);
-                Game1.spriteBatch.DrawRectangle(Bound,Color.Blue);
-                if (Mouse.GetState().LeftButton == ButtonState.Pressed && Bound.Contains(mousePosition))
+                MouseState ms = Mouse.GetState();
+                if (ms.LeftButton == ButtonState.Pressed && Globals.Selected != i)
                 {
-                    Globals.Selected = i;
+                    float x = ms.X + (-Camera.transform.M41);
+                    float y = ms.Y + (-Camera.transform.M42);
+                    Vector2 position = new Vector2(x, y);
+                    if (Bound.Contains(position))
+                    {
+                        Globals.Selected = i;
+                    }
                 }
             }
         }

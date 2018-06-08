@@ -16,7 +16,8 @@ namespace Client
 
         private ClientTCP ctcp;
         private HandleData chd;
-        private Camera camera;
+        Camera camera;
+
 
         private readonly InterfaceGUI IGUI = new InterfaceGUI();
         private static readonly KeyControl KC = new KeyControl();
@@ -29,7 +30,7 @@ namespace Client
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
-            graphics.IsFullScreen = true;
+            // graphics.IsFullScreen = true;
             Content.RootDirectory = "Content";
 
             graphics.PreferredBackBufferWidth = Globals.PreferredBackBufferWidth;
@@ -153,8 +154,9 @@ namespace Client
             }
             CheckKeys();
 
+
             // TODO: Add your drawing code here
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, camera.transform);
+            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, Camera.transform);
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
             Graphics.DrawBorder(Globals.playArea, 1, Color.DarkOliveGreen);
             Graphics.RenderGraphics(Content);
@@ -213,5 +215,6 @@ namespace Client
                 if (KC.KeyPress(Keys.Escape)) { MenuManager.Clear(3); }
             }
         }
+
     }
 }

@@ -129,8 +129,16 @@ namespace Server
             buffer.AddInteger((int)ServerPackets.SMessage);
             buffer.AddInteger((int)color);
             buffer.AddString(message);
-            // There will never be a user -1, so we'll pass that to send something to all players.
-            SendData(index, buffer.ToArray());
+            // Use index -1 to broadcast from server to all players
+            if (index != -1)
+            {
+                SendData(index, buffer.ToArray());
+            }
+            else
+            {
+                BroadcastData(buffer.ToArray());
+            }
+
             buffer.Dispose();
         }
 
@@ -140,7 +148,13 @@ namespace Server
             buffer.AddInteger((int)ServerPackets.SAckLogin);
             buffer.AddInteger(index);
             SendData(index, buffer.ToArray());
+            buffer.AddFloat(Types.Player[index].X);
+            buffer.AddFloat(Types.Player[index].Y);
+            buffer.AddFloat(Types.Player[index].Rotation);
             buffer.Dispose();
+            // Types.Player[index].Name = Types.Player[index].Login;
+            string message = Types.Player[index].Login + " has connected.";
+            SendMessage(-1, message, MessageColors.Notification);
         }
 
         public void AcknowledgeRegister(int index)
@@ -156,7 +170,6 @@ namespace Server
         {
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SPlayerData);
-            // Extrapolate and transfer position data
             buffer.AddFloat(Types.Player[index].X);
             buffer.AddFloat(Types.Player[index].Y);
             buffer.AddFloat(Types.Player[index].Rotation);
@@ -169,7 +182,6 @@ namespace Server
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SPulse);
             buffer.AddBytes(BitConverter.GetBytes(DateTime.UtcNow.ToBinary()));
-            // Extrapolate and transfer position data
             for (var i = 1; i < Constants.MAX_PLAYERS; i++)
             {
                 buffer.AddFloat(Types.Player[i].X);
