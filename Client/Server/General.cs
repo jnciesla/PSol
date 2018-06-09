@@ -28,7 +28,6 @@ namespace Server
 				Types.Player[i] = new Types.PlayerStruct();
 			}
 			stcp.InitializeNetwork();
-            db.ConnectToSQL();
 			Console.WriteLine("Server has started");
 			return shd;
 		}

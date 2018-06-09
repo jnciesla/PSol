@@ -70,8 +70,8 @@ namespace Server
             buffer.GetInteger();
             string username = buffer.GetString();
             string password = buffer.GetString();
-
-            if (!db.AccountExists(username))
+            bool exists = db.AccountExists(username);
+            if (!exists)
             {
                 db.register(index, username, password);
                 AcknowledgeRegister(index);
@@ -152,8 +152,7 @@ namespace Server
             buffer.AddFloat(Types.Player[index].Y);
             buffer.AddFloat(Types.Player[index].Rotation);
             buffer.Dispose();
-            // Types.Player[index].Name = Types.Player[index].Login;
-            string message = Types.Player[index].Login + " has connected.";
+            string message = Types.Player[index].Name + " has connected.";
             SendMessage(-1, message, MessageColors.Notification);
         }
 
