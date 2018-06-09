@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Bindings
+﻿namespace Bindings
 {
     public enum ServerPackets
     {
@@ -24,6 +20,7 @@ namespace Bindings
     public enum MessageColors
     {
         Chat = 1,
-        Warning = 2
+        Warning = 2,
+        Notification = 3
     }
 }

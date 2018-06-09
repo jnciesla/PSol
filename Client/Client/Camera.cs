@@ -7,9 +7,9 @@ namespace Client
     internal class Camera
 	{
 		public float zoom = 1;
-		public Matrix transform;
-	    private Viewport view;
-	    private Vector2 center;
+		public static Matrix transform;
+	    public static Viewport view;
+	    public static Vector2 center;
 
 		public Camera(Viewport newView)
 		{

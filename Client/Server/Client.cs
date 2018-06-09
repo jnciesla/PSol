@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
-using System.Net;
-using System.IO;
-using System.Threading;
+using Bindings;
 
 namespace Server
 {
@@ -13,7 +11,6 @@ namespace Server
         public TcpClient Socket;
         public NetworkStream Stream;
         private HandleData shd;
-        public bool Closing;
         public byte[] readBuff;
 
         public void Start()
@@ -31,7 +28,7 @@ namespace Server
             try
             {
                 int readBytes = Stream.EndRead(ar);
-                if(readBytes <= 0)
+                if (readBytes <= 0)
                 {
                     CloseSocket(Index); // Disconnect client when stream is <= 0 bytes
                     return;
@@ -53,11 +50,13 @@ namespace Server
         private void CloseSocket(int index)
         {
             Console.WriteLine("Connection from " + IP + " has been terminated.");
-			var db = new Database();
-			db.SaveGame(index);
+            string message = Types.Player[index].Login + " has disconnected.";
+            shd.SendMessage(-1, message, MessageColors.Notification);
+            var db = new Database();
+            db.SaveGame(index);
             Socket.Close();
             Socket = null;
         }
-		
+
     }
 }

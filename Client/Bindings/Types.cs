@@ -9,6 +9,7 @@ namespace Bindings
     internal class Types
     {
         public static PlayerStruct[] Player = new PlayerStruct[Constants.MAX_PLAYERS];
+        public static PlayerStruct Default = new PlayerStruct();
 
         [Serializable]
         public struct PlayerStruct
@@ -33,20 +34,6 @@ namespace Bindings
             public float Y;
             public int Dir;
             public float Rotation;
-
-            // Client use
-            public int XOffset;
-            public int YOffset;
-            public int Moving;
-            public byte Steps;
-        }
-
-        public struct RECT
-        {
-            public int Top;
-            public int Right;
-            public int Bottom;
-            public int Left;
         }
     }
 }

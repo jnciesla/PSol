@@ -1,11 +1,11 @@
-﻿using System.Runtime.Serialization.Formatters;
-using Microsoft.Xna.Framework.Input;
+﻿using Microsoft.Xna.Framework.Input;
 
 namespace Client
 {
     class KeyControl
     {
         private Keys current;
+        private static bool previousMouse;
 
         public bool KeyPress(Keys key)
         {
@@ -16,6 +16,22 @@ namespace Client
             if (Keyboard.GetState().IsKeyUp(key) && current == key)
             {
                 current = Keys.None;
+                return true;
+            }
+
+            return false;
+        }
+
+        public static bool Click()
+        {
+            if (Mouse.GetState().LeftButton == ButtonState.Pressed)
+            {
+                previousMouse = true;
+            }
+
+            if (Mouse.GetState().LeftButton == ButtonState.Released && previousMouse)
+            {
+                previousMouse = false;
                 return true;
             }
 
