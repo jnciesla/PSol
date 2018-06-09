@@ -50,6 +50,7 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerTCP.cs" />
+    <Compile Include="SQL.cs" />
     <Compile Include="TempPlayer.cs" />
   </ItemGroup>
   <ItemGroup>

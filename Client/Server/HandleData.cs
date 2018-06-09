@@ -8,7 +8,7 @@ namespace Server
     {
         private delegate void Packet_(int index, byte[] data);
         private static Dictionary<int, Packet_> packets;
-        private Database db = new Database();
+        private SQL db = new SQL();
 
         public void InitializeMesssages()
         {
@@ -49,7 +49,7 @@ namespace Server
                 return;
             }
 
-            if (!db.PasswordOK(index, username, password))
+            if (!db.PasswordOK(username, password))
             {
                 SendMessage(index, "Password incorrect!", MessageColors.Warning);
                 return;
@@ -73,7 +73,7 @@ namespace Server
 
             if (!db.AccountExists(username))
             {
-                db.AddAccount(index, username, password);
+                db.register(index, username, password);
                 AcknowledgeRegister(index);
             }
             else

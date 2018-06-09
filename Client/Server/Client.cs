@@ -52,7 +52,7 @@ namespace Server
             Console.WriteLine("Connection from " + IP + " has been terminated.");
             string message = Types.Player[index].Login + " has disconnected.";
             shd.SendMessage(-1, message, MessageColors.Notification);
-            var db = new Database();
+            var db = new SQL();
             db.SaveGame(index);
             Socket.Close();
             Socket = null;

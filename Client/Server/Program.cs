@@ -8,13 +8,13 @@ namespace Server
 	{
 		private static Thread consoleThread;
 		private static General general;
-		private static Database db;
+		private static SQL db;
 		private static HandleData shd;
 
 	    private static void Main(string[] args)
 		{
 			general = new General();
-			db = new Database();
+			db = new SQL();
 			consoleThread = new Thread(new ThreadStart(ConsoleThread));
 			consoleThread.Start();
 			shd = general.InitializeServer();

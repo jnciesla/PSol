@@ -12,6 +12,7 @@ namespace Server
 	{
 		private ServerTCP stcp;
 		private HandleData shd;
+	    private SQL db = new SQL();
 
 		public HandleData InitializeServer()
 		{
@@ -27,7 +28,7 @@ namespace Server
 				Types.Player[i] = new Types.PlayerStruct();
 			}
 			stcp.InitializeNetwork();
-
+            db.ConnectToSQL();
 			Console.WriteLine("Server has started");
 			return shd;
 		}

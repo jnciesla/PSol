@@ -39,9 +39,9 @@ namespace Client
 
         public void TabThrough()
         {
-            if (Windows[0].Visible == true) // Tab through login window when visible
+            if (Windows[1].Visible) // Tab through login window when visible
             {
-                if (txtUser.IsFocused == true)
+                if (txtUser.IsFocused)
                 {
                     txtUser.IsFocused = false;
                     txtPass.IsFocused = true;
@@ -53,14 +53,14 @@ namespace Client
                 }
             }
 
-            if (Windows[1].Visible == true) // Tab through register window when visible
+            if (Windows[2].Visible) // Tab through register window when visible
             {
-                if (txtUserReg.IsFocused == true)
+                if (txtUserReg.IsFocused)
                 {
                     txtUserReg.IsFocused = false;
                     txtPassReg.IsFocused = true;
                 }
-                else if (txtPassReg.IsFocused == true)
+                else if (txtPassReg.IsFocused)
                 {
                     txtPas2Reg.IsFocused = true;
                     txtPassReg.IsFocused = false;
