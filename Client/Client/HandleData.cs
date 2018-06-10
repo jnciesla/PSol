@@ -46,6 +46,7 @@ namespace Client
             int colorCode = buffer.GetInteger();
             if (colorCode == 2) { color = Color.DarkRed; }
             if (colorCode == 3) { color = Color.DarkGoldenrod; }
+            if (colorCode == 4) { color = Color.DarkGray; }
             InterfaceGUI.AddChats(buffer.GetString(), color);
         }
 

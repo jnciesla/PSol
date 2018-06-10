@@ -21,6 +21,7 @@
     {
         Chat = 1,
         Warning = 2,
-        Notification = 3
+        Notification = 3,
+        System = 4
     }
 }

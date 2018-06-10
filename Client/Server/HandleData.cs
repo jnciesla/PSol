@@ -45,7 +45,7 @@ namespace Server
 
             if (!db.AccountExists(username))
             {
-                // Username does not exist
+                SendMessage(index, "Username does not exist!", MessageColors.Warning);
                 return;
             }
 
@@ -56,10 +56,11 @@ namespace Server
             }
 
             db.LoadPlayer(index, username);
+            SendMessage(index, "Querying database...", MessageColors.System);
             ServerTCP.tempPlayer[index].inGame = true;
-            AcknowledgeLogin(index);
             XFerLoad(index);
             Console.WriteLine(username + " logged in successfully.");
+            AcknowledgeLogin(index);
         }
 
         private void HandleRegister(int index, byte[] data)
@@ -78,8 +79,7 @@ namespace Server
             }
             else
             {
-                // username exists
-                return;
+                SendMessage(index, "That username already exists!", MessageColors.Warning);
             }
         }
 
@@ -102,11 +102,13 @@ namespace Server
             buffer.AddBytes(data);
             try
             {
-                ServerTCP.Clients[index].Stream.BeginWrite(buffer.ToArray(), 0, buffer.ToArray().Length, null, null);
+                ServerTCP.Clients[index].Stream
+                    .BeginWrite(buffer.ToArray(), 0, buffer.ToArray().Length, null, null);
             }
-            catch
+            catch (Exception ex)
             {
                 Console.WriteLine("Unable to send packet- client disconnected");
+                Console.WriteLine(ex);
             }
 
             buffer.Dispose();
@@ -148,9 +150,6 @@ namespace Server
             buffer.AddInteger((int)ServerPackets.SAckLogin);
             buffer.AddInteger(index);
             SendData(index, buffer.ToArray());
-            buffer.AddFloat(Types.Player[index].X);
-            buffer.AddFloat(Types.Player[index].Y);
-            buffer.AddFloat(Types.Player[index].Rotation);
             buffer.Dispose();
             string message = Types.Player[index].Name + " has connected.";
             SendMessage(-1, message, MessageColors.Notification);
@@ -167,6 +166,7 @@ namespace Server
 
         public void XFerLoad(int index)
         {
+            SendMessage(index, "Downloading user data...", MessageColors.System);
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SPlayerData);
             buffer.AddFloat(Types.Player[index].X);
