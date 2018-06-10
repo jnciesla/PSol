@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.SqlClient;
-using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using Bindings;
@@ -10,19 +8,7 @@ namespace Server
 {
     class SQL
     {
-        private SqlConnection conn = new SqlConnection("Data Source=MSI;Initial Catalog=PSOL;User ID=root;Password=N^mLAd4h&E8x6#nT");
-
-        public void ConnectToSQL()
-        {
-            conn.Open();
-            Console.WriteLine("Connected to SQL server");
-        }
-
-        private void disconnect()
-        {
-            Console.WriteLine("Disconnected from SQL server");
-            conn.Close();
-        }
+        public SqlConnection conn = new SqlConnection("Data Source=MSI;Initial Catalog=PSOL;User ID=root;Password=N^mLAd4h&E8x6#nT");
 
         private void read()
         {
@@ -32,13 +18,11 @@ namespace Server
             {
                 Console.WriteLine(reader.GetString(0));
             }
-
-            reader.Close();
         }
 
         public void register(int index, string username, string password)
         {
-            Console.WriteLine("test");
+            conn.Open();
             string MD5password = CalculateMD5Hash(password);
             SqlCommand cmd = new SqlCommand("INSERT INTO [PSOL].[dbo].[users] VALUES ('" + username + "','" + MD5password + "','10','10','0')", conn);
             cmd.ExecuteNonQuery();
@@ -48,57 +32,63 @@ namespace Server
             Types.Player[index].X = 10;
             Types.Player[index].Y = 10;
             Types.Player[index].Rotation = 0;
+            conn.Close();
         }
 
         public bool AccountExists(string username)
         {
+            conn.Open();
+            bool exists = false;
             SqlCommand cmd = new SqlCommand("SELECT * FROM [PSOL].[dbo].[users] WHERE [name] = '" + username + "'", conn);
             SqlDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                reader.Close();
-                return true;
+                exists = true;
             }
-            reader.Close();
-            return false;
+            conn.Close();
+            return exists;
         }
 
         public bool PasswordOK(string username, string password)
         {
+            conn.Open();
+            bool OK = false;
             var MD5password = CalculateMD5Hash(password);
             SqlCommand cmd = new SqlCommand("SELECT * FROM [PSOL].[dbo].[users] WHERE [name] = '" + username + "' AND [password] = '" + MD5password + "'", conn);
             SqlDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
-                reader.Close();
-                return true;
+                OK = true;
             }
-            reader.Close();
-            return false;
+            conn.Close();
+            return OK;
         }
 
         public void LoadPlayer(int index, string username)
         {
+            conn.Open();
             SqlCommand cmd = new SqlCommand("SELECT * FROM [PSOL].[dbo].[users] WHERE [name] = '" + username + "'", conn);
             SqlDataReader reader = cmd.ExecuteReader();
             while (reader.Read())
             {
                 Types.Player[index].Name = reader.GetString(1);
-                Types.Player[index].X = reader.GetFloat(3);
-                Types.Player[index].Y = reader.GetFloat(4);
-                Types.Player[index].Rotation = reader.GetFloat(5);
+                Types.Player[index].X = (float)reader.GetDouble(3);
+                Types.Player[index].Y = (float)reader.GetDouble(4);
+                Types.Player[index].Rotation = (float)reader.GetDouble(5);
             }
-            reader.Close();
+            conn.Close();
         }
 
         public void SavePlayer(int index)
         {
-            SqlCommand cmd = new SqlCommand("UPDATE [PSOL].[dbo].[users] SET (" +
-                                            "[X] = '" + Types.Player[index].X + "'" +
-                                            "[Y] = '" + Types.Player[index].Y + "'" +
+            conn.Open();
+            SqlCommand cmd = new SqlCommand("UPDATE [PSOL].[dbo].[users] SET " +
+                                            "[X] = '" + Types.Player[index].X + "'," +
+                                            "[Y] = '" + Types.Player[index].Y + "'," +
                                             "[rotation] = '" + Types.Player[index].Rotation + "'" +
-                                            ") WHERE [name] = '" + Types.Player[index].Name + "'", conn);
+                                            " WHERE [name] = '" + Types.Player[index].Name + "'", conn);
             cmd.ExecuteNonQuery();
+            conn.Close();
         }
 
         public void SaveGame(int index = -1)
@@ -108,7 +98,7 @@ namespace Server
                 Console.WriteLine("Saving database...");
                 for (var i = 1; i < Constants.MAX_PLAYERS; i++)
                 {
-                    if (Types.Player[i].Login != null)
+                    if (Types.Player[i].Name != null)
                     {
                         SavePlayer(i);
                     }
