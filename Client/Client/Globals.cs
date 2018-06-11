@@ -1,5 +1,4 @@
-﻿using System.Security.Policy;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using GeonBit.UI.Entities;
 
 namespace Client

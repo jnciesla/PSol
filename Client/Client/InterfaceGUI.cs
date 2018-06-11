@@ -2,7 +2,6 @@
 using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
-using GeonBit.UI.DataTypes;
 using GeonBit.UI.Utils;
 
 namespace Client
@@ -85,7 +84,7 @@ namespace Client
                 Register();
             }
 
-            if (Windows[3].Visible)
+            if (Windows[3].Visible) // Ingame console
             {
                 if (messageText.Value != "" && messageText.Value != messageText.ValueWhenEmpty)
                 {
@@ -93,8 +92,11 @@ namespace Client
                     {
                         Globals.exitgame = true;
                     }
-                    ctcp.SendChat(messageText.Value);
-                    messageText.Value = "";
+                    else
+                    {
+                        ctcp.SendChat(messageText.Value);
+                        messageText.Value = "";
+                    }
                     MenuManager.Clear(3);
                 }
                 else
