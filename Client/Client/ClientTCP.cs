@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using Bindings;
+using Microsoft.Xna.Framework;
 
 namespace Client
 {
@@ -10,7 +11,6 @@ namespace Client
         public static NetworkStream myStream;
         private HandleData chd;
         private byte[] asyncBuff;
-        private bool connecting;
         private bool connected;
         public bool isOnline = false;
 
@@ -33,7 +33,6 @@ namespace Client
             PlayerSocket.NoDelay = false;
             Array.Resize(ref asyncBuff, 8192);
             PlayerSocket.BeginConnect("127.0.0.1", 8000, new AsyncCallback(ConnectCallback), PlayerSocket);
-            connecting = true;
         }
 
         private void ConnectCallback(IAsyncResult ar)
@@ -49,7 +48,6 @@ namespace Client
             }
             if(PlayerSocket.Connected == false)
             {
-                connecting = false;
                 connected = false;
                 return;
 
@@ -58,7 +56,6 @@ namespace Client
                 myStream = PlayerSocket.GetStream();
                 myStream.BeginRead(asyncBuff, 0, 8192, OnReceive, null);
                 connected = true;
-                connecting = false;
             }
         }
 
@@ -117,6 +114,7 @@ namespace Client
             buffer.AddFloat(Types.Player[GameLogic.PlayerIndex].Rotation);
             SendData(buffer.ToArray());
             buffer.Dispose();
+
         }
 
         public void SendChat(string message)
@@ -124,6 +122,15 @@ namespace Client
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddInteger((int)ClientPackets.CChat);
             buffer.AddString(message);
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void RequestStatic()
+        {
+            InterfaceGUI.AddChats("Requesting environment data...", Color.DarkGray);
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddInteger((int)ClientPackets.CTriggerPulse);
             SendData(buffer.ToArray());
             buffer.Dispose();
         }

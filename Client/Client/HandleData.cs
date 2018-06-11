@@ -18,10 +18,10 @@ namespace Client
             packets = new Dictionary<int, Packet_>
             {
                 {(int) ServerPackets.SMessage, HandleMessage},
-                {(int) ServerPackets.SAckLogin, HandleLogin},
                 {(int) ServerPackets.SPlayerData, DownloadData},
                 {(int) ServerPackets.SAckRegister, GoodRegister},
-                {(int) ServerPackets.SPulse, HandleServerPulse}
+                {(int) ServerPackets.SPulse, HandleServerPulse},
+                {(int) ServerPackets.SFullData, GetFullData}
             };
         }
 
@@ -50,24 +50,16 @@ namespace Client
             InterfaceGUI.AddChats(buffer.GetString(), color);
         }
 
-        private void HandleLogin(byte[] data)
-        {
-            PacketBuffer buffer = new PacketBuffer();
-            buffer.AddBytes(data);
-            buffer.GetInteger();
-            GameLogic.PlayerIndex = buffer.GetInteger(); // Index on server side
-            MenuManager.Clear();
-        }
-
         private void GoodRegister(byte[] data)
         {
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             GameLogic.PlayerIndex = buffer.GetInteger(); // Index on server side
-
+            buffer.Dispose();
             ctcp.SendLogin();
             MenuManager.Clear();
+            InterfaceGUI.AddChats("Registration successful.", Color.DarkGray);
         }
 
         private void DownloadData(byte[] data)
@@ -75,13 +67,29 @@ namespace Client
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
-            float posX = buffer.GetFloat();
-            float posY = buffer.GetFloat();
-            float rot = buffer.GetFloat();
-            Types.Player[GameLogic.PlayerIndex].Rotation = rot;
-            Types.Player[GameLogic.PlayerIndex].X = posX;
-            Types.Player[GameLogic.PlayerIndex].Y = posY;
+            GameLogic.PlayerIndex = buffer.GetInteger(); // Index on server side
+            Types.Player[GameLogic.PlayerIndex].Name = buffer.GetString();
+            Types.Player[GameLogic.PlayerIndex].X = buffer.GetFloat();
+            Types.Player[GameLogic.PlayerIndex].Y = buffer.GetFloat();
+            Types.Player[GameLogic.PlayerIndex].Rotation = buffer.GetFloat();
+            buffer.Dispose();
             MenuManager.Clear();
+            InterfaceGUI.AddChats("User data downloaded.", Color.DarkGray);
+            // ctcp.RequestStatic(); UNCOMMENT THIS LINE TO RUIN EVERYTHING
+        }
+
+        private void GetFullData(byte[] data)
+        {
+            InterfaceGUI.AddChats("Static data downloaded.", Color.DarkGray);
+            // Initial connection to download the stuff that only needs to go once
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            for (var i = 1; i != Constants.MAX_PLAYERS; i++)
+            {
+                Types.Player[i].Name = buffer.GetString();
+            }
+            buffer.Dispose();
         }
 
         private void HandleServerPulse(byte[] data)
@@ -96,16 +104,13 @@ namespace Client
                 var posY = buffer.GetFloat();
                 var rot = buffer.GetFloat();
                 var inGame = BitConverter.ToBoolean(buffer.GetBytes(1), 0);
-                if (inGame == false)
-                {
-                    Types.Player[i] = Types.Default;
-                }
                 // If the buffer is not in game or its ourselves, skip the update
                 if (!inGame || i == GameLogic.PlayerIndex) continue;
                 Types.Player[i].X = posX;
                 Types.Player[i].Y = posY;
                 Types.Player[i].Rotation = rot;
             }
+            buffer.Dispose();
         }
     }
 }
