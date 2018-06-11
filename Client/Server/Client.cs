@@ -50,12 +50,12 @@ namespace Server
         private void CloseSocket(int index)
         {
             Console.WriteLine("Connection from " + IP + " has been terminated.");
-            string message = Types.Player[index].Login + " has disconnected.";
-            shd.SendMessage(-1, message, MessageColors.Notification);
+            shd.SendMessage(-1, Types.Player[index].Name + " has disconnected.", MessageColors.Notification);
             var db = new SQL();
             db.SaveGame(index);
             Socket.Close();
             Socket = null;
+            Types.Player[index] = Types.Default;
         }
 
     }

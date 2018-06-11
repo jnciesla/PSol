@@ -44,12 +44,10 @@ namespace Client
             Types.Player[1].Health = 100;
             Types.Player[1].MaxShield = 100;
             Types.Player[1].Shield = 97;
-            Types.Player[1].Name = "JCiesla";
             Types.Player[2].MaxHealth = 400;
             Types.Player[2].Health = 375;
             Types.Player[2].MaxShield = 100;
             Types.Player[2].Shield = 12;
-            Types.Player[2].Name = "Test";
 
             for (var i = 1; i != Constants.MAX_PLAYERS; i++)
             {
@@ -120,7 +118,7 @@ namespace Client
                             Color.Goldenrod, 4F);
                         Game1.spriteBatch.DrawRectangle(shieldRect, Color.DarkGoldenrod, 2F);
                         var ShieldDisplay = "";
-                        if (Globals.Details1)
+                        if (Globals.Details1 || Globals.Selected == i)
                         {
                             ShieldDisplay = Types.Player[i].Shield + "/" + Types.Player[i].MaxShield;
                         }

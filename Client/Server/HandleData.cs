@@ -13,11 +13,14 @@ namespace Server
         public void InitializeMesssages()
         {
             Console.WriteLine("Initializing Network Packets...");
-            packets = new Dictionary<int, Packet_>();
-            packets.Add((int)ClientPackets.CLogin, HandleLogin);
-            packets.Add((int)ClientPackets.CRegister, HandleRegister);
-            packets.Add((int)ClientPackets.CPlayerData, RecvPlayer);
-            packets.Add((int)ClientPackets.CChat, RelayChat);
+            packets = new Dictionary<int, Packet_>
+            {
+                {(int) ClientPackets.CLogin, HandleLogin},
+                {(int) ClientPackets.CRegister, HandleRegister},
+                {(int) ClientPackets.CPlayerData, RecvPlayer},
+                {(int) ClientPackets.CChat, ParseChat},
+                {(int) ClientPackets.CTriggerPulse, PrepareStaticBroadcast}
+            };
         }
 
         public void HandleNetworkMessages(int index, byte[] data)
@@ -56,11 +59,9 @@ namespace Server
             }
 
             db.LoadPlayer(index, username);
-            SendMessage(index, "Querying database...", MessageColors.System);
             ServerTCP.tempPlayer[index].inGame = true;
             XFerLoad(index);
             Console.WriteLine(username + " logged in successfully.");
-            AcknowledgeLogin(index);
         }
 
         private void HandleRegister(int index, byte[] data)
@@ -105,10 +106,9 @@ namespace Server
                 ServerTCP.Clients[index].Stream
                     .BeginWrite(buffer.ToArray(), 0, buffer.ToArray().Length, null, null);
             }
-            catch (Exception ex)
+            catch
             {
                 Console.WriteLine("Unable to send packet- client disconnected");
-                Console.WriteLine(ex);
             }
 
             buffer.Dispose();
@@ -144,17 +144,6 @@ namespace Server
             buffer.Dispose();
         }
 
-        public void AcknowledgeLogin(int index)
-        {
-            PacketBuffer buffer = new PacketBuffer();
-            buffer.AddInteger((int)ServerPackets.SAckLogin);
-            buffer.AddInteger(index);
-            SendData(index, buffer.ToArray());
-            buffer.Dispose();
-            string message = Types.Player[index].Name + " has connected.";
-            SendMessage(-1, message, MessageColors.Notification);
-        }
-
         public void AcknowledgeRegister(int index)
         {
             PacketBuffer buffer = new PacketBuffer();
@@ -166,14 +155,16 @@ namespace Server
 
         public void XFerLoad(int index)
         {
-            SendMessage(index, "Downloading user data...", MessageColors.System);
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SPlayerData);
+            buffer.AddInteger(index);
+            buffer.AddString(Types.Player[index].Name);
             buffer.AddFloat(Types.Player[index].X);
             buffer.AddFloat(Types.Player[index].Y);
             buffer.AddFloat(Types.Player[index].Rotation);
             SendData(index, buffer.ToArray());
             buffer.Dispose();
+            SendMessage(-1, Types.Player[index].Name + " has connected.", MessageColors.Notification);
         }
 
         public void PreparePulseBroadcast()
@@ -192,20 +183,41 @@ namespace Server
             buffer.Dispose();
         }
 
-        public void RelayChat(int index, byte[] data)
+        public void PrepareStaticBroadcast(int index, byte[] data)
+        {
+            Console.WriteLine("Static data requested");
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int)ServerPackets.SFullData);
+            for (var i = 1; i < Constants.MAX_PLAYERS; i++)
+            {
+                buffer.AddString(Types.Player[i].Name);
+            }
+            BroadcastData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void ParseChat(int index, byte[] data)
         {
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
-            var oldString = buffer.GetString();
-            var newString = Types.Player[index].Login + ": " + oldString;
-            buffer.Dispose();
+            string str = buffer.GetString();
+            if (str.ToLower().StartsWith("/c"))
+            {
+                
+                RelayChat(index, str.Substring(3));
+            }
+        }
+
+        public void RelayChat(int index, string str)
+        {
+            var buffer = new PacketBuffer();
+            var newString = Types.Player[index].Name + ": " + str;
             buffer.AddInteger((int)ServerPackets.SMessage);
             buffer.AddInteger((int)MessageColors.Chat);
             buffer.AddString(newString);
             BroadcastData(buffer.ToArray());
             buffer.Dispose();
         }
-
     }
 }
