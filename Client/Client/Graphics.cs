@@ -10,19 +10,22 @@ namespace Client
     internal class Graphics
     {
         public static Texture2D[] Characters = new Texture2D[2];
+        public static Texture2D[] Planets = new Texture2D[2];
         public static Texture2D Shield;
         public static Texture2D pixel;
 
         public static void InitializeGraphics(ContentManager manager)
         {
             LoadCharacters(manager);
+            LoadPlanets(manager);
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
         }
 
-        public static void RenderGraphics(ContentManager manager)
+        public static void RenderGraphics()
         {
-            DrawPlayers(manager);
+            DrawSystems();
+            DrawPlayers();
         }
 
         private static void DrawSprite(int sprite, Vector2 position, float rotation, Vector2 origin)
@@ -30,10 +33,33 @@ namespace Client
             Game1.spriteBatch.Draw(Characters[sprite], position, null, Color.White, rotation, origin, 1, SpriteEffects.None, 0);
         }
 
-        private static void DrawPlayers(ContentManager manager)
+        private static void DrawPlanet(int sprite, Vector2 position, Vector2 origin)
         {
-            var HealthFont = manager.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size10");
-            var ShieldFont = manager.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size8");
+            Game1.spriteBatch.Draw(Planets[sprite], position, null, Color.White, Globals.PlanetaryRotation, origin, 0.2F, SpriteEffects.None, 0);
+        }
+
+        private static void DrawSystems()
+        {
+            int SpriteNum = 1;
+            var origin = new Vector2(Planets[SpriteNum].Width / 2f, Planets[SpriteNum].Height / 2f);
+            DrawPlanet(SpriteNum, new Vector2(1000, 1000), origin);
+            // OnClick
+            var Bound = new Rectangle(1000 - Characters[SpriteNum].Width / 2, 1000 - Characters[SpriteNum].Height / 2, Characters[SpriteNum].Width, Characters[SpriteNum].Height);
+            var ms = Mouse.GetState();
+            if (ms.LeftButton == ButtonState.Pressed)
+            {
+                float x = ms.X + (-Camera.transform.M41);
+                float y = ms.Y + (-Camera.transform.M42);
+                Vector2 position = new Vector2(x, y);
+                if (Bound.Contains(position))
+                {
+                    InterfaceGUI.AddChats("test",Color.MediumVioletRed);
+                }
+            }
+        }
+
+        private static void DrawPlayers()
+        {
             if (GameLogic.PlayerIndex <= -1) return;
 
             int SpriteNum = 1;
@@ -57,7 +83,7 @@ namespace Client
                             new Vector2(Shield.Width / 2f, Shield.Height / 2f), 1, SpriteEffects.None, 0);
                     }
 
-                    Game1.spriteBatch.DrawString(HealthFont, Types.Player[i].Name, new Vector2(Types.Player[i].X - HealthFont.MeasureString(Types.Player[i].Name).X / 2, Types.Player[i].Y - (Characters[SpriteNum].Height /2) - 10), Color.AntiqueWhite);
+                    Game1.spriteBatch.DrawString(Globals.Font10, Types.Player[i].Name, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(Types.Player[i].Name).X / 2, Types.Player[i].Y - (Characters[SpriteNum].Height /2) - 10), Color.AntiqueWhite);
 
                     // Health
                     Color HealthColor1 = Color.Green;
@@ -93,7 +119,7 @@ namespace Client
                         HealthDisplay = (int)((float)Types.Player[i].Health / Types.Player[i].MaxHealth * 100) + "%";
                     }
 
-                    Game1.spriteBatch.DrawString(HealthFont, HealthDisplay, new Vector2(Types.Player[i].X - HealthFont.MeasureString(HealthDisplay).X / 2, healthRect.Bottom + 8), HealthColor2);
+                    Game1.spriteBatch.DrawString(Globals.Font10, HealthDisplay, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(HealthDisplay).X / 2, healthRect.Bottom + 8), HealthColor2);
 
                     // Shield
                     RectangleF shieldRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2,
@@ -116,13 +142,13 @@ namespace Client
                             ShieldDisplay = (int)((float)Types.Player[i].Shield / Types.Player[i].MaxShield * 100) + "%";
                         }
 
-                        Game1.spriteBatch.DrawString(ShieldFont, ShieldDisplay,
-                            new Vector2(Types.Player[i].X - ShieldFont.MeasureString(ShieldDisplay).X / 2,
+                        Game1.spriteBatch.DrawString(Globals.Font8, ShieldDisplay,
+                            new Vector2(Types.Player[i].X - Globals.Font8.MeasureString(ShieldDisplay).X / 2,
                                 shieldRect.Bottom + 13), Color.Goldenrod);
                     }
                     else if (Types.Player[i].Shield <= 0 && Types.Player[i].MaxShield > 0)
                     {
-                        Game1.spriteBatch.DrawString(ShieldFont, "Shield depleted", new Vector2(Types.Player[i].X - ShieldFont.MeasureString("Shield Depleted!").X / 2,
+                        Game1.spriteBatch.DrawString(Globals.Font8, "Shield depleted", new Vector2(Types.Player[i].X - Globals.Font8.MeasureString("Shield Depleted!").X / 2,
                             shieldRect.Bottom + 13), Color.DarkGoldenrod);
                     }
                 }
@@ -150,6 +176,14 @@ namespace Client
             }
 
             Shield = manager.Load<Texture2D>("Shield");
+        }
+
+        private static void LoadPlanets(ContentManager manager)
+        {
+            for (int i = 1; i < Planets.Length; i++)
+            {
+                Planets[i] = manager.Load<Texture2D>("Planets/" + i);
+            }
         }
 
         public static void DrawHud(ContentManager manager)

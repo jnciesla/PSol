@@ -18,7 +18,6 @@ namespace Client
         private HandleData chd;
         Camera camera;
 
-
         private readonly InterfaceGUI IGUI = new InterfaceGUI();
         private static readonly KeyControl KC = new KeyControl();
 
@@ -45,7 +44,10 @@ namespace Client
         /// </summary>
         protected override void Initialize()
         {
-            // TODO: Add your initialization logic here
+            // Initialize fonts
+            Globals.Font10 = Content.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size10");
+            Globals.Font8 = Content.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size8");
+
             ctcp = new ClientTCP();
             chd = new HandleData();
             renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
@@ -151,6 +153,7 @@ namespace Client
                 GameLogic.CheckMovement();
                 camera.ZoomController();
                 WalkTimer = Tick + 15;
+                Globals.PlanetaryRotation += MathHelper.ToRadians(.01f);
             }
             CheckKeys();
 
@@ -159,7 +162,7 @@ namespace Client
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, Camera.transform);
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
             Graphics.DrawBorder(Globals.playArea, 1, Color.DarkOliveGreen);
-            Graphics.RenderGraphics(Content);
+            Graphics.RenderGraphics();
             spriteBatch.End();
 
             Graphics.DrawHud(Content);

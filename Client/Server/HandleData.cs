@@ -8,7 +8,7 @@ namespace Server
     {
         private delegate void Packet_(int index, byte[] data);
         private static Dictionary<int, Packet_> packets;
-        private SQL db = new SQL();
+        private readonly SQL db = new SQL();
 
         public void InitializeMesssages()
         {
@@ -24,11 +24,10 @@ namespace Server
 
         public void HandleNetworkMessages(int index, byte[] data)
         {
-            int packetNum;
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
 
             buffer.AddBytes(data);
-            packetNum = buffer.GetInteger();
+            var packetNum = buffer.GetInteger();
             buffer.Dispose();
 
             if (packets.TryGetValue(packetNum, out Packet_ Packet))
@@ -39,7 +38,7 @@ namespace Server
         private void HandleLogin(int index, byte[] data)
         {
             Console.WriteLine("Received login packet");
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             string username = buffer.GetString();
@@ -66,7 +65,7 @@ namespace Server
         private void HandleRegister(int index, byte[] data)
         {
             Console.WriteLine("Received register packet");
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             string username = buffer.GetString();
@@ -85,7 +84,7 @@ namespace Server
 
         private static void RecvPlayer(int index, byte[] data)
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             float posX = buffer.GetFloat();
@@ -98,7 +97,7 @@ namespace Server
 
         public void SendData(int index, byte[] data)
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             try
             {
@@ -126,7 +125,7 @@ namespace Server
 
         public void SendMessage(int index, string message, MessageColors color)
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SMessage);
             buffer.AddInteger((int)color);
             buffer.AddString(message);
@@ -145,7 +144,7 @@ namespace Server
 
         public void AcknowledgeRegister(int index)
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SAckRegister);
             buffer.AddInteger(index);
             SendData(index, buffer.ToArray());
@@ -154,7 +153,7 @@ namespace Server
 
         public void XFerLoad(int index)
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SPlayerData);
             buffer.AddInteger(index);
             buffer.AddString(Types.Player[index].Name);
@@ -223,5 +222,6 @@ namespace Server
             BroadcastData(buffer.ToArray());
             buffer.Dispose();
         }
+
     }
 }

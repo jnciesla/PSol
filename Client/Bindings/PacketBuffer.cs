@@ -211,11 +211,11 @@ namespace Bindings
         }
 
         // IDisposable
-        private bool disposedValue = false;
+        private bool disposedValue;
 
         protected virtual void Dispose(bool Disposing)
         {
-            if (!this.disposedValue)
+            if (!disposedValue)
             {
                 if (Disposing)
                 {
@@ -224,7 +224,7 @@ namespace Bindings
 
                 readPos = 0;
             }
-            this.disposedValue = true;
+            disposedValue = true;
         }
 
         public void Dispose() 

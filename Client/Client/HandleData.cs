@@ -39,14 +39,14 @@ namespace Client
 
         private void HandleMessage(byte[] data)
         {
-            Color color = Color.White;
+            Color color = Color.DarkGray;
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             int colorCode = buffer.GetInteger();
             if (colorCode == 2) { color = Color.DarkRed; }
             if (colorCode == 3) { color = Color.DarkGoldenrod; }
-            if (colorCode == 4) { color = Color.DarkGray; }
+            if (colorCode == 4) { color = Color.DarkOliveGreen; }
             InterfaceGUI.AddChats(buffer.GetString(), color);
         }
 
@@ -59,7 +59,7 @@ namespace Client
             buffer.Dispose();
             ctcp.SendLogin();
             MenuManager.Clear();
-            InterfaceGUI.AddChats("Registration successful.", Color.DarkGray);
+            InterfaceGUI.AddChats("Registration successful.", Color.DarkOliveGreen);
         }
 
         private void DownloadData(byte[] data)
@@ -80,12 +80,13 @@ namespace Client
 
             buffer.Dispose();
             MenuManager.Clear();
-            InterfaceGUI.AddChats("User data downloaded.", Color.DarkGray);
+            InterfaceGUI.AddChats("User data downloaded.", Color.DarkOliveGreen);
+            
         }
 
         private void GetStaticPulse(byte[] data)
         {
-            InterfaceGUI.AddChats("Static data downloaded.", Color.DarkGray);
+            InterfaceGUI.AddChats("Static data downloaded.", Color.DarkOliveGreen);
             // Someone new connected so this is all the data we don't need updating every 100ms
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddBytes(data);

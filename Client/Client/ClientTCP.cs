@@ -78,7 +78,7 @@ namespace Client
 
         public void SendData(byte[] data)
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             myStream.Write(buffer.ToArray(), 0, buffer.ToArray().Length);
             buffer.Dispose();
@@ -86,7 +86,7 @@ namespace Client
 
         public void SendLogin()
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddInteger((int)ClientPackets.CLogin);
             buffer.AddString(Globals.loginUsername);
             buffer.AddString(Globals.loginPassword);
@@ -96,7 +96,7 @@ namespace Client
 
         public void SendRegister()
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddInteger((int)ClientPackets.CRegister);
             buffer.AddString(Globals.registerUsername);
             buffer.AddString(Globals.registerPassword);
@@ -106,7 +106,7 @@ namespace Client
 
         public void XFerPlayer()
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddInteger((int)ClientPackets.CPlayerData);
             buffer.AddFloat(Types.Player[GameLogic.PlayerIndex].X);
             buffer.AddFloat(Types.Player[GameLogic.PlayerIndex].Y);
@@ -118,7 +118,7 @@ namespace Client
 
         public void SendChat(string message)
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddInteger((int)ClientPackets.CChat);
             buffer.AddString(message);
             SendData(buffer.ToArray());

@@ -1,5 +1,6 @@
 ﻿using Microsoft.Xna.Framework;
 using GeonBit.UI.Entities;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Client
 {
@@ -11,6 +12,8 @@ namespace Client
         public static Rectangle playArea = new Rectangle(0, 0, 100010, 100010);
         public static int PreferredBackBufferWidth = 1024;
         public static int PreferredBackBufferHeight = 768;
+
+        public static float PlanetaryRotation = 0;
 
         public static Panel chatPanel;
         public static bool pauseChat = false;
@@ -37,5 +40,9 @@ namespace Client
 
         public static bool Details1;
         public static bool Details2;
+
+        // Fonts
+        public static SpriteFont Font10;
+        public static SpriteFont Font8;
     }
 }

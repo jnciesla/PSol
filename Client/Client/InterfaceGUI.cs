@@ -136,7 +136,7 @@ namespace Client
             {
                 MessageBox.ShowMsgBox("No credentials", "Please enter a valid username and password, and confirm your password, before attempting to register!", new MessageBox.MsgBoxOption[]
                 {
-                        new MessageBox.MsgBoxOption("Okay" ,() => {return true; })
+                        new MessageBox.MsgBoxOption("Okay" ,() => true)
                 });
             }
             else
@@ -145,7 +145,7 @@ namespace Client
                 {
                     MessageBox.ShowMsgBox("Passwords do not match", "The passwords you have entered to not match.  Please try again.", new MessageBox.MsgBoxOption[]
                     {
-                        new MessageBox.MsgBoxOption("Okay" ,() => {return true; })
+                        new MessageBox.MsgBoxOption("Okay" ,() => true)
                     });
                 }
                 else
@@ -308,9 +308,10 @@ namespace Client
 
         public static void AddChats(string message, Color color)
         {
-            //Globals.chats.AddItem(message);
-            var para = new MulticolorParagraph(message, Anchor.Auto, color);
-            para.Scale = 0.6f;
+            var para = new MulticolorParagraph(message, Anchor.Auto, color)
+            {
+                FontOverride = Globals.Font8
+            };
             Globals.chatPanel.AddChild(para);
             if (!Globals.pauseChat)
             {
@@ -320,9 +321,9 @@ namespace Client
 
         public void CreateMessage()
         {
-            Panel panel = new Panel(new Vector2(500, 50), PanelSkin.None, Anchor.BottomLeft, new Vector2(-10, 40));
-            messageText = new TextInput(false);
-            messageText.Skin = PanelSkin.None;
+            Panel panel = new Panel(new Vector2(1024, 50), PanelSkin.None, Anchor.BottomLeft, new Vector2(-10, 40));
+            messageText = new TextInput(false) {Skin = PanelSkin.None};
+            messageText.TextParagraph.FontOverride = Globals.Font10;
             UserInterface.Active.AddEntity(panel);
             panel.AddChild(messageText);
             CreateWindow(panel);
