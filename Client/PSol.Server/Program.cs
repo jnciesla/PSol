@@ -13,7 +13,7 @@ namespace Server
 
         private static void Main(string[] args)
         {
-            general = new General();
+            general = new General(shd);
             db = new SQL();
             consoleThread = new Thread(ConsoleThread);
             consoleThread.Start();

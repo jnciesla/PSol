@@ -2,6 +2,7 @@
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
 using Bindings;
+using PSol.Data.Models;
 
 namespace Server
 {
@@ -29,7 +30,7 @@ namespace Server
             string filename = "Data/Accounts/" + username + ".save";
             BinaryFormatter bf = new BinaryFormatter();
             FileStream fs = new FileStream(filename, FileMode.Open);
-            Types.Player[index] = (Types.PlayerStruct)bf.Deserialize(fs);
+            Types.Player[index] = (User)bf.Deserialize(fs);
             fs.Close();
 
             if(Types.Player[index].Password == password)
@@ -90,7 +91,7 @@ namespace Server
             string filename = "Data/Accounts/" + name + ".save";
             BinaryFormatter bf = new BinaryFormatter();
             FileStream fs = new FileStream(filename, FileMode.Open);
-            Types.Player[index] = (Types.PlayerStruct)bf.Deserialize(fs);
+            Types.Player[index] = (User)bf.Deserialize(fs);
             fs.Close();
         }
     }

@@ -3,31 +3,14 @@ using System.Data.SqlClient;
 using System.Security.Cryptography;
 using System.Text;
 using Bindings;
+using PSol.Data.Models;
+using PSol.Data.Repositories;
 
 namespace Server
 {
     class SQL
     {
         public SqlConnection conn = new SqlConnection("Data Source=./;Initial Catalog=PSOL;User ID=root;Password=N^mLAd4h&E8x6#nT");
-
-        public void register(int index, string username, string password)
-        {
-            conn.Open();
-            string MD5password = CalculateMD5Hash(password);
-            SqlCommand cmd = new SqlCommand("INSERT INTO [PSOL].[dbo].[users] VALUES ('" + username + "','" + MD5password + "','10','10','0','100','100','100','100')", conn);
-            cmd.ExecuteNonQuery();
-            ClearPlayer(index);
-            Types.Player[index].Login = username;
-            Types.Player[index].Name = username;
-            Types.Player[index].X = 10;
-            Types.Player[index].Y = 10;
-            Types.Player[index].Rotation = 0;
-            Types.Player[index].Health = 100;
-            Types.Player[index].MaxHealth = 100;
-            Types.Player[index].Shield = 100;
-            Types.Player[index].MaxShield = 100;
-            conn.Close();
-        }
 
         public bool AccountExists(string username)
         {
@@ -110,13 +93,6 @@ namespace Server
             {
                 SavePlayer(index);
             }
-        }
-
-        public void ClearPlayer(int index)
-        {
-            Types.Player[index].Login = "";
-            Types.Player[index].Password = "";
-            Types.Player[index].Name = "";
         }
 
         private string CalculateMD5Hash(string input)
