@@ -1,6 +1,7 @@
 ﻿using System;
 using Bindings;
 using System.Collections.Generic;
+using PSol.Data.Services;
 
 namespace Server
 {
@@ -9,6 +10,12 @@ namespace Server
         private delegate void Packet_(int index, byte[] data);
         private static Dictionary<int, Packet_> packets;
         private SQL db = new SQL();
+        private UserService _userService;
+
+        public HandleData(UserService userService)
+        {
+            _userService = userService;
+        }
 
         public void InitializeMesssages()
         {
@@ -74,7 +81,7 @@ namespace Server
             bool exists = db.AccountExists(username);
             if (!exists)
             {
-                db.register(index, username, password);
+                _userService.RegisterUser(index, username, password);
                 AcknowledgeRegister(index);
             }
             else
