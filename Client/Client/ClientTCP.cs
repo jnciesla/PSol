@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net.Sockets;
 using Bindings;
-using Microsoft.Xna.Framework;
 
 namespace Client
 {
@@ -12,7 +11,7 @@ namespace Client
         private HandleData chd;
         private byte[] asyncBuff;
         private bool connected;
-        public bool isOnline = false;
+        public bool isOnline;
 
         public void ConnectToServer()
         {
@@ -32,7 +31,7 @@ namespace Client
             PlayerSocket.SendBufferSize = 4096;
             PlayerSocket.NoDelay = false;
             Array.Resize(ref asyncBuff, 8192);
-            PlayerSocket.BeginConnect("127.0.0.1", 8000, new AsyncCallback(ConnectCallback), PlayerSocket);
+            PlayerSocket.BeginConnect("127.0.0.1", 8000, ConnectCallback, PlayerSocket);
         }
 
         private void ConnectCallback(IAsyncResult ar)
@@ -122,15 +121,6 @@ namespace Client
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddInteger((int)ClientPackets.CChat);
             buffer.AddString(message);
-            SendData(buffer.ToArray());
-            buffer.Dispose();
-        }
-
-        public void RequestStatic()
-        {
-            InterfaceGUI.AddChats("Requesting environment data...", Color.DarkGray);
-            PacketBuffer buffer = new PacketBuffer();
-            buffer.AddInteger((int)ClientPackets.CTriggerPulse);
             SendData(buffer.ToArray());
             buffer.Dispose();
         }

@@ -46,6 +46,7 @@
     <Compile Include="Client.cs" />
     <Compile Include="Database.cs" />
     <Compile Include="General.cs" />
+    <Compile Include="Globals.cs" />
     <Compile Include="HandleData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

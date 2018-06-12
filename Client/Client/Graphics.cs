@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Xna.Framework.Content;
+﻿using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Bindings;
@@ -13,12 +12,10 @@ namespace Client
         public static Texture2D[] Characters = new Texture2D[2];
         public static Texture2D Shield;
         public static Texture2D pixel;
-        private static Model model;
 
         public static void InitializeGraphics(ContentManager manager)
         {
             LoadCharacters(manager);
-            model = manager.Load<Model>("planet");
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
         }
@@ -40,14 +37,6 @@ namespace Client
             if (GameLogic.PlayerIndex <= -1) return;
 
             int SpriteNum = 1;
-            Types.Player[1].MaxHealth = 500;
-            Types.Player[1].Health = 100;
-            Types.Player[1].MaxShield = 100;
-            Types.Player[1].Shield = 97;
-            Types.Player[2].MaxHealth = 400;
-            Types.Player[2].Health = 375;
-            Types.Player[2].MaxShield = 100;
-            Types.Player[2].Shield = 12;
 
             for (var i = 1; i != Constants.MAX_PLAYERS; i++)
             {

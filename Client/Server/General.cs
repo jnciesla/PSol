@@ -1,9 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Bindings;
 
 namespace Server
@@ -12,7 +7,6 @@ namespace Server
 	{
 		private ServerTCP stcp;
 		private HandleData shd;
-	    private SQL db = new SQL();
 
 		public HandleData InitializeServer()
 		{

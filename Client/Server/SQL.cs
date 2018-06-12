@@ -8,23 +8,13 @@ namespace Server
 {
     class SQL
     {
-        public SqlConnection conn = new SqlConnection("Data Source=MSI;Initial Catalog=PSOL;User ID=root;Password=N^mLAd4h&E8x6#nT");
-
-        private void read()
-        {
-            SqlCommand cmd = new SqlCommand("SELECT [name] FROM [PSOL].[dbo].[users]", conn);
-            SqlDataReader reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                Console.WriteLine(reader.GetString(0));
-            }
-        }
+        public SqlConnection conn = new SqlConnection("Data Source=./;Initial Catalog=PSOL;User ID=root;Password=N^mLAd4h&E8x6#nT");
 
         public void register(int index, string username, string password)
         {
             conn.Open();
             string MD5password = CalculateMD5Hash(password);
-            SqlCommand cmd = new SqlCommand("INSERT INTO [PSOL].[dbo].[users] VALUES ('" + username + "','" + MD5password + "','10','10','0')", conn);
+            SqlCommand cmd = new SqlCommand("INSERT INTO [PSOL].[dbo].[users] VALUES ('" + username + "','" + MD5password + "','10','10','0','100','100','100','100')", conn);
             cmd.ExecuteNonQuery();
             ClearPlayer(index);
             Types.Player[index].Login = username;
@@ -32,6 +22,10 @@ namespace Server
             Types.Player[index].X = 10;
             Types.Player[index].Y = 10;
             Types.Player[index].Rotation = 0;
+            Types.Player[index].Health = 100;
+            Types.Player[index].MaxHealth = 100;
+            Types.Player[index].Shield = 100;
+            Types.Player[index].MaxShield = 100;
             conn.Close();
         }
 
@@ -75,6 +69,10 @@ namespace Server
                 Types.Player[index].X = (float)reader.GetDouble(3);
                 Types.Player[index].Y = (float)reader.GetDouble(4);
                 Types.Player[index].Rotation = (float)reader.GetDouble(5);
+                Types.Player[index].Health = reader.GetInt32(6);
+                Types.Player[index].MaxHealth = reader.GetInt32(7);
+                Types.Player[index].Shield = reader.GetInt32(8);
+                Types.Player[index].MaxShield = reader.GetInt32(9);
             }
             conn.Close();
         }
@@ -85,7 +83,11 @@ namespace Server
             SqlCommand cmd = new SqlCommand("UPDATE [PSOL].[dbo].[users] SET " +
                                             "[X] = '" + Types.Player[index].X + "'," +
                                             "[Y] = '" + Types.Player[index].Y + "'," +
-                                            "[rotation] = '" + Types.Player[index].Rotation + "'" +
+                                            "[rotation] = '" + Types.Player[index].Rotation + "'," +
+                                            "[health] = '" + Types.Player[index].Health + "'," +
+                                            "[maxhealth] = '" + Types.Player[index].MaxHealth + "'," +
+                                            "[shield] = '" + Types.Player[index].Shield + "'," +
+                                            "[maxshield] = '" + Types.Player[index].MaxShield + "'" +
                                             " WHERE [name] = '" + Types.Player[index].Name + "'", conn);
             cmd.ExecuteNonQuery();
             conn.Close();
@@ -120,7 +122,7 @@ namespace Server
         private string CalculateMD5Hash(string input)
         {
             MD5 md5 = MD5.Create();
-            byte[] inputBytes = System.Text.Encoding.ASCII.GetBytes(input);
+            byte[] inputBytes = Encoding.ASCII.GetBytes(input);
             byte[] hash = md5.ComputeHash(inputBytes);
             StringBuilder sb = new StringBuilder();
             for (int i = 0; i < hash.Length; i++)

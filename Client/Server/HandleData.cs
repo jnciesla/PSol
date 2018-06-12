@@ -18,8 +18,7 @@ namespace Server
                 {(int) ClientPackets.CLogin, HandleLogin},
                 {(int) ClientPackets.CRegister, HandleRegister},
                 {(int) ClientPackets.CPlayerData, RecvPlayer},
-                {(int) ClientPackets.CChat, ParseChat},
-                {(int) ClientPackets.CTriggerPulse, PrepareStaticBroadcast}
+                {(int) ClientPackets.CChat, ParseChat}
             };
         }
 
@@ -162,9 +161,14 @@ namespace Server
             buffer.AddFloat(Types.Player[index].X);
             buffer.AddFloat(Types.Player[index].Y);
             buffer.AddFloat(Types.Player[index].Rotation);
+            buffer.AddInteger(Types.Player[index].Health);
+            buffer.AddInteger(Types.Player[index].MaxHealth);
+            buffer.AddInteger(Types.Player[index].Shield);
+            buffer.AddInteger(Types.Player[index].MaxShield);
             SendData(index, buffer.ToArray());
             buffer.Dispose();
             SendMessage(-1, Types.Player[index].Name + " has connected.", MessageColors.Notification);
+            Globals.FullData = true;
         }
 
         public void PreparePulseBroadcast()
@@ -183,14 +187,14 @@ namespace Server
             buffer.Dispose();
         }
 
-        public void PrepareStaticBroadcast(int index, byte[] data)
+        public void PrepareStaticBroadcast()
         {
-            Console.WriteLine("Static data requested");
+            Globals.FullData = false;
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SFullData);
             for (var i = 1; i < Constants.MAX_PLAYERS; i++)
-            {
-                buffer.AddString(Types.Player[i].Name);
+            { 
+                buffer.AddString(Types.Player[i].Name ?? ""); // Don't send null
             }
             BroadcastData(buffer.ToArray());
             buffer.Dispose();

@@ -21,7 +21,7 @@ namespace Client
                 {(int) ServerPackets.SPlayerData, DownloadData},
                 {(int) ServerPackets.SAckRegister, GoodRegister},
                 {(int) ServerPackets.SPulse, HandleServerPulse},
-                {(int) ServerPackets.SFullData, GetFullData}
+                {(int) ServerPackets.SFullData, GetStaticPulse}
             };
         }
 
@@ -68,20 +68,25 @@ namespace Client
             buffer.AddBytes(data);
             buffer.GetInteger();
             GameLogic.PlayerIndex = buffer.GetInteger(); // Index on server side
-            Types.Player[GameLogic.PlayerIndex].Name = buffer.GetString();
-            Types.Player[GameLogic.PlayerIndex].X = buffer.GetFloat();
-            Types.Player[GameLogic.PlayerIndex].Y = buffer.GetFloat();
-            Types.Player[GameLogic.PlayerIndex].Rotation = buffer.GetFloat();
+            var i = GameLogic.PlayerIndex;
+            Types.Player[i].Name = buffer.GetString();
+            Types.Player[i].X = buffer.GetFloat();
+            Types.Player[i].Y = buffer.GetFloat();
+            Types.Player[i].Rotation = buffer.GetFloat();
+            Types.Player[i].Health = buffer.GetInteger();
+            Types.Player[i].MaxHealth = buffer.GetInteger();
+            Types.Player[i].Shield = buffer.GetInteger();
+            Types.Player[i].MaxShield = buffer.GetInteger();
+
             buffer.Dispose();
             MenuManager.Clear();
             InterfaceGUI.AddChats("User data downloaded.", Color.DarkGray);
-            // ctcp.RequestStatic(); UNCOMMENT THIS LINE TO RUIN EVERYTHING
         }
 
-        private void GetFullData(byte[] data)
+        private void GetStaticPulse(byte[] data)
         {
             InterfaceGUI.AddChats("Static data downloaded.", Color.DarkGray);
-            // Initial connection to download the stuff that only needs to go once
+            // Someone new connected so this is all the data we don't need updating every 100ms
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
