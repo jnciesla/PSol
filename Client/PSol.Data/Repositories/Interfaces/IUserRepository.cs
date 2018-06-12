@@ -9,8 +9,12 @@ namespace PSol.Data.Repositories.Interfaces
 {
     public interface IUserRepository
     {
-        User GetUser(string id);
+        User GetUserById(string id);
 
         User Add(User user);
+
+        void SavePlayer(User user);
+
+        User LoadPlayer(string username);
     }
 }

@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using Bindings;
 using PSol.Data.Models;
-using PSol.Data.Repositories;
 using PSol.Data.Repositories.Interfaces;
 using PSol.Data.Services.Interfaces;
 
@@ -21,9 +15,18 @@ namespace PSol.Data.Services
             _userRepo = userRepo;
         }
 
-        public User RegisterUser(int index, string username, string password)
+        public User LoadPlayer(string username)
         {
-            ClearPlayer(index);
+            return _userRepo.LoadPlayer(username);
+        }
+
+        public void SavePlayer(User user)
+        {
+            _userRepo.SavePlayer(user);
+        }
+
+        public User RegisterUser(string username, string password)
+        {
             var newUser = new User
             {
                 Login = username,
@@ -38,15 +41,7 @@ namespace PSol.Data.Services
                 MaxShield = 100
             };
             _userRepo.Add(newUser);
-            Types.Player[index] = newUser;
             return newUser;
-        }
-
-        public void ClearPlayer(int index)
-        {
-            Types.Player[index].Login = "";
-            Types.Player[index].Password = "";
-            Types.Player[index].Name = "";
         }
 
         private string CalculateMD5Hash(string input)

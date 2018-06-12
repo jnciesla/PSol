@@ -3,6 +3,8 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using GeonBit.UI;
 using System.Diagnostics.CodeAnalysis;
+using Bindings;
+using PSol.Data.Models;
 
 namespace PSol.Client
 {
@@ -46,6 +48,10 @@ namespace PSol.Client
         protected override void Initialize()
         {
             // TODO: Add your initialization logic here
+            for (var i = 1; i < Constants.MAX_PLAYERS; i++)
+            {
+                Types.Player[i] = new User();
+            }
             ctcp = new ClientTCP();
             chd = new HandleData();
             renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);

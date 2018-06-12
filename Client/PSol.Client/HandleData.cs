@@ -2,6 +2,7 @@
 using Bindings;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
+using PSol.Data.Models;
 
 namespace PSol.Client
 {
@@ -69,14 +70,17 @@ namespace PSol.Client
             buffer.GetInteger();
             GameLogic.PlayerIndex = buffer.GetInteger(); // Index on server side
             var i = GameLogic.PlayerIndex;
-            Types.Player[i].Name = buffer.GetString();
-            Types.Player[i].X = buffer.GetFloat();
-            Types.Player[i].Y = buffer.GetFloat();
-            Types.Player[i].Rotation = buffer.GetFloat();
-            Types.Player[i].Health = buffer.GetInteger();
-            Types.Player[i].MaxHealth = buffer.GetInteger();
-            Types.Player[i].Shield = buffer.GetInteger();
-            Types.Player[i].MaxShield = buffer.GetInteger();
+            Types.Player[i] = new User
+            {
+                Name = buffer.GetString(),
+                X = buffer.GetFloat(),
+                Y = buffer.GetFloat(),
+                Rotation = buffer.GetFloat(),
+                Health = buffer.GetInteger(),
+                MaxHealth = buffer.GetInteger(),
+                Shield = buffer.GetInteger(),
+                MaxShield = buffer.GetInteger()
+            };
 
             buffer.Dispose();
             MenuManager.Clear();

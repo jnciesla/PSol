@@ -11,9 +11,9 @@ namespace PSol.Server
     {
         public override void Load()
         {
-            //Bind(Type.GetType("DI.Data.DIConsoleEntities, DI.Data")).ToSelf().InSingletonScope();
             Bind(typeof(IUserRepository)).To(typeof(UserRepository)).InSingletonScope();
             Bind(typeof(IUserService)).To(typeof(UserService)).InSingletonScope();
+            Bind(typeof(IGameService)).To(typeof(GameService)).InSingletonScope();
         }
     }
 }

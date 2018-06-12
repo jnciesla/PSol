@@ -4,7 +4,8 @@ namespace PSol.Data.Services.Interfaces
 {
     public interface IUserService
     {
-        User RegisterUser(int index, string username, string password);
-        void ClearPlayer(int index);
+        User RegisterUser(string username, string password);
+        User LoadPlayer(string username);
+        void SavePlayer(User user);
     }
 }

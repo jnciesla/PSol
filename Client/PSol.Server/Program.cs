@@ -1,7 +1,9 @@
 ﻿using Bindings;
 using System;
+using System.Linq;
 using System.Threading;
 using Ninject;
+using PSol.Data.Services.Interfaces;
 
 namespace PSol.Server
 {
@@ -9,14 +11,14 @@ namespace PSol.Server
     {
         private static Thread consoleThread;
         private static General general;
-        private static SQL db;
         private static HandleData shd;
+        private static IGameService _gameService;
 
         private static void Main(string[] args)
         {
             IKernel kernel = new StandardKernel(new ServerModule());
+            _gameService = kernel.Get<IGameService>();
             general = new General(kernel);
-            db = new SQL();
             consoleThread = new Thread(ConsoleThread);
             consoleThread.Start();
             shd = general.InitializeServer();
@@ -24,7 +26,7 @@ namespace PSol.Server
 
         private static void ConsoleThread()
         {
-            var saveTimer = new Timer(e => db.SaveGame(),
+            var saveTimer = new Timer(e => _gameService.SaveGame(Types.Player.ToList()),
                 null,
                 TimeSpan.Zero,
                 TimeSpan.FromMinutes(5));
@@ -45,7 +47,7 @@ namespace PSol.Server
 
                 if (command == "save")
                 {
-                    db.SaveGame();
+                    _gameService.SaveGame(Types.Player.ToList());
                 }
                 else if (command != "end")
                 {
@@ -53,7 +55,7 @@ namespace PSol.Server
                 }
             }
             saveTimer.Dispose();
-            db.SaveGame();
+            _gameService.SaveGame(Types.Player.ToList());
         }
     }
 }

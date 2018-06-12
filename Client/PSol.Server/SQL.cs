@@ -40,61 +40,7 @@ namespace PSol.Server
             conn.Close();
             return OK;
         }
-
-        public void LoadPlayer(int index, string username)
-        {
-            conn.Open();
-            SqlCommand cmd = new SqlCommand("SELECT * FROM [PSOL].[dbo].[users] WHERE [name] = '" + username + "'", conn);
-            SqlDataReader reader = cmd.ExecuteReader();
-            while (reader.Read())
-            {
-                Types.Player[index].Name = reader.GetString(1);
-                Types.Player[index].X = (float)reader.GetDouble(3);
-                Types.Player[index].Y = (float)reader.GetDouble(4);
-                Types.Player[index].Rotation = (float)reader.GetDouble(5);
-                Types.Player[index].Health = reader.GetInt32(6);
-                Types.Player[index].MaxHealth = reader.GetInt32(7);
-                Types.Player[index].Shield = reader.GetInt32(8);
-                Types.Player[index].MaxShield = reader.GetInt32(9);
-            }
-            conn.Close();
-        }
-
-        public void SavePlayer(int index)
-        {
-            conn.Open();
-            SqlCommand cmd = new SqlCommand("UPDATE [PSOL].[dbo].[users] SET " +
-                                            "[X] = '" + Types.Player[index].X + "'," +
-                                            "[Y] = '" + Types.Player[index].Y + "'," +
-                                            "[rotation] = '" + Types.Player[index].Rotation + "'," +
-                                            "[health] = '" + Types.Player[index].Health + "'," +
-                                            "[maxhealth] = '" + Types.Player[index].MaxHealth + "'," +
-                                            "[shield] = '" + Types.Player[index].Shield + "'," +
-                                            "[maxshield] = '" + Types.Player[index].MaxShield + "'" +
-                                            " WHERE [name] = '" + Types.Player[index].Name + "'", conn);
-            cmd.ExecuteNonQuery();
-            conn.Close();
-        }
-
-        public void SaveGame(int index = -1)
-        {
-            if (index == -1)
-            {
-                Console.WriteLine("Saving database...");
-                for (var i = 1; i < Constants.MAX_PLAYERS; i++)
-                {
-                    if (Types.Player[i].Name != null)
-                    {
-                        SavePlayer(i);
-                    }
-                }
-            }
-            else
-            {
-                SavePlayer(index);
-            }
-        }
-
+        
         private string CalculateMD5Hash(string input)
         {
             MD5 md5 = MD5.Create();

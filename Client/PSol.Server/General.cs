@@ -9,10 +9,12 @@ namespace PSol.Server
 	{
 		private ServerTCP stcp;
 		private readonly HandleData _shd;
+	    private readonly IKernel _kernel;
 
 	    public General(IKernel kernel)
 	    {
-	        _shd = new HandleData(kernel);
+	        _kernel = kernel;
+	        _shd = new HandleData(_kernel);
 	    }
 
 		public HandleData InitializeServer()
@@ -23,7 +25,7 @@ namespace PSol.Server
 
 			for (var i = 1; i < Constants.MAX_PLAYERS; i++)
 			{
-				ServerTCP.Clients[i] = new Client(_shd);
+				ServerTCP.Clients[i] = new Client(_shd, _kernel);
 				ServerTCP.tempPlayer[i] = new TempPlayer();
 				Types.Player[i] = new User();
 			}

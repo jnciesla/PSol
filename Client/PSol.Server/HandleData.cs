@@ -2,6 +2,7 @@
 using Bindings;
 using System.Collections.Generic;
 using Ninject;
+using PSol.Data.Models;
 using PSol.Data.Services;
 using PSol.Data.Services.Interfaces;
 
@@ -66,7 +67,7 @@ namespace PSol.Server
                 return;
             }
 
-            db.LoadPlayer(index, username);
+            Types.Player[index] = _userService.LoadPlayer(username);
             ServerTCP.tempPlayer[index].inGame = true;
             XFerLoad(index);
             Console.WriteLine(username + " logged in successfully.");
@@ -83,7 +84,8 @@ namespace PSol.Server
             bool exists = db.AccountExists(username);
             if (!exists)
             {
-                _userService.RegisterUser(index, username, password);
+                Types.Player[index] = new User();
+                Types.Player[index] = _userService.RegisterUser(username, password);
                 AcknowledgeRegister(index);
             }
             else
