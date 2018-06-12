@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Client
+namespace PSol.Client
 {
     /// <summary>
     /// The main class.

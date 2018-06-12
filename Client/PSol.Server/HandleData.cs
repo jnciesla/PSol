@@ -1,23 +1,25 @@
 ﻿using System;
 using Bindings;
 using System.Collections.Generic;
+using Ninject;
 using PSol.Data.Services;
+using PSol.Data.Services.Interfaces;
 
-namespace Server
+namespace PSol.Server
 {
     internal class HandleData
     {
         private delegate void Packet_(int index, byte[] data);
         private static Dictionary<int, Packet_> packets;
         private SQL db = new SQL();
-        private UserService _userService;
+        private readonly IUserService _userService;
 
-        public HandleData(UserService userService)
+        public HandleData(IKernel kernel)
         {
-            _userService = userService;
+            _userService = kernel.Get<IUserService>();
         }
 
-        public void InitializeMesssages()
+        public void InitializeMessages()
         {
             Console.WriteLine("Initializing Network Packets...");
             packets = new Dictionary<int, Packet_>

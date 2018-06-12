@@ -1,4 +1,4 @@
-﻿namespace Server
+﻿namespace PSol.Server
 {
     internal class Globals
     {

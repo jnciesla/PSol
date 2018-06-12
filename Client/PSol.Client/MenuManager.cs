@@ -1,7 +1,7 @@
 ﻿using GeonBit.UI;
 using GeonBit.UI.Entities;
 
-namespace Client
+namespace PSol.Client
 {
     internal class MenuManager
     {

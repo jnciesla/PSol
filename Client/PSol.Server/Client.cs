@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using Bindings;
 
-namespace Server
+namespace PSol.Server
 {
     internal class Client
     {

@@ -2,7 +2,7 @@
 using Bindings;
 using Microsoft.Xna.Framework;
 
-namespace Client
+namespace PSol.Client
 {
     internal class GameLogic
     {

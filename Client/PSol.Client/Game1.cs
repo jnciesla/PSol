@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework.Input;
 using GeonBit.UI;
 using System.Diagnostics.CodeAnalysis;
 
-namespace Client
+namespace PSol.Client
 {
     public class Game1 : Game
     {

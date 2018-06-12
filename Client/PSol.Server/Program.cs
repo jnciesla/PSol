@@ -1,8 +1,9 @@
 ﻿using Bindings;
 using System;
 using System.Threading;
+using Ninject;
 
-namespace Server
+namespace PSol.Server
 {
     internal class Program
     {
@@ -13,7 +14,8 @@ namespace Server
 
         private static void Main(string[] args)
         {
-            general = new General(shd);
+            IKernel kernel = new StandardKernel(new ServerModule());
+            general = new General(kernel);
             db = new SQL();
             consoleThread = new Thread(ConsoleThread);
             consoleThread.Start();

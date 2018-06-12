@@ -4,7 +4,7 @@ using Microsoft.Xna.Framework;
 using System.Collections.Generic;
 using GeonBit.UI.Utils;
 
-namespace Client
+namespace PSol.Client
 {
     internal class InterfaceGUI
     {

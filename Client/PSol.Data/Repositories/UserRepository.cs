@@ -4,10 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using PSol.Data.Models;
+using PSol.Data.Repositories.Interfaces;
 
 namespace PSol.Data.Repositories
 {
-    public class UserRepository : IDisposable
+    public class UserRepository : IDisposable, IUserRepository
     {
         private readonly PSolDataContext _context;
 

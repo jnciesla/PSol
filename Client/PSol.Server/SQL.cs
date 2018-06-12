@@ -6,7 +6,7 @@ using Bindings;
 using PSol.Data.Models;
 using PSol.Data.Repositories;
 
-namespace Server
+namespace PSol.Server
 {
     class SQL
     {

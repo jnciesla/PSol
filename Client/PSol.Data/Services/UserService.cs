@@ -7,14 +7,16 @@ using System.Threading.Tasks;
 using Bindings;
 using PSol.Data.Models;
 using PSol.Data.Repositories;
+using PSol.Data.Repositories.Interfaces;
+using PSol.Data.Services.Interfaces;
 
 namespace PSol.Data.Services
 {
-    public class UserService
+    public class UserService : IUserService
     {
-        private readonly UserRepository _userRepo;
+        private readonly IUserRepository _userRepo;
 
-        public UserService(UserRepository userRepo)
+        public UserService(IUserRepository userRepo)
         {
             _userRepo = userRepo;
         }

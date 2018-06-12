@@ -1,27 +1,25 @@
 ﻿using System;
 using Bindings;
-using PSol.Data;
+using Ninject;
 using PSol.Data.Models;
-using PSol.Data.Repositories;
-using PSol.Data.Services;
 
-namespace Server
+namespace PSol.Server
 {
     internal class General
 	{
 		private ServerTCP stcp;
 		private readonly HandleData _shd;
 
-	    public General(HandleData shd)
+	    public General(IKernel kernel)
 	    {
-	        _shd = shd;
+	        _shd = new HandleData(kernel);
 	    }
 
 		public HandleData InitializeServer()
 		{
 		    stcp = new ServerTCP();
 
-			_shd.InitializeMesssages();
+			_shd.InitializeMessages();
 
 			for (var i = 1; i < Constants.MAX_PLAYERS; i++)
 			{
