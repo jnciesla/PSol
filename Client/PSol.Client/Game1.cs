@@ -1,10 +1,12 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using GeonBit.UI;
 using System.Diagnostics.CodeAnalysis;
 using Bindings;
 using PSol.Data.Models;
+using System.Collections.Generic;
 
 namespace PSol.Client
 {
@@ -12,6 +14,7 @@ namespace PSol.Client
     {
         public static GraphicsDeviceManager graphics;
         public static SpriteBatch spriteBatch;
+        public static ParticleEngine particleEngine;
         private Texture2D backGroundTexture;
         private Vector2 backgroundPos;
         RenderTarget2D renderTarget;
@@ -78,10 +81,13 @@ namespace PSol.Client
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
-
-            // TODO: use this.Content to load your game content here
             backGroundTexture = Content.Load<Texture2D>("stars3");
             backgroundPos = new Vector2(-Globals.PreferredBackBufferWidth / 2, -Globals.PreferredBackBufferHeight / 2);
+
+            // Particle engine textures
+            List<Texture2D> textures = new List<Texture2D>();
+            textures.Add(Content.Load<Texture2D>("Particles/circle"));
+            particleEngine = new ParticleEngine(textures, new Vector2(0, 0));
 
         }
 
@@ -101,17 +107,16 @@ namespace PSol.Client
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Update(GameTime gameTime)
         {
-            if (Globals.exitgame) this.Exit();
+            if (Globals.exitgame) Exit();
             UserInterface.Active.Update(gameTime);
-            // TODO: Add your update logic here
-            if (ctcp.isOnline)
+
+            if (GameLogic.PlayerIndex > -1)
             {
-                IGUI.lblStatus.Text = "Server status:{{GREEN}} online";
+                particleEngine.EmitterLocation = new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y);
+                particleEngine.Update(Globals.DirUp);
             }
-            else
-            {
-                IGUI.lblStatus.Text = "Server status:{{RED}} offline";
-            }
+
+            IGUI.lblStatus.Text = ctcp.isOnline ? "Server status:{{GREEN}} online" : "Server status:{{RED}} offline";
 
             camera.Update(gameTime, this);
             base.Update(gameTime);
@@ -135,6 +140,8 @@ namespace PSol.Client
             spriteBatch.Draw(renderTarget, new Rectangle(0, 0, 1024, 768), Globals.Luminosity);
 
             spriteBatch.End();
+
+
             base.Draw(gameTime);
         }
 
@@ -169,6 +176,8 @@ namespace PSol.Client
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
             Graphics.DrawBorder(Globals.playArea, 1, Color.DarkOliveGreen);
             Graphics.RenderGraphics();
+            particleEngine.Draw(spriteBatch);
+            Graphics.RenderPlayers();
             spriteBatch.End();
 
             Graphics.DrawHud(Content);

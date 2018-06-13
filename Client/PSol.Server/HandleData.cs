@@ -190,6 +190,10 @@ namespace PSol.Server
                 buffer.AddFloat(Types.Player[i].X);
                 buffer.AddFloat(Types.Player[i].Y);
                 buffer.AddFloat(Types.Player[i].Rotation);
+                buffer.AddInteger(Types.Player[i].Health);
+                buffer.AddInteger(Types.Player[i].MaxHealth);
+                buffer.AddInteger(Types.Player[i].Shield);
+                buffer.AddInteger(Types.Player[i].MaxShield);
                 buffer.AddBytes(BitConverter.GetBytes(ServerTCP.tempPlayer[i].inGame));
             }
             BroadcastData(buffer.ToArray());

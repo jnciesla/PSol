@@ -110,15 +110,23 @@ namespace PSol.Client
             var timestamp = BitConverter.ToInt64(buffer.GetBytes(8), 0);
             for (var i = 1; i != Constants.MAX_PLAYERS; i++)
             {
-                var posX = buffer.GetFloat();
-                var posY = buffer.GetFloat();
-                var rot = buffer.GetFloat();
+                var X = buffer.GetFloat();
+                var Y = buffer.GetFloat();
+                var Rotation = buffer.GetFloat();
+                var Health = buffer.GetInteger();
+                var MaxHealth = buffer.GetInteger();
+                var Shield = buffer.GetInteger();
+                var MaxShield = buffer.GetInteger();
                 var inGame = BitConverter.ToBoolean(buffer.GetBytes(1), 0);
                 // If the buffer is not in game or its ourselves, skip the update
                 if (!inGame || i == GameLogic.PlayerIndex) continue;
-                Types.Player[i].X = posX;
-                Types.Player[i].Y = posY;
-                Types.Player[i].Rotation = rot;
+                Types.Player[i].X = X;
+                Types.Player[i].Y = Y;
+                Types.Player[i].Rotation = Rotation;
+                Types.Player[i].Health = Health;
+                Types.Player[i].MaxHealth = MaxHealth;
+                Types.Player[i].Shield = Shield;
+                Types.Player[i].MaxShield = MaxShield;
             }
             buffer.Dispose();
         }

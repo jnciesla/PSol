@@ -25,6 +25,10 @@ namespace PSol.Client
         public static void RenderGraphics()
         {
             DrawSystems();
+        }
+
+        public static void RenderPlayers()
+        {
             DrawPlayers();
         }
 

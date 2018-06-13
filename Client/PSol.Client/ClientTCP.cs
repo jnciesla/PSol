@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Net.Sockets;
 using Bindings;
+using Microsoft.Xna.Framework;
 
 namespace PSol.Client
 {
@@ -48,8 +49,6 @@ namespace PSol.Client
             if(PlayerSocket.Connected == false)
             {
                 connected = false;
-                return;
-
             } else {
                 PlayerSocket.NoDelay = true;
                 myStream = PlayerSocket.GetStream();
@@ -86,6 +85,7 @@ namespace PSol.Client
 
         public void SendLogin()
         {
+            InterfaceGUI.AddChats("Logging in...", Color.DarkOliveGreen);
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)ClientPackets.CLogin);
             buffer.AddString(Globals.loginUsername);
@@ -96,6 +96,7 @@ namespace PSol.Client
 
         public void SendRegister()
         {
+            InterfaceGUI.AddChats("Registering new user...", Color.DarkOliveGreen);
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)ClientPackets.CRegister);
             buffer.AddString(Globals.registerUsername);
