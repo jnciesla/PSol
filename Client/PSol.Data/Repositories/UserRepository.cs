@@ -1,13 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using PSol.Data.Models;
+using PSol.Data.Repositories.Interfaces;
 
 namespace PSol.Data.Repositories
 {
-    public class UserRepository : IDisposable
+    public class UserRepository : IDisposable, IUserRepository
     {
         private readonly PSolDataContext _context;
 
@@ -16,7 +14,7 @@ namespace PSol.Data.Repositories
             _context = context;
         }
 
-        public User GetUser(string id)
+        public User GetUserById(string id)
         {
             return _context.Users.FirstOrDefault(u => u.Id == id);
         }
@@ -27,6 +25,28 @@ namespace PSol.Data.Repositories
             var dbUser = _context.Users.Add(user);
             _context.SaveChanges();
             return dbUser;
+        }
+
+        public User LoadPlayer(string username)
+        {
+            return _context.Users.FirstOrDefault(u => u.Name == username);
+        }
+
+        public void SavePlayer(User user)
+        {
+            var dbUser = GetUserById(user.Id);
+            _context.Entry(dbUser).CurrentValues.SetValues(user);
+            _context.SaveChanges();
+        }
+
+        public bool AccountExists(string username)
+        {
+            return _context.Users.FirstOrDefault(u => u.Name == username) != null;
+        }
+
+        public bool PasswordOK(string username, string passwordHash)
+        {
+            return _context.Users.FirstOrDefault(u => u.Name == username && u.Password == passwordHash) != null;
         }
 
         public void Dispose()

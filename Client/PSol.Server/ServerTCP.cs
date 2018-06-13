@@ -3,7 +3,7 @@ using System.Net.Sockets;
 using System.Net;
 using Bindings;
 
-namespace Server
+namespace PSol.Server
 {
     internal class ServerTCP
     {

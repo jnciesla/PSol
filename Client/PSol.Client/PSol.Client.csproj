@@ -59,11 +59,10 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="DataTypes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>Content\DataTypes.dll</HintPath>
+      <HintPath>..\packages\GeonBit.UI.3.1.0.4\lib\geonbitui\DataTypes.dll</HintPath>
     </Reference>
     <Reference Include="GeonBit.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GeonBit.UI.3.1.0.2\lib\geonbitui\GeonBit.UI.dll</HintPath>
+      <HintPath>..\packages\GeonBit.UI.3.1.0.4\lib\geonbitui\GeonBit.UI.dll</HintPath>
     </Reference>
     <Reference Include="MonoGame.Extended, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MonoGame.Extended.1.1.0\lib\portable-net45+win8+wpa81\MonoGame.Extended.dll</HintPath>
@@ -71,8 +70,8 @@
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\DesktopGL\MonoGame.Framework.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json, Version=9.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.9.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
@@ -139,6 +138,12 @@
     <None Include="Content\GeonBit.UI\themes\lowres\fonts\Italic.spritefont" />
     <None Include="Content\GeonBit.UI\themes\lowres\fonts\Regular.spritefont" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\PSol.Data\PSol.Data.csproj">
+      <Project>{3ED446D3-B597-4D06-B7AC-D5CA8E568FEB}</Project>
+      <Name>PSol.Data</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Content\GeonBit.UI\themes\editor\effects\disabled.fx" />
@@ -718,12 +723,6 @@
     <Content Include="Content\GeonBit.UI\themes\lowres\textures\slider_fancy_md.xml" />
     <Content Include="Content\GeonBit.UI\themes\lowres\textures\white_texture.png" />
     <Content Include="Content\GeonBit.UI\themes\lowres\ThemeData.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\PSol.Data\PSol.Data.csproj">
-      <Project>{3ED446D3-B597-4D06-B7AC-D5CA8E568FEB}</Project>
-      <Name>PSol.Data</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="..\Bindings\Bindings.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

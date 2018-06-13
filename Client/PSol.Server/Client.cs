@@ -1,8 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Sockets;
 using Bindings;
+using Ninject;
+using PSol.Data.Models;
+using PSol.Data.Services.Interfaces;
 
-namespace Server
+namespace PSol.Server
 {
     internal class Client
     {
@@ -11,11 +15,13 @@ namespace Server
         public TcpClient Socket;
         public NetworkStream Stream;
         private readonly HandleData _shd;
+        private readonly IGameService _gameService;
         public byte[] readBuff;
 
-        public Client(HandleData shd)
+        public Client(HandleData shd, IKernel kernel)
         {
             _shd = shd;
+            _gameService = kernel.Get<IGameService>();
         }
 
         public void Start()
@@ -55,8 +61,7 @@ namespace Server
         {
             Console.WriteLine("Connection from " + IP + " has been terminated.");
             _shd.SendMessage(-1, Types.Player[index].Name + " has disconnected.", MessageColors.Notification);
-            var db = new SQL();
-            db.SaveGame(index);
+            _gameService.SaveGame(new List<User> { Types.Player[index] });
             Socket.Close();
             Socket = null;
             Types.Player[index] = Types.Default;

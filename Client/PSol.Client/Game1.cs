@@ -3,8 +3,10 @@ using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using GeonBit.UI;
 using System.Diagnostics.CodeAnalysis;
+using Bindings;
+using PSol.Data.Models;
 
-namespace Client
+namespace PSol.Client
 {
     public class Game1 : Game
     {
@@ -48,6 +50,10 @@ namespace Client
             Globals.Font10 = Content.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size10");
             Globals.Font8 = Content.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size8");
 
+            for (var i = 1; i < Constants.MAX_PLAYERS; i++)
+            {
+                Types.Player[i] = new User();
+            }
             ctcp = new ClientTCP();
             chd = new HandleData();
             renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);

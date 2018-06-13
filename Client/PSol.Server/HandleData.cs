@@ -1,23 +1,25 @@
 ﻿using System;
 using Bindings;
 using System.Collections.Generic;
+using Ninject;
+using PSol.Data.Models;
 using PSol.Data.Services;
+using PSol.Data.Services.Interfaces;
 
-namespace Server
+namespace PSol.Server
 {
     internal class HandleData
     {
         private delegate void Packet_(int index, byte[] data);
         private static Dictionary<int, Packet_> packets;
-        private SQL db = new SQL();
-        private UserService _userService;
+        private readonly IUserService _userService;
 
-        public HandleData(UserService userService)
+        public HandleData(IKernel kernel)
         {
-            _userService = userService;
+            _userService = kernel.Get<IUserService>();
         }
 
-        public void InitializeMesssages()
+        public void InitializeMessages()
         {
             Console.WriteLine("Initializing Network Packets...");
             packets = new Dictionary<int, Packet_>
@@ -51,36 +53,37 @@ namespace Server
             string username = buffer.GetString();
             string password = buffer.GetString();
 
-            if (!db.AccountExists(username))
+            if (!_userService.AccountExists(username))
             {
                 SendMessage(index, "Username does not exist!", MessageColors.Warning);
                 return;
             }
 
-            if (!db.PasswordOK(username, password))
+            if (!_userService.PasswordOK(username, password))
             {
                 SendMessage(index, "Password incorrect!", MessageColors.Warning);
                 return;
             }
 
-            db.LoadPlayer(index, username);
+            Types.Player[index] = _userService.LoadPlayer(username);
             ServerTCP.tempPlayer[index].inGame = true;
             XFerLoad(index);
-            Console.WriteLine(username + " logged in successfully.");
+            Console.WriteLine(username + @" logged in successfully.");
         }
 
         private void HandleRegister(int index, byte[] data)
         {
-            Console.WriteLine("Received register packet");
-            var buffer = new PacketBuffer();
+            Console.WriteLine(@"Received register packet");
+            PacketBuffer buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             string username = buffer.GetString();
             string password = buffer.GetString();
-            bool exists = db.AccountExists(username);
+            bool exists = _userService.AccountExists(username);
             if (!exists)
             {
-                _userService.RegisterUser(index, username, password);
+                Types.Player[index] = new User();
+                Types.Player[index] = _userService.RegisterUser(username, password);
                 AcknowledgeRegister(index);
             }
             else
@@ -113,7 +116,7 @@ namespace Server
             }
             catch
             {
-                Console.WriteLine("Unable to send packet- client disconnected");
+                Console.WriteLine(@"Unable to send packet- client disconnected");
             }
 
             buffer.Dispose();

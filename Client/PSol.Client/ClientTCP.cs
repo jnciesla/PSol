@@ -2,7 +2,7 @@
 using System.Net.Sockets;
 using Bindings;
 
-namespace Client
+namespace PSol.Client
 {
     internal class ClientTCP
     {

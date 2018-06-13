@@ -2,7 +2,7 @@
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Client
+namespace PSol.Client
 {
     internal class Globals
     {

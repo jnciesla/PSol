@@ -1,7 +1,7 @@
 ﻿using GeonBit.UI;
 using GeonBit.UI.Entities;
 
-namespace Client
+namespace PSol.Client
 {
     internal class MenuManager
     {
@@ -26,7 +26,7 @@ namespace Client
         {
             if (which == -1)
             {
-                foreach (Panel window in InterfaceGUI.Windows)
+                foreach (var window in InterfaceGUI.Windows)
                 {
                     if (window != InterfaceGUI.Windows[0]) // Don't close chats.  At some point I'll make that an option
                     {

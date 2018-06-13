@@ -1,6 +1,6 @@
 ﻿using Microsoft.Xna.Framework.Input;
 
-namespace Client
+namespace PSol.Client
 {
     class KeyControl
     {

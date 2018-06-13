@@ -4,7 +4,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using Bindings;
 using PSol.Data.Models;
 
-namespace Server
+namespace PSol.Server
 {
     internal class Database
     {

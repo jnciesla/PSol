@@ -5,7 +5,7 @@ using Bindings;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 
-namespace Client
+namespace PSol.Client
 {
     internal class Graphics
     {
