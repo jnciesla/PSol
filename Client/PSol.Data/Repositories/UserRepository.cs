@@ -39,6 +39,16 @@ namespace PSol.Data.Repositories
             _context.SaveChanges();
         }
 
+        public bool AccountExists(string username)
+        {
+            return _context.Users.FirstOrDefault(u => u.Name == username) != null;
+        }
+
+        public bool PasswordOK(string username, string passwordHash)
+        {
+            return _context.Users.FirstOrDefault(u => u.Name == username && u.Password == passwordHash) != null;
+        }
+
         public void Dispose()
         {
             _context?.Dispose();

@@ -12,7 +12,6 @@ namespace PSol.Server
     {
         private delegate void Packet_(int index, byte[] data);
         private static Dictionary<int, Packet_> packets;
-        private SQL db = new SQL();
         private readonly IUserService _userService;
 
         public HandleData(IKernel kernel)
@@ -55,13 +54,13 @@ namespace PSol.Server
             string username = buffer.GetString();
             string password = buffer.GetString();
 
-            if (!db.AccountExists(username))
+            if (!_userService.AccountExists(username))
             {
                 SendMessage(index, "Username does not exist!", MessageColors.Warning);
                 return;
             }
 
-            if (!db.PasswordOK(username, password))
+            if (!_userService.PasswordOK(username, password))
             {
                 SendMessage(index, "Password incorrect!", MessageColors.Warning);
                 return;
@@ -70,18 +69,18 @@ namespace PSol.Server
             Types.Player[index] = _userService.LoadPlayer(username);
             ServerTCP.tempPlayer[index].inGame = true;
             XFerLoad(index);
-            Console.WriteLine(username + " logged in successfully.");
+            Console.WriteLine(username + @" logged in successfully.");
         }
 
         private void HandleRegister(int index, byte[] data)
         {
-            Console.WriteLine("Received register packet");
+            Console.WriteLine(@"Received register packet");
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             string username = buffer.GetString();
             string password = buffer.GetString();
-            bool exists = db.AccountExists(username);
+            bool exists = _userService.AccountExists(username);
             if (!exists)
             {
                 Types.Player[index] = new User();
@@ -118,7 +117,7 @@ namespace PSol.Server
             }
             catch
             {
-                Console.WriteLine("Unable to send packet- client disconnected");
+                Console.WriteLine(@"Unable to send packet- client disconnected");
             }
 
             buffer.Dispose();

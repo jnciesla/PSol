@@ -44,6 +44,16 @@ namespace PSol.Data.Services
             return newUser;
         }
 
+        public bool AccountExists(string username)
+        {
+            return _userRepo.AccountExists(username);
+        }
+
+        public bool PasswordOK(string username, string password)
+        {
+            return _userRepo.PasswordOK(username, CalculateMD5Hash(password));
+        }
+
         private string CalculateMD5Hash(string input)
         {
             MD5 md5 = MD5.Create();
