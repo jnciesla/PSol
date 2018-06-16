@@ -1,5 +1,4 @@
 ﻿using GeonBit.UI;
-using GeonBit.UI.Entities;
 
 namespace PSol.Client
 {
@@ -20,10 +19,15 @@ namespace PSol.Client
             Clear();
             InterfaceGUI.Windows[(int)menu].Visible = true;
                 Globals.windowOpen = true;
+            if ((int) menu == 1 || (int) menu == 2)
+            {
+                Globals.cursorOverride = true;
+            }
         }
 
         public static void Clear(int which = -1)
         {
+            Globals.cursorOverride = false;
             if (which == -1)
             {
                 foreach (var window in InterfaceGUI.Windows)

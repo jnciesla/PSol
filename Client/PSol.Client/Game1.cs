@@ -1,5 +1,4 @@
-﻿using System;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using GeonBit.UI;
@@ -34,11 +33,13 @@ namespace PSol.Client
         public Game1()
         {
             graphics = new GraphicsDeviceManager(this);
-            // graphics.IsFullScreen = true;
             Content.RootDirectory = "Content";
 
+            Globals.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            Globals.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
             graphics.PreferredBackBufferWidth = Globals.PreferredBackBufferWidth;
             graphics.PreferredBackBufferHeight = Globals.PreferredBackBufferHeight;
+            //graphics.ToggleFullScreen();
         }
 
         /// <summary>
@@ -64,9 +65,9 @@ namespace PSol.Client
             chd.InitializeMesssages();
             ctcp.ConnectToServer();
             Graphics.InitializeGraphics(Content);
-            UserInterface.Initialize(Content, BuiltinThemes.editor);
+            UserInterface.Initialize(Content, "classic");
             UserInterface.Active.UseRenderTarget = true;
-            IGUI.InitializeGUI();
+            IGUI.InitializeGUI(Content);
             MenuManager.ChangeMenu(MenuManager.Menu.Login);
 
             base.Initialize();
@@ -109,6 +110,7 @@ namespace PSol.Client
         {
             if (Globals.exitgame) Exit();
             UserInterface.Active.Update(gameTime);
+            if (!Globals.cursorOverride) { UserInterface.Active.SetCursor(CursorType.Default); }
 
             if (GameLogic.PlayerIndex > -1)
             {
@@ -117,7 +119,7 @@ namespace PSol.Client
             }
 
             IGUI.lblStatus.Text = ctcp.isOnline ? "Server status:{{GREEN}} online" : "Server status:{{RED}} offline";
-
+            CheckKeys();
             camera.Update(gameTime, this);
             base.Update(gameTime);
         }
@@ -137,7 +139,7 @@ namespace PSol.Client
                 SamplerState.LinearClamp, DepthStencilState.Default,
                 RasterizerState.CullNone);
 
-            spriteBatch.Draw(renderTarget, new Rectangle(0, 0, 1024, 768), Globals.Luminosity);
+            spriteBatch.Draw(renderTarget, new Rectangle(0, 0, Globals.PreferredBackBufferWidth, Globals.PreferredBackBufferHeight), Globals.Luminosity);
 
             spriteBatch.End();
 
@@ -168,13 +170,10 @@ namespace PSol.Client
                 WalkTimer = Tick + 15;
                 Globals.PlanetaryRotation += MathHelper.ToRadians(.01f);
             }
-            CheckKeys();
 
-
-            // TODO: Add your drawing code here
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, Camera.transform);
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
-            Graphics.DrawBorder(Globals.playArea, 1, Color.DarkOliveGreen);
+            Graphics.DrawBorder(Globals.playArea, 2, Color.DarkOliveGreen);
             Graphics.RenderGraphics();
             particleEngine.Draw(spriteBatch);
             Graphics.RenderPlayers();
@@ -219,7 +218,7 @@ namespace PSol.Client
                 Globals.ZoomDefault = Keyboard.GetState().IsKeyDown(Keys.R);
                 Globals.Details1 = Keyboard.GetState().IsKeyDown(Keys.LeftAlt);
                 Globals.Details2 = Keyboard.GetState().IsKeyDown(Keys.RightAlt);
-                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { Globals.Selected = -1; }
+                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { Globals.Selected = -1; Globals.selectedPlanet = -1; }
                 if (KC.KeyPress(Keys.T))
                 {
                     MenuManager.ChangeMenu(MenuManager.Menu.Message);

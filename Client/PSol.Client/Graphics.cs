@@ -4,20 +4,24 @@ using Microsoft.Xna.Framework;
 using Bindings;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
+using GeonBit.UI;
 
 namespace PSol.Client
 {
     internal class Graphics
     {
         public static Texture2D[] Characters = new Texture2D[2];
-        public static Texture2D[] Planets = new Texture2D[2];
+        public static Texture2D[] Planets = new Texture2D[5];
         public static Texture2D Shield;
         public static Texture2D pixel;
+
+        public static Texture2D[] Cursors = new Texture2D[2];
 
         public static void InitializeGraphics(ContentManager manager)
         {
             LoadCharacters(manager);
             LoadPlanets(manager);
+            LoadCursors(manager);
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
         }
@@ -37,28 +41,39 @@ namespace PSol.Client
             Game1.spriteBatch.Draw(Characters[sprite], position, null, Color.White, rotation, origin, 1, SpriteEffects.None, 0);
         }
 
-        private static void DrawPlanet(int sprite, Vector2 position, Vector2 origin)
+        private static void DrawPlanet(int sprite, Vector2 position, Vector2 origin, float scale)
         {
-            Game1.spriteBatch.Draw(Planets[sprite], position, null, Color.White, Globals.PlanetaryRotation, origin, 0.2F, SpriteEffects.None, 0);
+            Game1.spriteBatch.Draw(Planets[sprite], position, null, Color.White, Globals.PlanetaryRotation, origin, scale, SpriteEffects.None, 0);
         }
 
         private static void DrawSystems()
         {
-            int SpriteNum = 1;
+            int SpriteNum = 4;
+            float scale = .3F;
+            string name = "Some stupid planet name";
+
             var origin = new Vector2(Planets[SpriteNum].Width / 2f, Planets[SpriteNum].Height / 2f);
-            DrawPlanet(SpriteNum, new Vector2(1000, 1000), origin);
+            DrawPlanet(SpriteNum, new Vector2(1000, 1000), origin, scale);
             // OnClick
-            var Bound = new Rectangle(1000 - Characters[SpriteNum].Width / 2, 1000 - Characters[SpriteNum].Height / 2, Characters[SpriteNum].Width, Characters[SpriteNum].Height);
+            var Bound = new Rectangle(1000 - (int)(Planets[SpriteNum].Width * scale) / 2, 1000 - (int)(Planets[SpriteNum].Height * scale) / 2, (int)(Planets[SpriteNum].Width * scale), (int)(Planets[SpriteNum].Height * scale));
             var ms = Mouse.GetState();
-            if (ms.LeftButton == ButtonState.Pressed)
+            float x = ms.X + (-Camera.transform.M41) / Camera.zoom;
+            float y = ms.Y + (-Camera.transform.M42) / Camera.zoom;
+            Vector2 position = new Vector2(x, y);
+            if (Bound.Contains(position))
             {
-                float x = ms.X + (-Camera.transform.M41);
-                float y = ms.Y + (-Camera.transform.M42);
-                Vector2 position = new Vector2(x, y);
-                if (Bound.Contains(position))
+                UserInterface.Active.SetCursor(Cursors[1]);
+                if (ms.LeftButton == ButtonState.Pressed && Globals.selectedPlanet != 1)
                 {
-                    InterfaceGUI.AddChats("test",Color.MediumVioletRed);
+                    Globals.selectedPlanet = 1;
+                    Globals.Selected = -1;
                 }
+            }
+
+            if (Globals.selectedPlanet == 1)
+            {
+                DrawBorder(Bound, 1, Color.DarkGray * .25F);
+                Game1.spriteBatch.DrawString(Globals.Font10, name, new Vector2(1000 - Globals.Font10.MeasureString(name).X / 2, 1000 - ((int)(Planets[SpriteNum].Height * scale) / 2) - 20), Color.AntiqueWhite);
             }
         }
 
@@ -87,7 +102,7 @@ namespace PSol.Client
                             new Vector2(Shield.Width / 2f, Shield.Height / 2f), 1, SpriteEffects.None, 0);
                     }
 
-                    Game1.spriteBatch.DrawString(Globals.Font10, Types.Player[i].Name, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(Types.Player[i].Name).X / 2, Types.Player[i].Y - (Characters[SpriteNum].Height /2) - 10), Color.AntiqueWhite);
+                    Game1.spriteBatch.DrawString(Globals.Font10, Types.Player[i].Name, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(Types.Player[i].Name).X / 2, Types.Player[i].Y - (Characters[SpriteNum].Height / 2) - 10), Color.AntiqueWhite);
 
                     // Health
                     Color HealthColor1 = Color.Green;
@@ -156,18 +171,29 @@ namespace PSol.Client
                             shieldRect.Bottom + 13), Color.DarkGoldenrod);
                     }
                 }
+
                 // OnClick
                 Rectangle Bound = new Rectangle((int)Types.Player[i].X - Characters[SpriteNum].Width / 2, (int)Types.Player[i].Y - Characters[SpriteNum].Height / 2, Characters[SpriteNum].Width, Characters[SpriteNum].Height);
                 MouseState ms = Mouse.GetState();
-                if (ms.LeftButton == ButtonState.Pressed && Globals.Selected != i)
+                float x = ms.X + (-Camera.transform.M41);
+                float y = ms.Y + (-Camera.transform.M42);
+                Vector2 position = new Vector2(x, y);
+                if (Bound.Contains(position))
                 {
-                    float x = ms.X + (-Camera.transform.M41);
-                    float y = ms.Y + (-Camera.transform.M42);
-                    Vector2 position = new Vector2(x, y);
-                    if (Bound.Contains(position))
+                    UserInterface.Active.SetCursor(CursorType.Pointer);
+                }
+                if (Bound.Contains(position))
+                {
+                    if (ms.LeftButton == ButtonState.Pressed && Globals.Selected != i)
                     {
                         Globals.Selected = i;
+                        Globals.selectedPlanet = -1;
                     }
+                }
+
+                if (Globals.Selected == i)
+                {
+                    DrawBorder(Bound, 1, Color.DarkGray * .25F);
                 }
             }
         }
@@ -190,14 +216,21 @@ namespace PSol.Client
             }
         }
 
+        private static void LoadCursors(ContentManager manager)
+        {
+            for (int i = 1; i < Cursors.Length; i++)
+            {
+                Cursors[i] = manager.Load<Texture2D>("Cursors/" + i);
+            }
+        }
+
         public static void DrawHud(ContentManager manager)
         {
             if (GameLogic.PlayerIndex <= -1) return;
-            var infoFont = manager.Load<SpriteFont>("GeonBit.UI/themes/hd/fonts/Regular");
             Game1.spriteBatch.Begin();
-            Game1.spriteBatch.DrawString(infoFont, (int)Types.Player[GameLogic.PlayerIndex].X / 100 + ":" + (int)Types.Player[GameLogic.PlayerIndex].Y / 100,
-                new Vector2(512, 10), Color.DarkBlue);
-            Game1.spriteBatch.DrawString(infoFont, GameLogic.PlayerIndex.ToString(), new Vector2(512, 30), Color.Green);
+            Game1.spriteBatch.DrawString(Globals.Font10, (int)Types.Player[GameLogic.PlayerIndex].X / 100 + ":" + (int)Types.Player[GameLogic.PlayerIndex].Y / 100,
+                new Vector2(512, 10), Color.DimGray);
+            Game1.spriteBatch.DrawString(Globals.Font10, GameLogic.PlayerIndex.ToString(), new Vector2(512, 30), Color.Green);
             Game1.spriteBatch.End();
         }
 

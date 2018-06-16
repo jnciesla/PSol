@@ -6,7 +6,7 @@ namespace PSol.Client
 {
     internal class Camera
 	{
-		public float zoom = 1;
+		public static float zoom = 1;
 		public static Matrix transform;
 	    public static Viewport view;
 	    public static Vector2 center;
@@ -40,9 +40,14 @@ namespace PSol.Client
 
 		public void Update(GameTime gametime, Game1 ship)
 		{
-			if (GameLogic.PlayerIndex <= -1) return;
-			center = new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y) -
-					 new Vector2(512 / zoom, 384 / zoom);
+		    float x = -1000, y = -1000;
+			if (GameLogic.PlayerIndex > -1)
+			{
+			    x = Types.Player[GameLogic.PlayerIndex].X;
+			    y = Types.Player[GameLogic.PlayerIndex].Y;
+
+			}
+			center = new Vector2(x, y) - new Vector2((Globals.PreferredBackBufferWidth/2) / zoom, (Globals.PreferredBackBufferHeight / 2) / zoom);
 			transform = Matrix.CreateScale(new Vector3(zoom, zoom, 0)) *
 						Matrix.CreateTranslation(new Vector3(-center.X * zoom, -center.Y * zoom, 0));
 		}

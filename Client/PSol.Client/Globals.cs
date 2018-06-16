@@ -10,13 +10,14 @@ namespace PSol.Client
         public static bool windowOpen;
         public static Rectangle mapSize = new Rectangle(0, 0, 102500, 102500);
         public static Rectangle playArea = new Rectangle(0, 0, 100010, 100010);
-        public static int PreferredBackBufferWidth = 1024;
-        public static int PreferredBackBufferHeight = 768;
+        public static int PreferredBackBufferWidth;
+        public static int PreferredBackBufferHeight;
 
         public static float PlanetaryRotation = 0;
 
         public static Panel chatPanel;
         public static bool pauseChat = false;
+        public static bool cursorOverride = true;
 
         public static Color Luminosity = Color.White;
         public static bool Control = false;
@@ -27,6 +28,7 @@ namespace PSol.Client
         public static string registerPassword = "";
         public static string registerValidate = "";
         public static int Selected = -1;
+        public static int selectedPlanet = -1;
 
         // Game direction vars
         public static bool DirUp;

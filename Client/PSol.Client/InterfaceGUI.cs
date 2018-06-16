@@ -2,7 +2,8 @@
 using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
-using GeonBit.UI.Utils;
+using Microsoft.Xna.Framework.Content;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace PSol.Client
 {
@@ -17,18 +18,29 @@ namespace PSol.Client
         public TextInput txtPassReg;
         public TextInput txtPas2Reg;
         public static TextInput messageText;
-        public Button btnLogin;
-        public bool openBox;
+
+        // IGUI textures
+        private Texture2D registerPanel;
+        private Texture2D loginPanel;
+        private Texture2D button;
+        private Texture2D button_hover;
+        private Texture2D button_down;
 
         private const string mask = "*";
 
-        public void InitializeGUI()
+        public void InitializeGUI(ContentManager content)
         {
+            // Initialize custom graphics
+            loginPanel = content.Load<Texture2D>("Panels/Login");
+            registerPanel = content.Load<Texture2D>("Panels/Register");
+            button = content.Load<Texture2D>("Panels/button_default");
+            button_hover = content.Load<Texture2D>("Panels/button_default_hover");
+            button_down = content.Load<Texture2D>("Panels/button_default_down");
+
             CreateChats();
             CreateWindow_Login();
             CreateWindow_Register();
             CreateMessage();
-            // UserInterface.Active.GlobalScale = .75F;
         }
 
         public void CreateWindow(Panel panel)
@@ -110,19 +122,7 @@ namespace PSol.Client
         {
             if (Globals.loginUsername == string.Empty || Globals.loginPassword == string.Empty)
             {
-                if (openBox == false)
-                {
-                    openBox = true;
-                    MessageBox.ShowMsgBox("No credentials",
-                        "Please enter a valid username and password before logging in!", new[]
-                        {
-                            new MessageBox.MsgBoxOption("Okay", () =>
-                            {
-                                openBox = false;
-                                return true;
-                            })
-                        });
-                }
+                AddChats("You must enter a username and password to login.", Color.DarkRed);
             }
             else
             {
@@ -134,19 +134,13 @@ namespace PSol.Client
         {
             if (Globals.registerUsername == string.Empty || Globals.registerPassword == string.Empty || Globals.registerValidate == string.Empty)
             {
-                MessageBox.ShowMsgBox("No credentials", "Please enter a valid username and password, and confirm your password, before attempting to register!", new MessageBox.MsgBoxOption[]
-                {
-                        new MessageBox.MsgBoxOption("Okay" ,() => true)
-                });
+                AddChats("You must enter a valid username and password, and confirm your password, to register.", Color.DarkRed);
             }
             else
             {
                 if (Globals.registerPassword != Globals.registerValidate)
                 {
-                    MessageBox.ShowMsgBox("Passwords do not match", "The passwords you have entered to not match.  Please try again.", new MessageBox.MsgBoxOption[]
-                    {
-                        new MessageBox.MsgBoxOption("Okay" ,() => true)
-                    });
+                    AddChats("Passwords do not match- please try again.", Color.DarkRed);
                 }
                 else
                 {
@@ -161,34 +155,39 @@ namespace PSol.Client
         {
             //  Create Entities
             Panel panel = new Panel(new Vector2(500, 430));
-            btnLogin = new Button("Login");
-            txtUser = new TextInput(false);
+            Image image = new Image(loginPanel, new Vector2(496, 427), ImageDrawMode.Panel, Anchor.TopLeft, new Vector2(-30, -29));
+            Image loginButton = new Image(button, new Vector2(400, 60), ImageDrawMode.Panel, Anchor.AutoCenter);
+            txtUser = new TextInput(false, Anchor.TopCenter, new Vector2(0, 40)) { Skin = PanelSkin.None };
             txtUser.Validators.Add(new Validators.AlphaNumValidator());
-            Header headerUser = new Header("Username", Anchor.TopCenter);
-            txtPass = new TextInput(false);
-            txtPass.HideInputWithChar = mask.ToCharArray()[0];
+            txtPass = new TextInput(false, Anchor.Auto, new Vector2(0, 38))
+            {
+                HideInputWithChar = mask.ToCharArray()[0],
+                Skin = PanelSkin.None
+            };
             txtPass.Validators.Add(new Validators.AlphaNumValidator());
-            Header headerPass = new Header("Password", Anchor.AutoCenter);
-            Label lblRegister = new Label("No account?  Register here", Anchor.AutoCenter);
+            Label lblRegister = new Label("No account?  Register here", Anchor.AutoCenter, null, new Vector2(0, 25));
+            Paragraph loginLabel = new Paragraph("LOGIN", Anchor.AutoCenter, null, new Vector2(0, -50)) { FillColor = Color.DarkGray };
             lblStatus = new MulticolorParagraph("Server status:{{RED}} offline", Anchor.BottomLeft);
             UserInterface.Active.AddEntity(panel);
+
+            panel.Skin = PanelSkin.None;
 
             // Entity Settings
             txtUser.PlaceholderText = "Enter username";
             txtPass.PlaceholderText = "Enter password";
 
             // Add Entities
-            panel.AddChild(headerUser);
+            panel.AddChild(image);
             panel.AddChild(txtUser);
-            panel.AddChild(headerPass);
             panel.AddChild(txtPass);
-            panel.AddChild(btnLogin);
+            panel.AddChild(loginButton);
+            panel.AddChild(loginLabel);
             panel.AddChild(lblRegister);
             panel.AddChild(lblStatus);
 
             // MouseEvents
-            lblRegister.OnMouseEnter += entity => { lblRegister.FillColor = Color.Red; UserInterface.Active.SetCursor(CursorType.Pointer); };
-            lblRegister.OnMouseLeave += entity => { lblRegister.FillColor = Color.White; UserInterface.Active.SetCursor(CursorType.Default); };
+            lblRegister.OnMouseEnter += entity => { lblRegister.FillColor = Color.Red; };
+            lblRegister.OnMouseLeave += entity => { lblRegister.FillColor = Color.White; };
 
             txtUser.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
             txtUser.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
@@ -196,15 +195,19 @@ namespace PSol.Client
             txtPass.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
             txtPass.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            btnLogin.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.Pointer); };
-            btnLogin.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
+            loginButton.OnMouseEnter += entity => { loginButton.Texture = button_hover; };
+            loginButton.OnMouseLeave += entity => { loginButton.Texture = button; };
+            loginButton.OnMouseDown += entity => { loginButton.Texture = button_down; };
+            loginButton.OnMouseReleased += entity => { loginButton.Texture = button; };
+
+            loginLabel.OnClick += entity => { Login(); };
 
             lblRegister.OnClick += entity =>
             {
                 MenuManager.ChangeMenu(MenuManager.Menu.Register);
             };
 
-            btnLogin.OnClick += entity =>
+            loginButton.OnClick += entity =>
             {
                 Login();
             };
@@ -219,21 +222,23 @@ namespace PSol.Client
         public void CreateWindow_Register()
         {
             //  Create Entities
-            Panel panel = new Panel(new Vector2(500, 550));
-            Button btnRegister = new Button("Register");
-            Button btnBack = new Button("Back");
-            txtUserReg = new TextInput(false);
+            Panel panel = new Panel(new Vector2(500, 430));
+            Image image = new Image(registerPanel, new Vector2(496, 427), ImageDrawMode.Panel, Anchor.TopLeft, new Vector2(-30, -29));
+            Image backButton = new Image(button, new Vector2(210, 60), ImageDrawMode.Panel, Anchor.AutoInline);
+            Image registerButton = new Image(button, new Vector2(210, 60), ImageDrawMode.Panel, Anchor.AutoInline, new Vector2(20, 0));
+            Paragraph backLabel = new Paragraph("BACK", Anchor.AutoInline, null, new Vector2(80, -36)) { FillColor = Color.DarkGray };
+            Paragraph registerLabel = new Paragraph("REGISTER", Anchor.AutoInline, null, new Vector2(290, -50)) { FillColor = Color.DarkGray };
+            txtUserReg = new TextInput(false, Anchor.TopCenter, new Vector2(0, 22)) { Skin = PanelSkin.None };
             txtUserReg.Validators.Add(new Validators.AlphaNumValidator());
-            Header headerUser = new Header("Username", Anchor.TopCenter);
-            txtPassReg = new TextInput(false);
+            txtPassReg = new TextInput(false, Anchor.AutoCenter, new Vector2(0, 40)) { Skin = PanelSkin.None };
             txtPassReg.Validators.Add(new Validators.AlphaNumValidator());
             txtPassReg.HideInputWithChar = mask.ToCharArray()[0];
-            Header headerPass = new Header("Password", Anchor.AutoCenter);
-            txtPas2Reg = new TextInput(false);
+            txtPas2Reg = new TextInput(false, Anchor.AutoCenter, new Vector2(0, 36)) { Skin = PanelSkin.None };
             txtPas2Reg.Validators.Add(new Validators.AlphaNumValidator());
             txtPas2Reg.HideInputWithChar = mask.ToCharArray()[0];
-            Header headerPass2 = new Header("Confirm password", Anchor.AutoCenter);
             UserInterface.Active.AddEntity(panel);
+
+            panel.Skin = PanelSkin.None;
 
             // Entity Settings
             txtUserReg.PlaceholderText = "Enter username";
@@ -241,14 +246,14 @@ namespace PSol.Client
             txtPas2Reg.PlaceholderText = "Confirm password";
 
             // Add Entities
-            panel.AddChild(headerUser);
+            panel.AddChild(image);
             panel.AddChild(txtUserReg);
-            panel.AddChild(headerPass);
             panel.AddChild(txtPassReg);
-            panel.AddChild(headerPass2);
             panel.AddChild(txtPas2Reg);
-            panel.AddChild(btnRegister);
-            panel.AddChild(btnBack);
+            panel.AddChild(backButton);
+            panel.AddChild(registerButton);
+            panel.AddChild(registerLabel);
+            panel.AddChild(backLabel);
 
             // MouseEvents
             txtUserReg.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
@@ -260,17 +265,21 @@ namespace PSol.Client
             txtPas2Reg.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
             txtPas2Reg.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            btnRegister.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.Pointer); };
-            btnRegister.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
+            registerButton.OnMouseEnter += entity => { registerButton.Texture = button_hover; };
+            registerButton.OnMouseLeave += entity => { registerButton.Texture = button; };
+            registerButton.OnMouseDown += entity => { registerButton.Texture = button_down; };
+            registerButton.OnMouseReleased += entity => { registerButton.Texture = button; };
 
-            btnBack.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.Pointer); };
-            btnBack.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
+            backButton.OnMouseEnter += entity => { backButton.Texture = button_hover; };
+            backButton.OnMouseLeave += entity => { backButton.Texture = button; };
+            backButton.OnMouseDown += entity => { backButton.Texture = button_down; };
+            backButton.OnMouseReleased += entity => { backButton.Texture = button; };
 
-            btnBack.OnClick += entity =>
+            backButton.OnClick += entity =>
             {
                 MenuManager.ChangeMenu(MenuManager.Menu.Login);
             };
-            btnRegister.OnClick += entity =>
+            registerButton.OnClick += entity =>
             {
                 Register();
             };
@@ -322,7 +331,7 @@ namespace PSol.Client
         public void CreateMessage()
         {
             Panel panel = new Panel(new Vector2(1024, 50), PanelSkin.None, Anchor.BottomLeft, new Vector2(-10, 40));
-            messageText = new TextInput(false) {Skin = PanelSkin.None};
+            messageText = new TextInput(false) { Skin = PanelSkin.None };
             messageText.TextParagraph.FontOverride = Globals.Font10;
             UserInterface.Active.AddEntity(panel);
             panel.AddChild(messageText);
