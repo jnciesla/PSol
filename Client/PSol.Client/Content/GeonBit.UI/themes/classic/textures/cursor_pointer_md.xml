@@ -3,8 +3,8 @@
   
   <!-- metadata about this texture. for more info, take a look at the TextureData class in code. -->
   <Asset Type="GeonBit.UI.DataTypes.CursorTextureData">
-    <OffsetX>-4</OffsetX>
-    <OffsetY>0</OffsetY>
+    <OffsetX>-8</OffsetX>
+    <OffsetY>-8</OffsetY>
 	<DrawWidth>40</DrawWidth>
   </Asset>
 

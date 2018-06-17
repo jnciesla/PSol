@@ -15,9 +15,11 @@ namespace PSol.Client
 
         public static float PlanetaryRotation = 0;
 
+        // GUI Stuff
         public static Panel chatPanel;
         public static bool pauseChat = false;
         public static bool cursorOverride = true;
+        public static bool scanner = true;
 
         public static Color Luminosity = Color.White;
         public static bool Control = false;

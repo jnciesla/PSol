@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Data.Entity;
 using PSol.Data.Models;
 
 namespace PSol.Data
@@ -12,6 +7,8 @@ namespace PSol.Data
     {
         private const int MaxIdLength = 36;
         public DbSet<User> Users { get; set; }
+        public DbSet<Star> Stars { get; set; }
+        public DbSet<Planet> Planets { get; set; }
 
         public PSolDataContext() : base("PSolDataConnection")
         {
@@ -25,6 +22,18 @@ namespace PSol.Data
 
             modelBuilder.Entity<User>()
                 .Property(u => u.Id)
+                .HasMaxLength(MaxIdLength);
+
+            modelBuilder.Entity<Star>()
+                .Property(u => u.Id)
+                .HasMaxLength(MaxIdLength);
+
+            modelBuilder.Entity<Planet>()
+                .Property(u => u.Id)
+                .HasMaxLength(MaxIdLength);
+
+            modelBuilder.Entity<Planet>()
+                .Property(u => u.SystemId)
                 .HasMaxLength(MaxIdLength);
         }
     }

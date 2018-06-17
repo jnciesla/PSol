@@ -104,11 +104,15 @@ namespace PSol.Client
                     {
                         Globals.exitgame = true;
                     }
+                    else if (messageText.Value.ToLower() == "/scan" || messageText.Value.ToLower() == "/scanner")
+                    {
+                        Globals.scanner = !Globals.scanner;
+                    }
                     else
                     {
                         ctcp.SendChat(messageText.Value);
-                        messageText.Value = "";
                     }
+                    messageText.Value = "";
                     MenuManager.Clear(3);
                 }
                 else
@@ -186,8 +190,8 @@ namespace PSol.Client
             panel.AddChild(lblStatus);
 
             // MouseEvents
-            lblRegister.OnMouseEnter += entity => { lblRegister.FillColor = Color.Red; };
-            lblRegister.OnMouseLeave += entity => { lblRegister.FillColor = Color.White; };
+            lblRegister.OnMouseEnter += entity => { lblRegister.FillColor = Color.Red; UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            lblRegister.OnMouseLeave += entity => { lblRegister.FillColor = Color.White; UserInterface.Active.SetCursor(CursorType.Default); };
 
             txtUser.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
             txtUser.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
@@ -195,8 +199,8 @@ namespace PSol.Client
             txtPass.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
             txtPass.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            loginButton.OnMouseEnter += entity => { loginButton.Texture = button_hover; };
-            loginButton.OnMouseLeave += entity => { loginButton.Texture = button; };
+            loginButton.OnMouseEnter += entity => { loginButton.Texture = button_hover; UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            loginButton.OnMouseLeave += entity => { loginButton.Texture = button; UserInterface.Active.SetCursor(CursorType.Default); };
             loginButton.OnMouseDown += entity => { loginButton.Texture = button_down; };
             loginButton.OnMouseReleased += entity => { loginButton.Texture = button; };
 
@@ -265,13 +269,13 @@ namespace PSol.Client
             txtPas2Reg.OnMouseEnter += entity => { UserInterface.Active.SetCursor(CursorType.IBeam); };
             txtPas2Reg.OnMouseLeave += entity => { UserInterface.Active.SetCursor(CursorType.Default); };
 
-            registerButton.OnMouseEnter += entity => { registerButton.Texture = button_hover; };
-            registerButton.OnMouseLeave += entity => { registerButton.Texture = button; };
+            registerButton.OnMouseEnter += entity => { registerButton.Texture = button_hover; UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            registerButton.OnMouseLeave += entity => { registerButton.Texture = button; UserInterface.Active.SetCursor(CursorType.Default); };
             registerButton.OnMouseDown += entity => { registerButton.Texture = button_down; };
             registerButton.OnMouseReleased += entity => { registerButton.Texture = button; };
 
-            backButton.OnMouseEnter += entity => { backButton.Texture = button_hover; };
-            backButton.OnMouseLeave += entity => { backButton.Texture = button; };
+            backButton.OnMouseEnter += entity => { backButton.Texture = button_hover; UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            backButton.OnMouseLeave += entity => { backButton.Texture = button; UserInterface.Active.SetCursor(CursorType.Default); };
             backButton.OnMouseDown += entity => { backButton.Texture = button_down; };
             backButton.OnMouseReleased += entity => { backButton.Texture = button; };
 
@@ -295,7 +299,7 @@ namespace PSol.Client
         public void CreateChats()
         {
             //  Create Entities
-            Panel panel = new Panel(new Vector2(500, 250), PanelSkin.None, Anchor.TopLeft);
+            Panel panel = new Panel(new Vector2(Globals.PreferredBackBufferWidth * .5f, 250), PanelSkin.None, Anchor.TopLeft);
             UserInterface.Active.AddEntity(panel);
 
             panel.PanelOverflowBehavior = PanelOverflowBehavior.VerticalScroll;
@@ -319,7 +323,7 @@ namespace PSol.Client
         {
             var para = new MulticolorParagraph(message, Anchor.Auto, color)
             {
-                FontOverride = Globals.Font8
+                FontOverride = Globals.Font10
             };
             Globals.chatPanel.AddChild(para);
             if (!Globals.pauseChat)
@@ -330,9 +334,12 @@ namespace PSol.Client
 
         public void CreateMessage()
         {
-            Panel panel = new Panel(new Vector2(1024, 50), PanelSkin.None, Anchor.BottomLeft, new Vector2(-10, 40));
-            messageText = new TextInput(false) { Skin = PanelSkin.None };
-            messageText.TextParagraph.FontOverride = Globals.Font10;
+            Panel panel = new Panel(new Vector2(1024, 40), PanelSkin.None, Anchor.BottomLeft, new Vector2(-100, 40));
+            messageText = new TextInput(false)
+            {
+                Skin = PanelSkin.None,
+                TextParagraph = { FontOverride = Globals.Font10, BackgroundColor = Color.DarkOliveGreen * .4F, BackgroundColorUseBoxSize = true }
+            };
             UserInterface.Active.AddEntity(panel);
             panel.AddChild(messageText);
             CreateWindow(panel);

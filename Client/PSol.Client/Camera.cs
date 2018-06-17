@@ -48,8 +48,8 @@ namespace PSol.Client
 
 			}
 			center = new Vector2(x, y) - new Vector2((Globals.PreferredBackBufferWidth/2) / zoom, (Globals.PreferredBackBufferHeight / 2) / zoom);
-			transform = Matrix.CreateScale(new Vector3(zoom, zoom, 0)) *
-						Matrix.CreateTranslation(new Vector3(-center.X * zoom, -center.Y * zoom, 0));
+			transform = Matrix.CreateScale(new Vector3(zoom, zoom, 1)) *
+						Matrix.CreateTranslation(new Vector3(-center.X * zoom, -center.Y * zoom, 1));
 		}
 	}
 }

@@ -5,6 +5,7 @@ using Bindings;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using GeonBit.UI;
+using GeonBit.UI.Entities;
 
 namespace PSol.Client
 {
@@ -12,16 +13,20 @@ namespace PSol.Client
     {
         public static Texture2D[] Characters = new Texture2D[2];
         public static Texture2D[] Planets = new Texture2D[5];
+        public static Texture2D scanner;
         public static Texture2D Shield;
         public static Texture2D pixel;
+        public static Texture2D triangle;
 
-        public static Texture2D[] Cursors = new Texture2D[2];
+        public static Texture2D[] Cursors = new Texture2D[3];
 
         public static void InitializeGraphics(ContentManager manager)
         {
             LoadCharacters(manager);
             LoadPlanets(manager);
             LoadCursors(manager);
+            scanner = manager.Load<Texture2D>("Panels/scanner");
+            triangle = manager.Load<Texture2D>("Panels/triangle");
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
         }
@@ -57,8 +62,8 @@ namespace PSol.Client
             // OnClick
             var Bound = new Rectangle(1000 - (int)(Planets[SpriteNum].Width * scale) / 2, 1000 - (int)(Planets[SpriteNum].Height * scale) / 2, (int)(Planets[SpriteNum].Width * scale), (int)(Planets[SpriteNum].Height * scale));
             var ms = Mouse.GetState();
-            float x = ms.X + (-Camera.transform.M41) / Camera.zoom;
-            float y = ms.Y + (-Camera.transform.M42) / Camera.zoom;
+            float x = ms.X * (1 / Camera.zoom) + -Camera.transform.M41;
+            float y = ms.Y * (1 / Camera.zoom) + -Camera.transform.M42;
             Vector2 position = new Vector2(x, y);
             if (Bound.Contains(position))
             {
@@ -181,9 +186,6 @@ namespace PSol.Client
                 if (Bound.Contains(position))
                 {
                     UserInterface.Active.SetCursor(CursorType.Pointer);
-                }
-                if (Bound.Contains(position))
-                {
                     if (ms.LeftButton == ButtonState.Pressed && Globals.Selected != i)
                     {
                         Globals.Selected = i;
@@ -228,8 +230,31 @@ namespace PSol.Client
         {
             if (GameLogic.PlayerIndex <= -1) return;
             Game1.spriteBatch.Begin();
+            // Draw scanner
+            if (Globals.scanner)
+            {
+                Game1.spriteBatch.Draw(scanner, new Vector2(0, Globals.PreferredBackBufferHeight - 200), null,
+                    Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                Game1.spriteBatch.Draw(triangle, new Vector2(100, Globals.PreferredBackBufferHeight - 100), null,
+                    Color.White, Types.Player[GameLogic.PlayerIndex].Rotation, new Vector2(8, 8), 1, SpriteEffects.None, 0);
+
+                // Click to close
+                Rectangle Bound = new Rectangle(186, Globals.PreferredBackBufferHeight - 196, 12, 12);
+                MouseState ms = Mouse.GetState();
+                Vector2 position = new Vector2(ms.X, ms.Y);
+                if (Bound.Contains(position))
+                {
+                    UserInterface.Active.SetCursor(Cursors[2],32,new Point(-4,0));
+                    if(ms.LeftButton == ButtonState.Pressed) {
+                        Globals.scanner = false;
+
+                    };
+                }
+
+            }
+
             Game1.spriteBatch.DrawString(Globals.Font10, (int)Types.Player[GameLogic.PlayerIndex].X / 100 + ":" + (int)Types.Player[GameLogic.PlayerIndex].Y / 100,
-                new Vector2(512, 10), Color.DimGray);
+                new Vector2(Globals.PreferredBackBufferWidth / 2.0f, 10), Color.DimGray);
             Game1.spriteBatch.DrawString(Globals.Font10, GameLogic.PlayerIndex.ToString(), new Vector2(512, 30), Color.Green);
             Game1.spriteBatch.End();
         }

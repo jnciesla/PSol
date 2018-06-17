@@ -69,7 +69,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client.cs" />
-    <Compile Include="Database.cs" />
     <Compile Include="General.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="HandleData.cs" />

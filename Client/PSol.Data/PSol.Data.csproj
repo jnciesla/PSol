@@ -51,15 +51,25 @@
     <Compile Include="Migrations\201806120501013_Initial.Designer.cs">
       <DependentUpon>201806120501013_Initial.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201806171458290_systems.cs" />
+    <Compile Include="Migrations\201806171458290_systems.Designer.cs">
+      <DependentUpon>201806171458290_systems.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\Planet.cs" />
+    <Compile Include="Models\Star.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="PSolDataContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\Interfaces\IStarRepository.cs" />
     <Compile Include="Repositories\Interfaces\IUserRepository.cs" />
+    <Compile Include="Repositories\StarRepository.cs" />
     <Compile Include="Repositories\UserRepository.cs" />
     <Compile Include="Services\GameService.cs" />
     <Compile Include="Services\Interfaces\IGameService.cs" />
+    <Compile Include="Services\Interfaces\IStarService.cs" />
     <Compile Include="Services\Interfaces\IUserService.cs" />
+    <Compile Include="Services\StarService.cs" />
     <Compile Include="Services\UserService.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -69,6 +79,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201806120501013_Initial.resx">
       <DependentUpon>201806120501013_Initial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806171458290_systems.resx">
+      <DependentUpon>201806171458290_systems.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

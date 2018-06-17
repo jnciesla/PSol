@@ -3,7 +3,6 @@ using Bindings;
 using System.Collections.Generic;
 using Ninject;
 using PSol.Data.Models;
-using PSol.Data.Services;
 using PSol.Data.Services.Interfaces;
 
 namespace PSol.Server

@@ -1,4 +1,6 @@
 ﻿using GeonBit.UI;
+using GeonBit.UI.Entities;
+using Microsoft.Xna.Framework;
 
 namespace PSol.Client
 {
@@ -22,6 +24,18 @@ namespace PSol.Client
             if ((int) menu == 1 || (int) menu == 2)
             {
                 Globals.cursorOverride = true;
+            }
+
+            if ((int) menu == 3)
+            {
+                if (Globals.scanner)
+                {
+                    InterfaceGUI.Windows[(int) menu].SetPosition(Anchor.BottomLeft, new Vector2(-50, 240));
+                }
+                else
+                {
+                    InterfaceGUI.Windows[(int)menu].SetPosition(Anchor.BottomLeft, new Vector2(-50, 40));
+                }
             }
         }
 

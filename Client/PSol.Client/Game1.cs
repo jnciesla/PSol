@@ -2,7 +2,7 @@
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using GeonBit.UI;
-using System.Diagnostics.CodeAnalysis;
+
 using Bindings;
 using PSol.Data.Models;
 using System.Collections.Generic;
@@ -77,13 +77,12 @@ namespace PSol.Client
         /// LoadContent will be called once per game and is the place to load
         /// all of your content.
         /// </summary>
-        [SuppressMessage("ReSharper", "PossibleLossOfFraction")]
         protected override void LoadContent()
         {
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             backGroundTexture = Content.Load<Texture2D>("stars3");
-            backgroundPos = new Vector2(-Globals.PreferredBackBufferWidth / 2, -Globals.PreferredBackBufferHeight / 2);
+            backgroundPos = new Vector2(-Globals.PreferredBackBufferWidth / 2.0F, -Globals.PreferredBackBufferHeight / 2.0F);
 
             // Particle engine textures
             List<Texture2D> textures = new List<Texture2D>();
@@ -181,7 +180,7 @@ namespace PSol.Client
 
             Graphics.DrawHud(Content);
             UserInterface.Active.DrawMainRenderTarget(spriteBatch);
-
+            
             // Drop the render target
             GraphicsDevice.SetRenderTarget(null);
         }
