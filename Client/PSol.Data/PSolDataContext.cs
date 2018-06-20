@@ -9,6 +9,8 @@ namespace PSol.Data
         public DbSet<User> Users { get; set; }
         public DbSet<Star> Stars { get; set; }
         public DbSet<Planet> Planets { get; set; }
+        public DbSet<MobType> MobTypes { get; set; }
+        public DbSet<Mob> ActiveMobs { get; set; }
 
         public PSolDataContext() : base("PSolDataConnection")
         {
@@ -34,6 +36,14 @@ namespace PSol.Data
 
             modelBuilder.Entity<Planet>()
                 .Property(u => u.StarId)
+                .HasMaxLength(MaxIdLength);
+
+            modelBuilder.Entity<MobType>()
+                .Property(m => m.Id)
+                .HasMaxLength(MaxIdLength);
+
+            modelBuilder.Entity<Mob>()
+                .Property(m => m.Id)
                 .HasMaxLength(MaxIdLength);
         }
     }

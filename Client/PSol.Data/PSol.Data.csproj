@@ -58,8 +58,14 @@
     <Compile Include="Migrations\201806181403322_stars.cs" />
     <Compile Include="Migrations\201806181403322_stars.Designer.cs">
       <DependentUpon>201806181403322_stars.cs</DependentUpon>
+      </Compile>
+    <Compile Include="Migrations\201806200149163_Mobs.cs" />
+    <Compile Include="Migrations\201806200149163_Mobs.Designer.cs">
+      <DependentUpon>201806200149163_Mobs.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\MobType.cs" />
+    <Compile Include="Models\Mob.cs" />
     <Compile Include="Models\Planet.cs" />
     <Compile Include="Models\Star.cs" />
     <Compile Include="Models\User.cs" />
@@ -89,6 +95,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201806181403322_stars.resx">
       <DependentUpon>201806181403322_stars.cs</DependentUpon>
+      </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806200149163_Mobs.resx">
+      <DependentUpon>201806200149163_Mobs.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
