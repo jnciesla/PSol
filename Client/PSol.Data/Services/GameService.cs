@@ -21,6 +21,8 @@ namespace PSol.Data.Services
             {
                 _userRepository.SavePlayer(user);
             });
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            Console.WriteLine("Saving database... PASS");
         }
     }
 }

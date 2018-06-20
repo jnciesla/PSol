@@ -6,12 +6,13 @@ namespace PSol.Client
 {
     internal class Globals
     {
+        public static bool Fullscreen = false;
         public static bool exitgame = false;
         public static bool windowOpen;
         public static Rectangle mapSize = new Rectangle(0, 0, 102500, 102500);
         public static Rectangle playArea = new Rectangle(0, 0, 100010, 100010);
-        public static int PreferredBackBufferWidth;
-        public static int PreferredBackBufferHeight;
+        public static int PreferredBackBufferWidth = 1024;
+        public static int PreferredBackBufferHeight = 768;
 
         public static float PlanetaryRotation = 0;
 

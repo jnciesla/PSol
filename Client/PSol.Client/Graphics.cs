@@ -6,6 +6,7 @@ using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using GeonBit.UI;
 using GeonBit.UI.Entities;
+using PSol.Data.Models;
 
 namespace PSol.Client
 {
@@ -56,7 +57,6 @@ namespace PSol.Client
             int SpriteNum = 4;
             float scale = .3F;
             string name = "Some stupid planet name";
-
             var origin = new Vector2(Planets[SpriteNum].Width / 2f, Planets[SpriteNum].Height / 2f);
             DrawPlanet(SpriteNum, new Vector2(1000, 1000), origin, scale);
             // OnClick

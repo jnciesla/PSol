@@ -13,8 +13,16 @@ namespace PSol.Client
         [STAThread]
         private static void Main()
         {
+            Settings();
             using (var game = new Game1())
                 game.Run();
+        }
+
+        private static void Settings()
+        {
+            HandleData.LoadXml();
+            Globals.Fullscreen = Boolean.Parse(HandleData.ReadFromXml("Application", "Fullscreen", "true"));
+            HandleData.CloseXml(true);
         }
     }
 }

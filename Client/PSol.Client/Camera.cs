@@ -40,14 +40,14 @@ namespace PSol.Client
 
 		public void Update(GameTime gametime, Game1 ship)
 		{
-		    float x = -1000, y = -1000;
+		    float x = -5000, y = -5000;
 			if (GameLogic.PlayerIndex > -1)
 			{
 			    x = Types.Player[GameLogic.PlayerIndex].X;
 			    y = Types.Player[GameLogic.PlayerIndex].Y;
 
 			}
-			center = new Vector2(x, y) - new Vector2((Globals.PreferredBackBufferWidth/2) / zoom, (Globals.PreferredBackBufferHeight / 2) / zoom);
+			center = new Vector2(x, y) - new Vector2(Globals.PreferredBackBufferWidth/2.0f / zoom, Globals.PreferredBackBufferHeight / 2.0f / zoom);
 			transform = Matrix.CreateScale(new Vector3(zoom, zoom, 1)) *
 						Matrix.CreateTranslation(new Vector3(-center.X * zoom, -center.Y * zoom, 1));
 		}

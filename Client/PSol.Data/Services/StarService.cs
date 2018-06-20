@@ -13,9 +13,9 @@ namespace PSol.Data.Services
             _starRep = starRep;
         }
 
-        public Star LoadStar(string id)
+        public Star[] LoadStars()
         {
-            return _starRep.LoadStar(id);
+            return _starRep.LoadStars();
         }
     }
 }

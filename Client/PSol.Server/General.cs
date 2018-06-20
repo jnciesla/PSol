@@ -7,7 +7,7 @@ namespace PSol.Server
 {
     internal class General
 	{
-		private ServerTCP stcp;
+		private ServerTCP _stcp;
 		private readonly HandleData _shd;
 	    private readonly IKernel _kernel;
 
@@ -19,9 +19,8 @@ namespace PSol.Server
 
 		public HandleData InitializeServer()
 		{
-		    stcp = new ServerTCP();
-
-			_shd.InitializeMessages();
+		    _stcp = new ServerTCP();
+            _shd.InitializeMessages();
 
 			for (var i = 1; i < Constants.MAX_PLAYERS; i++)
 			{
@@ -29,9 +28,11 @@ namespace PSol.Server
 				ServerTCP.tempPlayer[i] = new TempPlayer();
 				Types.Player[i] = new User();
 			}
-			stcp.InitializeNetwork();
-			Console.WriteLine("Server has started");
-			return _shd;
+			_stcp.InitializeNetwork();
+		    Console.WriteLine("*********************************************");
+            Console.WriteLine("Server has started");
+		    Console.WriteLine("*********************************************");
+            return _shd;
 		}
 	}
 }

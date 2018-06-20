@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using Newtonsoft.Json;
+using PSol.Data.Models;
 
 namespace Bindings
 {
@@ -81,10 +83,18 @@ namespace Bindings
             buffUpdate = true;
         }
 
+        public void AddArray(Array input)
+        {
+            var JSON = JsonConvert.SerializeObject(input);
+            buff.AddRange(BitConverter.GetBytes(JSON.Length));
+            buff.AddRange(Encoding.ASCII.GetBytes(JSON));
+            buffUpdate = true;
+        }
+
         // Read data
         public int GetInteger(bool Peek = true)
         {
-            if(buff.Count > readPos)
+            if (buff.Count > readPos)
             {
                 if (buffUpdate)
                 {
@@ -93,12 +103,14 @@ namespace Bindings
                 }
 
                 int ret = BitConverter.ToInt32(readBuff, readPos);
-                if(Peek & buff.Count > readPos)
+                if (Peek & buff.Count > readPos)
                 {
                     readPos += 4;
                 }
                 return ret;
-            } else {
+            }
+            else
+            {
                 throw new Exception("Packet buffer is past its limit");
             }
 
@@ -130,21 +142,41 @@ namespace Bindings
         public string GetString(bool Peek = true)
         {
             int length = GetInteger(true);
-                if (buffUpdate)
-                {
-                    readBuff = buff.ToArray();
-                    buffUpdate = false;
-                }
+            if (buffUpdate)
+            {
+                readBuff = buff.ToArray();
+                buffUpdate = false;
+            }
 
-                string ret = Encoding.ASCII.GetString(readBuff, readPos, length);
-                if (Peek & buff.Count > readPos)
-                {
-                    if(ret.Length > 0)
+            string ret = Encoding.ASCII.GetString(readBuff, readPos, length);
+            if (Peek & buff.Count > readPos)
+            {
+                if (ret.Length > 0)
                 {
                     readPos += length;
                 }
+            }
+            return ret;
+        }
+
+        public List<T> GetList<T>(bool peek = true)
+        {
+            int length = GetInteger(true);
+            if (buffUpdate)
+            {
+                readBuff = buff.ToArray();
+                buffUpdate = false;
+            }
+
+            string JSON = Encoding.ASCII.GetString(readBuff, readPos, length);
+            if (peek & buff.Count > readPos)
+            {
+                if (JSON.Length > 0)
+                {
+                    readPos += length;
                 }
-                return ret;
+            }
+            return JsonConvert.DeserializeObject<List<T>>(JSON);
         }
 
         public byte GetByte(bool Peek = true)
@@ -227,7 +259,7 @@ namespace Bindings
             disposedValue = true;
         }
 
-        public void Dispose() 
+        public void Dispose()
         {
             Dispose(true);
             GC.SuppressFinalize(this);

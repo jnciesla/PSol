@@ -1,6 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bindings;
 using Microsoft.Xna.Framework;
+using PSol.Data.Models;
 
 namespace PSol.Client
 {
@@ -9,6 +11,7 @@ namespace PSol.Client
         public static int PlayerIndex = -1;
         private static ClientTCP ctcp = new ClientTCP();
         private static int messageTime;
+        public static List<Star> Galaxy;
 
         public static bool IsMoving()
         {

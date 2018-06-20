@@ -1,6 +1,10 @@
 ﻿using System;
 using Bindings;
 using System.Collections.Generic;
+using System.Xml;
+using System.Text;
+using System.IO;
+using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using PSol.Data.Models;
 
@@ -22,7 +26,8 @@ namespace PSol.Client
                 {(int) ServerPackets.SPlayerData, DownloadData},
                 {(int) ServerPackets.SAckRegister, GoodRegister},
                 {(int) ServerPackets.SPulse, HandleServerPulse},
-                {(int) ServerPackets.SFullData, GetStaticPulse}
+                {(int) ServerPackets.SFullData, GetStaticPulse},
+                {(int) ServerPackets.SGalaxy, HandleGalaxy }
             };
         }
 
@@ -85,7 +90,7 @@ namespace PSol.Client
             buffer.Dispose();
             MenuManager.Clear();
             InterfaceGUI.AddChats("User data downloaded.", Color.DarkOliveGreen);
-            
+
         }
 
         private void GetStaticPulse(byte[] data)
@@ -130,5 +135,94 @@ namespace PSol.Client
             }
             buffer.Dispose();
         }
+
+        private void HandleGalaxy(byte[] data)
+        {
+            InterfaceGUI.AddChats("Galaxy downloaded.", Color.DarkOliveGreen);
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            GameLogic.Galaxy = buffer.GetList<Star>();
+            buffer.Dispose();
+            Console.WriteLine(GameLogic.Galaxy[0].Name);
+        }
+
+        //
+        // XML DATA
+        //
+        private static XmlDocument XML = new XmlDocument();
+        private static string Root = "PSOL";
+        private static string Filename = "settings.xml";
+
+        public static void NewXMLDoc()
+        {
+            XmlTextWriter xmlTextWriter = new XmlTextWriter(Filename, Encoding.UTF8);
+            //Write a blank XML doc
+
+            var xml = xmlTextWriter;
+            {
+                xml.WriteStartDocument(true);
+                xml.WriteStartElement(Root);
+                xml.WriteEndElement();
+                xml.WriteEndDocument();
+                xml.Flush();
+                xml.Close();
+            }
+        }
+
+        public static void WriteToXml(string selection, string name, string value)
+        {
+            var check = XML.SelectSingleNode(Root + "/" + selection);
+            if (check == null)
+            {
+                XML.DocumentElement.AppendChild(XML.CreateElement(selection));
+            }
+
+            XmlNode xmlNode = XML.SelectSingleNode(Root + "/" + selection + "/Element[@Name='" + name + "']");
+            if (xmlNode == null)
+            {
+                XmlElement element = XML.CreateElement("Element");
+                element.SetAttribute("Value", value);
+                element.SetAttribute("Name", name);
+                XML.DocumentElement[selection].AppendChild(element);
+            }
+            else
+            {
+                //Update node
+                xmlNode.Attributes["Value"].Value = value;
+                xmlNode.Attributes["Name"].Value = name;
+            }
+        }
+
+        public static void LoadXml()
+        {
+            if (!File.Exists(Filename))
+            {
+                NewXMLDoc();
+            }
+            XML.Load(Filename);
+        }
+
+        public static string ReadFromXml(string selection, string name, string defaultValue = "")
+        {
+            var xmlNode = XML.SelectSingleNode(Root + "/" + selection + "/Element[@Name='" + name + "']");
+            if (xmlNode == null)
+            {
+                WriteToXml(selection, name, defaultValue);
+                return defaultValue;
+            }
+            return xmlNode.Attributes["Value"].Value;
+        }
+
+        public static void CloseXml(bool save)
+        {
+            if (save)
+            {
+                XML.Save(Filename);
+            }
+
+            XML = null;
+        }
+
     }
 }

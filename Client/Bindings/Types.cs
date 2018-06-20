@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Bindings;
-using PSol.Data.Models;
+﻿using PSol.Data.Models;
 
 namespace Bindings
 {

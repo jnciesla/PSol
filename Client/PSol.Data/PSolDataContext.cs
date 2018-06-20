@@ -33,7 +33,7 @@ namespace PSol.Data
                 .HasMaxLength(MaxIdLength);
 
             modelBuilder.Entity<Planet>()
-                .Property(u => u.SystemId)
+                .Property(u => u.StarId)
                 .HasMaxLength(MaxIdLength);
         }
     }

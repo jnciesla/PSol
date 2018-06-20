@@ -3,7 +3,7 @@
     public class Planet
     {
         public string Id { get; set; }
-        public string SystemId { get; set; }
+        public string StarId { get; set; }
 
         // General
         public string Name { get; set; }

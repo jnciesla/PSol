@@ -6,7 +6,8 @@
         SFullData = 2,
         SAckRegister = 3,
         SPlayerData = 4,
-		SPulse = 5
+		SPulse = 5,
+        SGalaxy
     }
 
     public enum ClientPackets

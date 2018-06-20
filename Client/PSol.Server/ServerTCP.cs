@@ -17,6 +17,8 @@ namespace PSol.Server
             ServerSocket = new TcpListener(IPAddress.Any, 8000);
             ServerSocket.Start();
             ServerSocket.BeginAcceptTcpClient(OnClientConnect, null);
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            Console.WriteLine("Initializing Server Network... PASS");
         }
 
         private void OnClientConnect(IAsyncResult ar)

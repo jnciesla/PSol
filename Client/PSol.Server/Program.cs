@@ -10,18 +10,25 @@ namespace PSol.Server
     internal class Program
     {
         private static Thread consoleThread;
+        private static DataLoader dataLoader;
+        private static PacketBuffer packet;
         private static General general;
         private static HandleData shd;
         private static IGameService _gameService;
 
         private static void Main(string[] args)
         {
+            packet = new PacketBuffer();
             IKernel kernel = new StandardKernel(new ServerModule());
             _gameService = kernel.Get<IGameService>();
+            dataLoader = new DataLoader();
             general = new General(kernel);
             consoleThread = new Thread(ConsoleThread);
             consoleThread.Start();
             shd = general.InitializeServer();
+            dataLoader.initialize();
+            dataLoader.DownloadGalaxy();
+            packet.AddArray(Globals.Galaxy);
         }
 
         private static void ConsoleThread()
@@ -47,7 +54,13 @@ namespace PSol.Server
 
                 if (command == "save")
                 {
+                    Console.SetCursorPosition(0,Console.CursorTop -1);
                     _gameService.SaveGame(Types.Player.ToList());
+                }
+                else if (command == "send")
+                {
+                    Console.WriteLine("Sending Galaxy");
+                    shd.SendGalaxy();
                 }
                 else if (command != "end")
                 {

@@ -28,6 +28,8 @@ namespace PSol.Server
                 {(int) ClientPackets.CPlayerData, RecvPlayer},
                 {(int) ClientPackets.CChat, ParseChat}
             };
+            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            Console.WriteLine("Initializing Network Packets... PASS");
         }
 
         public void HandleNetworkMessages(int index, byte[] data)
@@ -232,6 +234,15 @@ namespace PSol.Server
             buffer.AddInteger((int)ServerPackets.SMessage);
             buffer.AddInteger((int)MessageColors.Chat);
             buffer.AddString(newString);
+            BroadcastData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void SendGalaxy()
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int)ServerPackets.SGalaxy);
+            buffer.AddArray(Globals.Galaxy);
             BroadcastData(buffer.ToArray());
             buffer.Dispose();
         }

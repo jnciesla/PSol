@@ -2,6 +2,7 @@
 using System.Linq;
 using PSol.Data.Models;
 using PSol.Data.Repositories.Interfaces;
+using PSol.Data.Services;
 
 namespace PSol.Data.Repositories
 {
@@ -14,9 +15,9 @@ namespace PSol.Data.Repositories
             _context = context;
         }
 
-        public Star LoadStar(string id)
+        public Star[] LoadStars()
         {
-            return _context.Stars.FirstOrDefault(u => u.Id == id);
+            return _context.Stars.ToArray();
         }
 
         public void Dispose()
