@@ -13,7 +13,7 @@ namespace PSol.Data.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "201806120501013_Initial"; }
+            get { return "201806201514556_Initial"; }
         }
         
         string IMigrationMetadata.Source
