@@ -30,8 +30,6 @@ namespace PSol.Client
         public static string registerUsername = "";
         public static string registerPassword = "";
         public static string registerValidate = "";
-        public static int Selected = -1;
-        public static int selectedPlanet = -1;
 
         // Game direction vars
         public static bool DirUp;

@@ -17,7 +17,7 @@ namespace PSol.Client
         public static ParticleEngine particleEngine;
         private Texture2D backGroundTexture;
         private Vector2 backgroundPos;
-        RenderTarget2D renderTarget;
+        private RenderTarget2D renderTarget;
 
         private ClientTCP ctcp;
         private HandleData chd;
@@ -30,6 +30,8 @@ namespace PSol.Client
         public new static int Tick;
         public static int ElapsedTime;
         public static int FrameTime;
+        Laser.Beam beam;
+        Laser bolt;
 
         public Game1()
         {
@@ -121,6 +123,10 @@ namespace PSol.Client
             }
             IGUI.lblStatus.Text = ctcp.isOnline ? "Server status:{{GREEN}} online" : "Server status:{{RED}} offline";
             CheckKeys();
+
+            bolt?.Update();
+            beam?.Update();
+
             camera.Update(gameTime, this);
             base.Update(gameTime);
         }
@@ -175,7 +181,14 @@ namespace PSol.Client
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, Camera.transform);
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
             Graphics.DrawBorder(Globals.playArea, 2, Color.DarkOliveGreen);
-            Graphics.RenderGraphics();
+            if (GameLogic.Galaxy != null)
+            {
+                Graphics.DrawSystems();
+            }
+
+            bolt?.Draw(spriteBatch);
+            beam?.Draw(spriteBatch, Color.Red);
+
             particleEngine.Draw(spriteBatch);
             Graphics.RenderPlayers();
             spriteBatch.End();
@@ -210,6 +223,9 @@ namespace PSol.Client
 
             if (!Globals.windowOpen && !Globals.Control) // Don't allow game input when menus are open or CTRL is pressed
             {
+                
+                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { beam = new Laser.Beam(new Vector2(100,100), new Vector2(1000,1000), 2); }
+                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { bolt = new Laser(new Vector2(100, 100), new Vector2(1000, 1000), Color.Red); }
                 Globals.DirUp = Keyboard.GetState().IsKeyDown(Keys.W);
                 Globals.DirDn = Keyboard.GetState().IsKeyDown(Keys.S);
                 Globals.DirLt = Keyboard.GetState().IsKeyDown(Keys.A);
@@ -219,7 +235,7 @@ namespace PSol.Client
                 Globals.ZoomDefault = Keyboard.GetState().IsKeyDown(Keys.R);
                 Globals.Details1 = Keyboard.GetState().IsKeyDown(Keys.LeftAlt);
                 Globals.Details2 = Keyboard.GetState().IsKeyDown(Keys.RightAlt);
-                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { Globals.Selected = -1; Globals.selectedPlanet = -1; }
+                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { GameLogic.Selected = -1; GameLogic.selectedPlanet = -1; }
                 if (KC.KeyPress(Keys.T))
                 {
                     MenuManager.ChangeMenu(MenuManager.Menu.Message);

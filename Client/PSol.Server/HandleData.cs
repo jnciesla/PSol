@@ -69,6 +69,7 @@ namespace PSol.Server
             Types.Player[index] = _userService.LoadPlayer(username);
             ServerTCP.tempPlayer[index].inGame = true;
             XFerLoad(index);
+            SendGalaxy(index);
             Console.WriteLine(username + @" logged in successfully.");
         }
 
@@ -238,12 +239,12 @@ namespace PSol.Server
             buffer.Dispose();
         }
 
-        public void SendGalaxy()
+        public void SendGalaxy(int index)
         {
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SGalaxy);
             buffer.AddArray(Globals.Galaxy);
-            BroadcastData(buffer.ToArray());
+            SendData(index, buffer.ToArray());
             buffer.Dispose();
         }
 

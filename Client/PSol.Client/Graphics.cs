@@ -5,8 +5,6 @@ using Bindings;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using GeonBit.UI;
-using GeonBit.UI.Entities;
-using PSol.Data.Models;
 
 namespace PSol.Client
 {
@@ -19,6 +17,8 @@ namespace PSol.Client
         public static Texture2D pixel;
         public static Texture2D triangle;
 
+        public static Texture2D laserMid;
+
         public static Texture2D[] Cursors = new Texture2D[3];
 
         public static void InitializeGraphics(ContentManager manager)
@@ -26,15 +26,11 @@ namespace PSol.Client
             LoadCharacters(manager);
             LoadPlanets(manager);
             LoadCursors(manager);
+            laserMid = manager.Load<Texture2D>("Particles/laserMid");
             scanner = manager.Load<Texture2D>("Panels/scanner");
             triangle = manager.Load<Texture2D>("Panels/triangle");
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
-        }
-
-        public static void RenderGraphics()
-        {
-            DrawSystems();
         }
 
         public static void RenderPlayers()
@@ -52,33 +48,39 @@ namespace PSol.Client
             Game1.spriteBatch.Draw(Planets[sprite], position, null, Color.White, Globals.PlanetaryRotation, origin, scale, SpriteEffects.None, 0);
         }
 
-        private static void DrawSystems()
+        public static void DrawSystems()
         {
             int SpriteNum = 4;
             float scale = .3F;
-            string name = "Some stupid planet name";
-            var origin = new Vector2(Planets[SpriteNum].Width / 2f, Planets[SpriteNum].Height / 2f);
-            DrawPlanet(SpriteNum, new Vector2(1000, 1000), origin, scale);
-            // OnClick
-            var Bound = new Rectangle(1000 - (int)(Planets[SpriteNum].Width * scale) / 2, 1000 - (int)(Planets[SpriteNum].Height * scale) / 2, (int)(Planets[SpriteNum].Width * scale), (int)(Planets[SpriteNum].Height * scale));
-            var ms = Mouse.GetState();
-            float x = ms.X * (1 / Camera.zoom) + -Camera.transform.M41;
-            float y = ms.Y * (1 / Camera.zoom) + -Camera.transform.M42;
-            Vector2 position = new Vector2(x, y);
-            if (Bound.Contains(position))
+            for (var i = 0; i != GameLogic.Galaxy.Count; i++)
             {
-                UserInterface.Active.SetCursor(Cursors[1]);
-                if (ms.LeftButton == ButtonState.Pressed && Globals.selectedPlanet != 1)
+                var origin = new Vector2(Planets[SpriteNum].Width / 2f, Planets[SpriteNum].Height / 2f);
+                DrawPlanet(SpriteNum, new Vector2(GameLogic.Galaxy[i].X, GameLogic.Galaxy[i].Y), origin, scale);
+                // OnClick
+                var Bound = new Rectangle((int)GameLogic.Galaxy[i].X - (int)(Planets[SpriteNum].Width * scale) / 2,
+                    (int)GameLogic.Galaxy[i].Y - (int) (Planets[SpriteNum].Height * scale) / 2, (int) (Planets[SpriteNum].Width * scale),
+                    (int) (Planets[SpriteNum].Height * scale));
+                var ms = Mouse.GetState();
+                float x = ms.X + -Camera.transform.M41;
+                float y = ms.Y + -Camera.transform.M42;
+                Vector2 position = new Vector2(x, y);
+                if (Bound.Contains(position))
                 {
-                    Globals.selectedPlanet = 1;
-                    Globals.Selected = -1;
+                    UserInterface.Active.SetCursor(Cursors[1]);
+                    if (ms.LeftButton == ButtonState.Pressed && GameLogic.selectedPlanet != i)
+                    {
+                        GameLogic.selectedPlanet = i;
+                        GameLogic.Selected = -1;
+                    }
                 }
-            }
 
-            if (Globals.selectedPlanet == 1)
-            {
-                DrawBorder(Bound, 1, Color.DarkGray * .25F);
-                Game1.spriteBatch.DrawString(Globals.Font10, name, new Vector2(1000 - Globals.Font10.MeasureString(name).X / 2, 1000 - ((int)(Planets[SpriteNum].Height * scale) / 2) - 20), Color.AntiqueWhite);
+                if (GameLogic.selectedPlanet == i)
+                {
+                    DrawBorder(Bound, 1, Color.DarkGray * .25F);
+                    Game1.spriteBatch.DrawString(Globals.Font10, GameLogic.Galaxy[i].Name,
+                        new Vector2(GameLogic.Galaxy[i].X - Globals.Font10.MeasureString(GameLogic.Galaxy[i].Name).X / 2,
+                            GameLogic.Galaxy[i].Y - (int) (Planets[SpriteNum].Height * scale) / 2.0F - 20), Color.AntiqueWhite);
+                }
             }
         }
 
@@ -97,10 +99,10 @@ namespace PSol.Client
                 // Game1.spriteBatch.Draw(Shield, new Vector2(Types.Player[i].X, Types.Player[i].Y), null, Color.LightBlue * 0.25f, Types.Player[i].Rotation * -1, new Vector2(Shield.Width / 2f, Shield.Height / 2f), 1, SpriteEffects.None, 0);
 
                 // Draw status stuff
-                if (Globals.Details1 || Globals.Details2 || Globals.Selected == i)
+                if (Globals.Details1 || Globals.Details2 || GameLogic.Selected == i)
                 {
                     // Draw shield orb overlay when viewing details but not selected only on ourselves and when it's not depleted
-                    if (Types.Player[i].Shield > 0 && Globals.Selected != i && GameLogic.PlayerIndex == i)
+                    if (Types.Player[i].Shield > 0 && GameLogic.Selected != i && GameLogic.PlayerIndex == i)
                     {
                         Game1.spriteBatch.Draw(Shield, new Vector2(Types.Player[i].X, Types.Player[i].Y), null,
                             Color.LightBlue * 0.25f, Types.Player[i].Rotation * -1,
@@ -129,12 +131,12 @@ namespace PSol.Client
                         HealthColor1 = Color.Green;
                         HealthColor2 = Color.DarkGreen;
                     }
-                    RectangleF healthRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2,
-                        Types.Player[i].Y + Characters[SpriteNum].Height / 2, Characters[SpriteNum].Width, 6);
+                    RectangleF healthRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2.0F,
+                        Types.Player[i].Y + Characters[SpriteNum].Height / 2.0F, Characters[SpriteNum].Width, 6);
                     Game1.spriteBatch.DrawLine(healthRect.Left + 2, healthRect.Bottom - 2, healthRect.Right - (Characters[SpriteNum].Width * percentHealth), healthRect.Bottom - 2, HealthColor1, 4F);
                     Game1.spriteBatch.DrawRectangle(healthRect, HealthColor2, 2F);
                     var HealthDisplay = "";
-                    if (Globals.Details1 || Globals.Selected == i)
+                    if (Globals.Details1 || GameLogic.Selected == i)
                     {
                         HealthDisplay = Types.Player[i].Health + "/" + Types.Player[i].MaxHealth;
                     }
@@ -146,8 +148,8 @@ namespace PSol.Client
                     Game1.spriteBatch.DrawString(Globals.Font10, HealthDisplay, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(HealthDisplay).X / 2, healthRect.Bottom + 8), HealthColor2);
 
                     // Shield
-                    RectangleF shieldRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2,
-                        (Types.Player[i].Y + Characters[SpriteNum].Height / 2) + 7, Characters[SpriteNum].Width, 6);
+                    RectangleF shieldRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2.0F,
+                        (Types.Player[i].Y + Characters[SpriteNum].Height / 2.0F) + 7, Characters[SpriteNum].Width, 6);
                     if (Types.Player[i].Shield > 0 && Types.Player[i].MaxShield > 0)
                     {
                         float percentShield = (Types.Player[i].MaxShield - Types.Player[i].Shield) /
@@ -157,7 +159,7 @@ namespace PSol.Client
                             Color.Goldenrod, 4F);
                         Game1.spriteBatch.DrawRectangle(shieldRect, Color.DarkGoldenrod, 2F);
                         var ShieldDisplay = "";
-                        if (Globals.Details1 || Globals.Selected == i)
+                        if (Globals.Details1 || GameLogic.Selected == i)
                         {
                             ShieldDisplay = Types.Player[i].Shield + "/" + Types.Player[i].MaxShield;
                         }
@@ -180,20 +182,20 @@ namespace PSol.Client
                 // OnClick
                 Rectangle Bound = new Rectangle((int)Types.Player[i].X - Characters[SpriteNum].Width / 2, (int)Types.Player[i].Y - Characters[SpriteNum].Height / 2, Characters[SpriteNum].Width, Characters[SpriteNum].Height);
                 MouseState ms = Mouse.GetState();
-                float x = ms.X + (-Camera.transform.M41);
-                float y = ms.Y + (-Camera.transform.M42);
+                float x = ms.X + -Camera.transform.M41;
+                float y = ms.Y + -Camera.transform.M42;
                 Vector2 position = new Vector2(x, y);
                 if (Bound.Contains(position))
                 {
                     UserInterface.Active.SetCursor(CursorType.Pointer);
-                    if (ms.LeftButton == ButtonState.Pressed && Globals.Selected != i)
+                    if (ms.LeftButton == ButtonState.Pressed && GameLogic.Selected != i)
                     {
-                        Globals.Selected = i;
-                        Globals.selectedPlanet = -1;
+                        GameLogic.Selected = i;
+                        GameLogic.selectedPlanet = -1;
                     }
                 }
 
-                if (Globals.Selected == i)
+                if (GameLogic.Selected == i)
                 {
                     DrawBorder(Bound, 1, Color.DarkGray * .25F);
                 }

@@ -23,12 +23,12 @@ namespace PSol.Server
             _gameService = kernel.Get<IGameService>();
             dataLoader = new DataLoader();
             general = new General(kernel);
-            consoleThread = new Thread(ConsoleThread);
-            consoleThread.Start();
+            
             shd = general.InitializeServer();
             dataLoader.initialize();
             dataLoader.DownloadGalaxy();
-            packet.AddArray(Globals.Galaxy);
+            consoleThread = new Thread(ConsoleThread);
+            consoleThread.Start();
         }
 
         private static void ConsoleThread()
@@ -56,11 +56,6 @@ namespace PSol.Server
                 {
                     Console.SetCursorPosition(0,Console.CursorTop -1);
                     _gameService.SaveGame(Types.Player.ToList());
-                }
-                else if (command == "send")
-                {
-                    Console.WriteLine("Sending Galaxy");
-                    shd.SendGalaxy();
                 }
                 else if (command != "end")
                 {

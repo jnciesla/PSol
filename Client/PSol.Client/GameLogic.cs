@@ -9,6 +9,8 @@ namespace PSol.Client
     internal class GameLogic
     {
         public static int PlayerIndex = -1;
+        public static int Selected = -1;
+        public static int selectedPlanet = -1;
         private static ClientTCP ctcp = new ClientTCP();
         private static int messageTime;
         public static List<Star> Galaxy;

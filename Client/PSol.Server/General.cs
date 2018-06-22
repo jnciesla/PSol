@@ -29,9 +29,9 @@ namespace PSol.Server
 				Types.Player[i] = new User();
 			}
 			_stcp.InitializeNetwork();
-		    Console.WriteLine("*********************************************");
-            Console.WriteLine("Server has started");
-		    Console.WriteLine("*********************************************");
+		    Console.WriteLine(@"*********************************************");
+            Console.WriteLine(@"Server has started");
+		    Console.WriteLine(@"*********************************************");
             return _shd;
 		}
 	}

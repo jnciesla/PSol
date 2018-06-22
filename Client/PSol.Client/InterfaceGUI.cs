@@ -1,4 +1,5 @@
-﻿using GeonBit.UI.Entities;
+﻿using System;
+using GeonBit.UI.Entities;
 using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
@@ -283,7 +284,15 @@ namespace PSol.Client
             {
                 MenuManager.ChangeMenu(MenuManager.Menu.Login);
             };
+            backLabel.OnClick += entity =>
+            {
+                MenuManager.ChangeMenu(MenuManager.Menu.Login);
+            };
             registerButton.OnClick += entity =>
+            {
+                Register();
+            };
+            registerLabel.OnClick += entity =>
             {
                 Register();
             };

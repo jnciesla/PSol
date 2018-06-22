@@ -95,7 +95,7 @@ namespace PSol.Client
 
         private void GetStaticPulse(byte[] data)
         {
-            InterfaceGUI.AddChats("Static data downloaded.", Color.DarkOliveGreen);
+            InterfaceGUI.AddChats("Existing connections downloaded.", Color.DarkOliveGreen);
             // Someone new connected so this is all the data we don't need updating every 100ms
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddBytes(data);
@@ -144,7 +144,6 @@ namespace PSol.Client
             buffer.GetInteger();
             GameLogic.Galaxy = buffer.GetList<Star>();
             buffer.Dispose();
-            Console.WriteLine(GameLogic.Galaxy[0].Name);
         }
 
         //
