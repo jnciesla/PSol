@@ -79,9 +79,9 @@ namespace PSol.Data.Services
                 mob.SpawnDate = DateTime.UtcNow;
                 var xMod = random.Next(-1 * mob.MobType.SpawnRadius, mob.MobType.SpawnRadius);
                 var yMod = random.Next(-1 * mob.MobType.SpawnRadius, mob.MobType.SpawnRadius);
-                mob.X = mob.MobType.Star.X * 100 + xMod;
+                mob.X = mob.MobType.Star.X + xMod;
                 mob.X = mob.X < 0 ? mob.X * -1 : mob.X;
-                mob.Y = mob.MobType.Star.Y * 100 + yMod;
+                mob.Y = mob.MobType.Star.Y + yMod;
                 mob.Y = mob.Y < 0 ? mob.Y * -1 : mob.Y;
                 _mobRepo.SaveMob(mob);
             }
