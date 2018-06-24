@@ -21,6 +21,7 @@ Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		Bindings\Bindings.projitems*{0f6bd255-8deb-4d09-a3aa-3443de82528a}*SharedItemsImports = 4
 		Bindings\Bindings.projitems*{388b3e5d-21e7-4665-ae6e-f084c45fb577}*SharedItemsImports = 13
+		Bindings\Bindings.projitems*{3ed446d3-b597-4d06-b7ac-d5ca8e568feb}*SharedItemsImports = 4
 		Bindings\Bindings.projitems*{543edae0-84f9-4871-b482-40036f4ee84d}*SharedItemsImports = 4
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -16,6 +16,8 @@ namespace PSol.Server
             Bind(typeof(IGameService)).To(typeof(GameService)).InSingletonScope();
             Bind(typeof(IStarRepository)).To(typeof(StarRepository)).InSingletonScope();
             Bind(typeof(IStarService)).To(typeof(StarService)).InSingletonScope();
+            Bind(typeof(IMobRepository)).To(typeof(MobRepository)).InSingletonScope();
+            Bind(typeof(IMobService)).To(typeof(MobService)).InSingletonScope();
         }
     }
 }

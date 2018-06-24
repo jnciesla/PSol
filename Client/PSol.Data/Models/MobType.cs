@@ -22,6 +22,6 @@ namespace PSol.Data.Models
 
         // Position
         public Star Star { get; set; }
-        public float SpawnRadius { get; set; }
+        public int SpawnRadius { get; set; }
     }
 }
