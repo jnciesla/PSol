@@ -30,7 +30,7 @@ namespace PSol.Client
         public new static int Tick;
         public static int ElapsedTime;
         public static int FrameTime;
-        Laser.Beam beam;
+        Laser beam;
         Laser bolt;
 
         public Game1()
@@ -187,7 +187,7 @@ namespace PSol.Client
             }
 
             bolt?.Draw(spriteBatch);
-            beam?.Draw(spriteBatch, Color.Red);
+            beam?.Draw(spriteBatch);
 
             particleEngine.Draw(spriteBatch);
             Graphics.RenderPlayers();
@@ -224,8 +224,8 @@ namespace PSol.Client
             if (!Globals.windowOpen && !Globals.Control) // Don't allow game input when menus are open or CTRL is pressed
             {
                 
-                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { beam = new Laser.Beam(new Vector2(100,100), new Vector2(1000,1000), 2); }
-                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { bolt = new Laser(new Vector2(100, 100), new Vector2(1000, 1000), Color.Red); }
+                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { beam = new Laser(new Vector2(100,100), new Vector2(1000,1000), Color.HotPink, 20); }
+                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { bolt = new Laser(new Vector2(100, 100), new Vector2(1000, 1000), Color.BlueViolet, 2, false); } // set disrupt to false for a standard beam
                 Globals.DirUp = Keyboard.GetState().IsKeyDown(Keys.W);
                 Globals.DirDn = Keyboard.GetState().IsKeyDown(Keys.S);
                 Globals.DirLt = Keyboard.GetState().IsKeyDown(Keys.A);

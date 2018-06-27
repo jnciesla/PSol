@@ -7,26 +7,28 @@ namespace PSol.Client
 {
     class Laser : ILaser
     {
-        public List<Beam> Segments = new List<Beam>();
-        public bool IsComplete { get { return Alpha <= 0; } }
+        public List<Beam> Segments;
+        public bool IsComplete => Alpha <= 0;
 
         public float Alpha { get; set; }
         public float AlphaMultiplier { get; set; }
         public float FadeOutRate { get; set; }
+        public Vector2 A { get; set; }
+        public Vector2 B { get; set; }
         public Color Tint { get; set; }
 
-        static Random rand = new Random();
+        static readonly Random rand = new Random();
 
-        public Laser(Vector2 source, Vector2 dest) : this(source, dest, new Color(0.9f, 0.8f, 1f)) { }
+        //public Laser(Vector2 source, Vector2 dest) : this(source, dest, new Color(0.9f, 0.8f, 1f)) { }
 
-        public Laser(Vector2 source, Vector2 dest, Color color)
+        public Laser(Vector2 source, Vector2 dest, Color color, float thickness = 2, bool disrupt = true)
         {
-            Segments = CreateBolt(source, dest, 2);
-
+            Segments = CreateBolt(source, dest, thickness, disrupt);
             Tint = color;
             Alpha = 1f;
             AlphaMultiplier = 0.6f;
             FadeOutRate = 0.03f;
+
         }
 
         public void Draw(SpriteBatch spriteBatch)
@@ -43,45 +45,51 @@ namespace PSol.Client
             Alpha -= FadeOutRate;
         }
 
-        protected static List<Beam> CreateBolt(Vector2 source, Vector2 dest, float thickness)
+        protected static List<Beam> CreateBolt(Vector2 source, Vector2 dest, float thickness, bool disrupt = true)
         {
             var results = new List<Beam>();
             Vector2 tangent = dest - source;
             Vector2 normal = Vector2.Normalize(new Vector2(tangent.Y, -tangent.X));
             float length = tangent.Length();
 
-            List<float> positions = new List<float>();
-            positions.Add(0);
-
-            for (int i = 0; i < length / 4; i++)
-                positions.Add(Rand(0, 1));
-
-            positions.Sort();
-
-            const float Sway = 80;
-            const float Jaggedness = 1 / Sway;
-
-            Vector2 prevPoint = source;
-            float prevDisplacement = 0;
-            for (int i = 1; i < positions.Count; i++)
+            if (disrupt)
             {
-                float pos = positions[i];
+                List<float> positions = new List<float> {0};
 
-                float scale = (length * Jaggedness) * (pos - positions[i - 1]);
+                for (int i = 0; i < length / 4; i++)
+                    positions.Add(Rand(0, 1));
 
-                float envelope = pos > 0.95f ? 20 * (1 - pos) : 1;
+                positions.Sort();
 
-                float displacement = Rand(-Sway, Sway);
-                displacement -= (displacement - prevDisplacement) * (1 - scale);
-                displacement *= envelope;
+                const float Sway = 80;
+                const float Jaggedness = 1 / Sway;
 
-                Vector2 point = source + pos * tangent + displacement * normal;
-                results.Add(new Beam(prevPoint, point, thickness));
-                prevPoint = point;
-                prevDisplacement = displacement;
+                Vector2 prevPoint = source;
+                float prevDisplacement = 0;
+                for (int i = 1; i < positions.Count; i++)
+                {
+                    float pos = positions[i];
+
+                    float scale = (length * Jaggedness) * (pos - positions[i - 1]);
+
+                    float envelope = pos > 0.95f ? 20 * (1 - pos) : 1;
+
+                    float displacement = Rand(-Sway, Sway);
+                    displacement -= (displacement - prevDisplacement) * (1 - scale);
+                    displacement *= envelope;
+
+                    Vector2 point = source + pos * tangent + displacement * normal;
+                    results.Add(new Beam(prevPoint, point, thickness));
+                    prevPoint = point;
+                    prevDisplacement = displacement;
+                }
+
+                results.Add(new Beam(prevPoint, dest, thickness));
             }
-
-            results.Add(new Beam(prevPoint, dest, thickness));
+            else
+            {
+                results.Add(new Beam(source, dest, thickness));
+            }
 
             return results;
         }
@@ -98,8 +106,8 @@ namespace PSol.Client
             public float Thickness;
             public float Alpha = 1F;
             public float FadeOutRate;
+            public Color Tint;
 
-            public Beam() { }
             public Beam(Vector2 a, Vector2 b, float thickness = 1)
             {
                 A = a;
@@ -108,17 +116,18 @@ namespace PSol.Client
                 FadeOutRate = 0.03f;
             }
 
-            public void Draw(SpriteBatch spriteBatch, Color tint)
+            public void Draw(SpriteBatch spriteBatch, Color? tint = null)
             {
                 Vector2 tangent = B - A;
                 float theta = (float)Math.Atan2(tangent.Y, tangent.X);
+                Tint = tint ?? Color.White;
 
                 const float ImageThickness = 8;
                 float thicknessScale = Thickness / ImageThickness;
                 Vector2 middleOrigin = new Vector2(0, Graphics.laserMid.Height / 2f);
                 Vector2 middleScale = new Vector2(tangent.Length(), thicknessScale);
 
-                spriteBatch.Draw(Graphics.laserMid, A, null, tint * Alpha, theta, middleOrigin, middleScale, SpriteEffects.None, 0f);
+                spriteBatch.Draw(Graphics.laserMid, A, null, Tint * Alpha, theta, middleOrigin, middleScale, SpriteEffects.None, 0f);
             }
 
             public virtual void Update()
