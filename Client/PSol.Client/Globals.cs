@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework;
+﻿using Bindings;
+using Microsoft.Xna.Framework;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework.Graphics;
 
@@ -9,8 +10,8 @@ namespace PSol.Client
         public static bool Fullscreen = false;
         public static bool exitgame = false;
         public static bool windowOpen;
-        public static Rectangle mapSize = new Rectangle(0, 0, 102500, 102500);
-        public static Rectangle playArea = new Rectangle(0, 0, 100010, 100010);
+        public static Rectangle mapSize = new Rectangle(0, 0, Constants.MAP_SIZE_WIDTH, Constants.MAP_SIZE_HEIGHT);
+        public static Rectangle playArea = new Rectangle(0, 0, Constants.PLAY_AREA_WIDTH, Constants.PLAY_AREA_HEIGHT);
         public static int PreferredBackBufferWidth = 1024;
         public static int PreferredBackBufferHeight = 768;
 

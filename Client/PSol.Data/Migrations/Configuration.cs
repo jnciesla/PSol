@@ -26,8 +26,8 @@ namespace PSol.Data.Migrations
             {
                 Id = "7179FC09-EBAA-49D8-8ED4-A53F7B95F260",
                 Name = "Vyt",
-                X = 4,
-                Y = 4,
+                X = 400,
+                Y = 400,
                 Planets = new List<Planet>()
             });
 

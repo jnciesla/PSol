@@ -10,7 +10,7 @@ namespace PSol.Data
         public DbSet<Star> Stars { get; set; }
         public DbSet<Planet> Planets { get; set; }
         public DbSet<MobType> MobTypes { get; set; }
-        public DbSet<Mob> ActiveMobs { get; set; }
+        public DbSet<Mob> Mobs { get; set; }
 
         public PSolDataContext() : base("PSolDataConnection")
         {
@@ -21,6 +21,7 @@ namespace PSol.Data
         {
             base.OnModelCreating(modelBuilder);
             modelBuilder.Properties<string>().Configure(c => c.HasMaxLength((255)));
+            
 
             modelBuilder.Entity<User>()
                 .Property(u => u.Id)
@@ -45,6 +46,14 @@ namespace PSol.Data
             modelBuilder.Entity<Mob>()
                 .Property(m => m.Id)
                 .HasMaxLength(MaxIdLength);
+
+            modelBuilder.Entity<Mob>()
+                .Property(m => m.KilledDate)
+                .HasColumnType("datetime2");
+
+            modelBuilder.Entity<Mob>()
+                .Property(m => m.SpawnDate)
+                .HasColumnType("datetime2");
         }
     }
 }

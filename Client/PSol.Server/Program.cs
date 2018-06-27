@@ -15,12 +15,14 @@ namespace PSol.Server
         private static General general;
         private static HandleData shd;
         private static IGameService _gameService;
+        private static IMobService _mobService;
 
         private static void Main(string[] args)
         {
             packet = new PacketBuffer();
             IKernel kernel = new StandardKernel(new ServerModule());
             _gameService = kernel.Get<IGameService>();
+            _mobService = kernel.Get<IMobService>();
             dataLoader = new DataLoader();
             general = new General(kernel);
             
@@ -47,6 +49,11 @@ namespace PSol.Server
                 TimeSpan.FromSeconds(1),
                 TimeSpan.FromMilliseconds(100));
 
+            var repopTimer = new Timer(e => _mobService.repopGalaxy(),
+                null,
+                TimeSpan.Zero, 
+                TimeSpan.FromSeconds(30));
+
             string command = "";
             while (command != "end" && command != "e" && command != "exit" && command != "q" && command != "quit")
             {
@@ -63,6 +70,8 @@ namespace PSol.Server
                 }
             }
             saveTimer.Dispose();
+            pulseTimer.Dispose();
+            repopTimer.Dispose();
             _gameService.SaveGame(Types.Player.ToList());
         }
     }

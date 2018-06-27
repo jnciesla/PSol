@@ -36,6 +36,9 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
@@ -51,6 +54,14 @@
     <Compile Include="Migrations\201806201514556_Initial.Designer.cs">
       <DependentUpon>201806201514556_Initial.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201806241720555_Mobs2.cs" />
+    <Compile Include="Migrations\201806241720555_Mobs2.Designer.cs">
+      <DependentUpon>201806241720555_Mobs2.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201806241739436_Mobs3.cs" />
+    <Compile Include="Migrations\201806241739436_Mobs3.Designer.cs">
+      <DependentUpon>201806241739436_Mobs3.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\MobType.cs" />
     <Compile Include="Models\Mob.cs" />
@@ -59,14 +70,18 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="PSolDataContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\MobRepository.cs" />
     <Compile Include="Repositories\Interfaces\IStarRepository.cs" />
+    <Compile Include="Repositories\Interfaces\IMobRepository.cs" />
     <Compile Include="Repositories\Interfaces\IUserRepository.cs" />
     <Compile Include="Repositories\StarRepository.cs" />
     <Compile Include="Repositories\UserRepository.cs" />
     <Compile Include="Services\GameService.cs" />
     <Compile Include="Services\Interfaces\IGameService.cs" />
     <Compile Include="Services\Interfaces\IStarService.cs" />
+    <Compile Include="Services\Interfaces\IMobService.cs" />
     <Compile Include="Services\Interfaces\IUserService.cs" />
+    <Compile Include="Services\MobService.cs" />
     <Compile Include="Services\StarService.cs" />
     <Compile Include="Services\UserService.cs" />
   </ItemGroup>
@@ -78,6 +93,13 @@
     <EmbeddedResource Include="Migrations\201806201514556_Initial.resx">
       <DependentUpon>201806201514556_Initial.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806241720555_Mobs2.resx">
+      <DependentUpon>201806241720555_Mobs2.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806241739436_Mobs3.resx">
+      <DependentUpon>201806241739436_Mobs3.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
+  <Import Project="..\Bindings\Bindings.projitems" Label="Shared" />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
