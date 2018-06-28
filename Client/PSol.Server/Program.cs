@@ -47,7 +47,7 @@ namespace PSol.Server
                 },
                 null,
                 TimeSpan.FromSeconds(1),
-                TimeSpan.FromMilliseconds(100));
+                TimeSpan.FromMilliseconds(50));
 
             var repopTimer = new Timer(e => _mobService.repopGalaxy(),
                 null,

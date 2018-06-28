@@ -1,6 +1,7 @@
 ﻿using System;
 using Bindings;
 using System.Collections.Generic;
+using System.Linq;
 using Ninject;
 using PSol.Data.Models;
 using PSol.Data.Services.Interfaces;
@@ -12,10 +13,12 @@ namespace PSol.Server
         private delegate void Packet_(int index, byte[] data);
         private static Dictionary<int, Packet_> packets;
         private readonly IUserService _userService;
+        private readonly IMobService _mobService;
 
         public HandleData(IKernel kernel)
         {
             _userService = kernel.Get<IUserService>();
+            _mobService = kernel.Get<IMobService>();
         }
 
         public void InitializeMessages()
@@ -184,22 +187,41 @@ namespace PSol.Server
 
         public void PreparePulseBroadcast()
         {
-            var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ServerPackets.SPulse);
-            buffer.AddBytes(BitConverter.GetBytes(DateTime.UtcNow.ToBinary()));
+            var mobRange = 200;
             for (var i = 1; i < Constants.MAX_PLAYERS; i++)
             {
-                buffer.AddFloat(Types.Player[i].X);
-                buffer.AddFloat(Types.Player[i].Y);
-                buffer.AddFloat(Types.Player[i].Rotation);
-                buffer.AddInteger(Types.Player[i].Health);
-                buffer.AddInteger(Types.Player[i].MaxHealth);
-                buffer.AddInteger(Types.Player[i].Shield);
-                buffer.AddInteger(Types.Player[i].MaxShield);
-                buffer.AddBytes(BitConverter.GetBytes(ServerTCP.tempPlayer[i].inGame));
+                if (ServerTCP.Clients[i].Socket != null && ServerTCP.tempPlayer[i].inGame)
+                {
+                    var buffer = new PacketBuffer();
+                    buffer.AddInteger((int)ServerPackets.SPulse);
+                    buffer.AddBytes(BitConverter.GetBytes(DateTime.UtcNow.ToBinary()));
+                    for (var j = 1; j < Constants.MAX_PLAYERS; j++)
+                    {
+                        buffer.AddFloat(Types.Player[j].X);
+                        buffer.AddFloat(Types.Player[j].Y);
+                        buffer.AddFloat(Types.Player[j].Rotation);
+                        buffer.AddInteger(Types.Player[j].Health);
+                        buffer.AddInteger(Types.Player[j].MaxHealth);
+                        buffer.AddInteger(Types.Player[j].Shield);
+                        buffer.AddInteger(Types.Player[j].MaxShield);
+                        buffer.AddBytes(BitConverter.GetBytes(ServerTCP.tempPlayer[j].inGame));
+                    }
+
+                    if (ServerTCP.tempPlayer[i].inGame)
+                    {
+                        buffer.AddArray(_mobService.GetMobs((int) Types.Player[i].X - mobRange,
+                            (int) Types.Player[i].X + mobRange,
+                            (int) Types.Player[i].Y - mobRange, (int) Types.Player[i].Y + mobRange).ToArray());
+                    }
+                    else
+                    {
+                        buffer.AddArray(new Mob[]{});
+                    }
+
+                    SendData(i, buffer.ToArray());
+                    buffer.Dispose();
+                }
             }
-            BroadcastData(buffer.ToArray());
-            buffer.Dispose();
         }
 
         public void PrepareStaticBroadcast()
@@ -208,7 +230,7 @@ namespace PSol.Server
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SFullData);
             for (var i = 1; i < Constants.MAX_PLAYERS; i++)
-            { 
+            {
                 buffer.AddString(Types.Player[i].Name ?? ""); // Don't send null
             }
             BroadcastData(buffer.ToArray());
@@ -223,7 +245,7 @@ namespace PSol.Server
             string str = buffer.GetString();
             if (str.ToLower().StartsWith("/c"))
             {
-                
+
                 RelayChat(index, str.Substring(3));
             }
         }
