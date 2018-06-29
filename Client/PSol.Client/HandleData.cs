@@ -133,6 +133,8 @@ namespace PSol.Client
                 Types.Player[i].Shield = Shield;
                 Types.Player[i].MaxShield = MaxShield;
             }
+
+            GameLogic.LocalMobs = buffer.GetList<Mob>();
             buffer.Dispose();
         }
 

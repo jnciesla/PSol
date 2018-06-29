@@ -7,6 +7,7 @@ using GeonBit.UI;
 using Bindings;
 using PSol.Data.Models;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace PSol.Client
 {
@@ -196,7 +197,7 @@ namespace PSol.Client
 
             Graphics.DrawHud(Content);
             UserInterface.Active.DrawMainRenderTarget(spriteBatch);
-            
+
             // Drop the render target
             GraphicsDevice.SetRenderTarget(null);
         }
@@ -229,9 +230,49 @@ namespace PSol.Client
 
             if (!Globals.windowOpen && !Globals.Control) // Don't allow game input when menus are open or CTRL is pressed
             {
-                
-                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { beam = new Laser(new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y), new Vector2(1000,1000), Color.HotPink); }
-                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { bolt = new Laser(new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y), new Vector2(1000, 1000), Color.BlueViolet, 2, false); } // set disrupt to false for a standard beam
+                if (GameLogic.Selected != "")
+                {
+                    var x = 0f;
+                    var y = 0f;
+                    if (GameLogic.SelectedType == "MOB")
+                    {
+                        var mob = GameLogic.LocalMobs.Find(m => m.Id == GameLogic.Selected);
+                        if (mob != null)
+                        {
+                            x = mob.X;
+                            y = mob.Y;
+                        }
+                        else
+                        {
+                            GameLogic.Selected = "";
+                            GameLogic.SelectedType = "";
+                        }
+                    }
+                    else if (GameLogic.SelectedType == "PLAYER")
+                    {
+                        if (GameLogic.Selected != Types.Player[GameLogic.PlayerIndex].Id)
+                        {
+                            var player = Types.Player.First(p => p.Id == GameLogic.Selected);
+                            if (player != null)
+                            {
+                                x = player.X;
+                                y = player.Y;
+                            }
+                            else
+                            {
+                                GameLogic.Selected = "";
+                                GameLogic.SelectedType = "";
+                            }
+                        }
+                    }
+                    if (Keyboard.GetState().IsKeyDown(Keys.Space) && (int)x != 0 && (int)y != 0)
+                    {
+                        beam = new Laser(new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y), new Vector2(x, y), Color.HotPink, 2, false);
+                        bolt = new Laser(new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y),
+                            new Vector2(x, y), Color.Red);
+                    }
+                }
+
                 Globals.DirUp = Keyboard.GetState().IsKeyDown(Keys.W);
                 Globals.DirDn = Keyboard.GetState().IsKeyDown(Keys.S);
                 Globals.DirLt = Keyboard.GetState().IsKeyDown(Keys.A);
@@ -241,7 +282,8 @@ namespace PSol.Client
                 Globals.ZoomDefault = Keyboard.GetState().IsKeyDown(Keys.R);
                 Globals.Details1 = Keyboard.GetState().IsKeyDown(Keys.LeftAlt);
                 Globals.Details2 = Keyboard.GetState().IsKeyDown(Keys.RightAlt);
-                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { GameLogic.Selected = -1; GameLogic.selectedPlanet = -1; GameLogic.Navigating = false; }
+
+                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { GameLogic.Selected = ""; GameLogic.selectedPlanet = -1; GameLogic.Navigating = false; }
                 if (KC.KeyPress(Keys.T))
                 {
                     MenuManager.ChangeMenu(MenuManager.Menu.Message);

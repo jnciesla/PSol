@@ -9,7 +9,8 @@ namespace PSol.Client
     internal class GameLogic
     {
         public static int PlayerIndex = -1;
-        public static int Selected = -1;
+        public static string Selected = "";
+        public static string SelectedType = "";
         public static int selectedPlanet = -1;
         public static int selectedMapItem = -1;
         public static Vector2 Destination;
@@ -17,6 +18,7 @@ namespace PSol.Client
         private static readonly ClientTCP ctcp = new ClientTCP();
         private static int messageTime;
         public static List<Star> Galaxy;
+        public static List<Mob> LocalMobs;
 
         public static bool IsMoving()
         {
