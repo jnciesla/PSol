@@ -64,7 +64,7 @@ namespace PSol.Client
                 float x = ms.X + -Camera.transform.M41;
                 float y = ms.Y + -Camera.transform.M42;
                 Vector2 position = new Vector2(x, y);
-                if (Bound.Contains(position))
+                if (Bound.Contains(position) && !Globals.windowOpen)
                 {
                     UserInterface.Active.SetCursor(Cursors[1]);
                     if (ms.LeftButton == ButtonState.Pressed && GameLogic.selectedPlanet != i)
@@ -185,7 +185,7 @@ namespace PSol.Client
                 float x = ms.X + -Camera.transform.M41;
                 float y = ms.Y + -Camera.transform.M42;
                 Vector2 position = new Vector2(x, y);
-                if (Bound.Contains(position))
+                if (Bound.Contains(position) && !Globals.windowOpen)
                 {
                     UserInterface.Active.SetCursor(CursorType.Pointer);
                     if (ms.LeftButton == ButtonState.Pressed && GameLogic.Selected != i)
@@ -214,7 +214,7 @@ namespace PSol.Client
 
         private static void LoadPlanets(ContentManager manager)
         {
-            for (int i = 1; i < Planets.Length; i++)
+            for (int i = 0; i < Planets.Length; i++)
             {
                 Planets[i] = manager.Load<Texture2D>("Planets/" + i);
             }

@@ -62,6 +62,10 @@
     <Compile Include="Migrations\201806241739436_Mobs3.Designer.cs">
       <DependentUpon>201806241739436_Mobs3.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201806270901213_planets.cs" />
+    <Compile Include="Migrations\201806270901213_planets.Designer.cs">
+      <DependentUpon>201806270901213_planets.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\MobType.cs" />
     <Compile Include="Models\Mob.cs" />
@@ -98,6 +102,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201806241739436_Mobs3.resx">
       <DependentUpon>201806241739436_Mobs3.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201806270901213_planets.resx">
+      <DependentUpon>201806270901213_planets.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Bindings\Bindings.projitems" Label="Shared" />

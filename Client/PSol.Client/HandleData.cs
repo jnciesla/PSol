@@ -64,7 +64,7 @@ namespace PSol.Client
             GameLogic.PlayerIndex = buffer.GetInteger(); // Index on server side
             buffer.Dispose();
             ctcp.SendLogin();
-            MenuManager.Clear();
+            MenuManager.Clear(2);
             InterfaceGUI.AddChats("Registration successful.", Color.DarkOliveGreen);
         }
 
@@ -88,7 +88,7 @@ namespace PSol.Client
             };
 
             buffer.Dispose();
-            MenuManager.Clear();
+            MenuManager.Clear(1);
             InterfaceGUI.AddChats("User data downloaded.", Color.DarkOliveGreen);
 
         }
@@ -143,6 +143,7 @@ namespace PSol.Client
             buffer.AddBytes(data);
             buffer.GetInteger();
             GameLogic.Galaxy = buffer.GetList<Star>();
+            InterfaceGUI.PopulateMap();
             buffer.Dispose();
         }
 

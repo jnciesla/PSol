@@ -26,8 +26,16 @@ namespace PSol.Data.Migrations
             {
                 Id = "7179FC09-EBAA-49D8-8ED4-A53F7B95F260",
                 Name = "Vyt",
-                X = 400,
-                Y = 400,
+                X = 1000,
+                Y = 1000,
+                Planets = new List<Planet>()
+            });
+            context.Stars.AddOrUpdate(new Star
+            {
+                Id = "d2f03d3c-c465-4ae2-a887-d783037253ef",
+                Name = "Scathe",
+                X = 4000,
+                Y = 700,
                 Planets = new List<Planet>()
             });
 

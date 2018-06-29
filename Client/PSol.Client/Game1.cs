@@ -172,6 +172,7 @@ namespace PSol.Client
 
             if (WalkTimer < Tick)
             {
+                GameLogic.Navigate();
                 GameLogic.CheckMovement();
                 camera.ZoomController();
                 WalkTimer = Tick + 15;
@@ -219,13 +220,18 @@ namespace PSol.Client
                 Globals.exitgame = true;
             }
 
+            if (KC.KeyPress(Keys.M) && Globals.Control)
+            {
+                MenuManager.ChangeMenu(MenuManager.Menu.Map);
+            }
+
             Globals.Control = KC.CheckCtrl();
 
             if (!Globals.windowOpen && !Globals.Control) // Don't allow game input when menus are open or CTRL is pressed
             {
                 
-                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { beam = new Laser(new Vector2(100,100), new Vector2(1000,1000), Color.HotPink, 20); }
-                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { bolt = new Laser(new Vector2(100, 100), new Vector2(1000, 1000), Color.BlueViolet, 2, false); } // set disrupt to false for a standard beam
+                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { beam = new Laser(new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y), new Vector2(1000,1000), Color.HotPink); }
+                if (Keyboard.GetState().IsKeyDown(Keys.Space)) { bolt = new Laser(new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y), new Vector2(1000, 1000), Color.BlueViolet, 2, false); } // set disrupt to false for a standard beam
                 Globals.DirUp = Keyboard.GetState().IsKeyDown(Keys.W);
                 Globals.DirDn = Keyboard.GetState().IsKeyDown(Keys.S);
                 Globals.DirLt = Keyboard.GetState().IsKeyDown(Keys.A);
@@ -235,7 +241,7 @@ namespace PSol.Client
                 Globals.ZoomDefault = Keyboard.GetState().IsKeyDown(Keys.R);
                 Globals.Details1 = Keyboard.GetState().IsKeyDown(Keys.LeftAlt);
                 Globals.Details2 = Keyboard.GetState().IsKeyDown(Keys.RightAlt);
-                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { GameLogic.Selected = -1; GameLogic.selectedPlanet = -1; }
+                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { GameLogic.Selected = -1; GameLogic.selectedPlanet = -1; GameLogic.Navigating = false; }
                 if (KC.KeyPress(Keys.T))
                 {
                     MenuManager.ChangeMenu(MenuManager.Menu.Message);
@@ -246,7 +252,7 @@ namespace PSol.Client
             {
                 if (KC.KeyPress(Keys.Tab)) { IGUI.TabThrough(); }
                 if (KC.KeyPress(Keys.Enter)) { IGUI.Enter(); }
-                if (KC.KeyPress(Keys.Escape)) { MenuManager.Clear(3); }
+                if (KC.KeyPress(Keys.Escape)) { MenuManager.Clear(); }
             }
         }
 

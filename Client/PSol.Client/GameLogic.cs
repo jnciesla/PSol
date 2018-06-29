@@ -11,7 +11,10 @@ namespace PSol.Client
         public static int PlayerIndex = -1;
         public static int Selected = -1;
         public static int selectedPlanet = -1;
-        private static ClientTCP ctcp = new ClientTCP();
+        public static int selectedMapItem = -1;
+        public static Vector2 Destination;
+        public static bool Navigating;
+        private static readonly ClientTCP ctcp = new ClientTCP();
         private static int messageTime;
         public static List<Star> Galaxy;
 
@@ -22,10 +25,7 @@ namespace PSol.Client
                 ctcp.XFerPlayer();
                 return true;
             }
-            else
-            {
-                return false;
-            }
+            return false;
         }
 
         public static void Rotate(int dir)
@@ -34,10 +34,37 @@ namespace PSol.Client
             {
                 case 0:
                     Types.Player[PlayerIndex].Rotation -= MathHelper.ToRadians(4f);
+                    if (Types.Player[PlayerIndex].Rotation <= 0)
+                    {
+                        Types.Player[PlayerIndex].Rotation += (float)Math.PI * 2;
+                    }
                     break;
                 case 1:
                     Types.Player[PlayerIndex].Rotation += MathHelper.ToRadians(4f);
+                    if (Types.Player[PlayerIndex].Rotation >= (float)Math.PI * 2)
+                    {
+                        Types.Player[PlayerIndex].Rotation -= (float)Math.PI * 2;
+                    }
                     break;
+            }
+        }
+
+        public static void Navigate()
+        {
+            if (!Navigating) { return; }
+            Vector2 start = new Vector2(Types.Player[PlayerIndex].X, Types.Player[PlayerIndex].Y);
+            Vector2 direction = Vector2.Normalize(start - Destination);
+            float angle = (float)Math.Atan2(direction.Y, direction.X) - MathHelper.ToRadians(90);
+            if (angle <= 0) { angle += (float)Math.PI * 2; } else if (angle >= (float)Math.PI * 2) { angle -= (float)Math.PI * 2; }
+            if (Types.Player[PlayerIndex].Rotation != angle && Types.Player[PlayerIndex].Rotation >= angle)
+                Rotate(0);
+            if (Types.Player[PlayerIndex].Rotation != angle && Types.Player[PlayerIndex].Rotation <= angle)
+                Rotate(1);
+            Globals.DirUp = true;
+            if (Types.Player[PlayerIndex].X - Destination.X <= .1F && Types.Player[PlayerIndex].Y - Destination.Y <= .1F)
+            {
+                Navigating = false;
+                InterfaceGUI.AddChats(@"We've reached our destination", Color.BurlyWood);
             }
         }
 

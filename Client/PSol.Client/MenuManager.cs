@@ -1,4 +1,5 @@
-﻿using GeonBit.UI;
+﻿using System;
+using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
 
@@ -13,24 +14,25 @@ namespace PSol.Client
             Chats,
             Login,
             Register,
-            Message
+            Message,
+            Map
         }
 
         public static void ChangeMenu(Menu menu)
         {
             Clear();
             InterfaceGUI.Windows[(int)menu].Visible = true;
-                Globals.windowOpen = true;
-            if ((int) menu == 1 || (int) menu == 2)
+            Globals.windowOpen = true;
+            if (menu == Menu.Login || menu == Menu.Register || menu == Menu.Map)
             {
                 Globals.cursorOverride = true;
             }
 
-            if ((int) menu == 3)
+            if ((int)menu == 3)
             {
                 if (Globals.scanner)
                 {
-                    InterfaceGUI.Windows[(int) menu].SetPosition(Anchor.BottomLeft, new Vector2(-50, 240));
+                    InterfaceGUI.Windows[(int)menu].SetPosition(Anchor.BottomLeft, new Vector2(-50, 240));
                 }
                 else
                 {
@@ -46,15 +48,14 @@ namespace PSol.Client
             {
                 foreach (var window in InterfaceGUI.Windows)
                 {
-                    if (window != InterfaceGUI.Windows[0]) // Don't close chats.  At some point I'll make that an option
-                    {
-                        window.Visible = false;
-                    }
-
+                    if (window == InterfaceGUI.Windows[0] || window == InterfaceGUI.Windows[1]) // Don't close chats or login
+                        continue;
+                    UserInterface.Active.SetCursor(CursorType.Default);
+                    window.Visible = false;
                 }
 
-                UserInterface.Active.SetCursor(CursorType.Default);
-                Globals.windowOpen = false;
+                if (!InterfaceGUI.Windows[1].Visible && !InterfaceGUI.Windows[2].Visible)
+                    Globals.windowOpen = false;
             }
             else
             {
