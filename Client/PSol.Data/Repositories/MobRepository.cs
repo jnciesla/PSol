@@ -21,10 +21,9 @@ namespace PSol.Data.Repositories
             return _context.Mobs.FirstOrDefault(m => m.Id == id);
         }
 
-        public ICollection<Mob> GetAllMobs(int minX, int maxX, int minY, int maxY)
+        public ICollection<Mob> GetAllMobs()
         {
-                return _context.Mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY)
-                    .Include(i => i.MobType).Include(i => i.MobType.Star).ToList();
+            return _context.Mobs.Include(i => i.MobType).Include(i => i.MobType.Star).ToList();
         }
 
         public ICollection<Mob> GetAllDeadMobs()

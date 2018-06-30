@@ -7,7 +7,7 @@ namespace PSol.Data.Repositories.Interfaces
     public interface IMobRepository
     {
         Mob GetMobById(string id);
-        ICollection<Mob> GetAllMobs(int minX, int maxX, int minY, int maxY);
+        ICollection<Mob> GetAllMobs();
         ICollection<Mob> GetAllDeadMobs();
         Mob Add(Mob mob);
         void SaveMob(Mob mob);
