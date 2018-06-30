@@ -62,6 +62,8 @@ namespace PSol.Server
             Console.WriteLine("Connection from " + IP + " has been terminated.");
             _shd.SendMessage(-1, Types.Player[index].Name + " has disconnected.", MessageColors.Notification);
             _gameService.SaveGame(new List<User> { Types.Player[index] });
+            ServerTCP.tempPlayer[index].inGame = false;
+            ServerTCP.tempPlayer[index].receiving = false;
             Socket.Close();
             Socket = null;
             Types.Player[index] = Types.Default;

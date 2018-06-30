@@ -23,7 +23,8 @@ namespace PSol.Data.Repositories
 
         public ICollection<Mob> GetAllMobs(int minX, int maxX, int minY, int maxY)
         {
-            return _context.Mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY).Include(i => i.MobType).Include(i => i.MobType.Star).ToList();
+                return _context.Mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY)
+                    .Include(i => i.MobType).Include(i => i.MobType.Star).ToList();
         }
 
         public ICollection<Mob> GetAllDeadMobs()

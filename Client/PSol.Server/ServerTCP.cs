@@ -35,7 +35,7 @@ namespace PSol.Server
                     Clients[i].Index = i;
                     Clients[i].IP = client.Client.RemoteEndPoint.ToString();
                     Clients[i].Start();
-                    Console.WriteLine("Connection received from " + Clients[i].IP);
+                    Console.WriteLine(@"Connection received from " + Clients[i].IP);
                     return;
                 }
             }

@@ -1,4 +1,5 @@
 ﻿using System;
+using Bindings;
 using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
@@ -38,6 +39,12 @@ namespace PSol.Client
                 {
                     InterfaceGUI.Windows[(int)menu].SetPosition(Anchor.BottomLeft, new Vector2(-50, 40));
                 }
+            }
+
+            if (menu == Menu.Map)
+            {
+                const float scale = (float)500 / Constants.PLAY_AREA_WIDTH;
+                InterfaceGUI.mapPlayer.SetOffset(new Vector2(Types.Player[GameLogic.PlayerIndex].X * scale, Types.Player[GameLogic.PlayerIndex].Y * scale));
             }
         }
 

@@ -3,8 +3,6 @@ using PSol.Data.Models;
 
 namespace PSol.Data.Migrations
 {
-    using System;
-    using System.Data.Entity;
     using System.Data.Entity.Migrations;
     using System.Linq;
 
@@ -15,7 +13,7 @@ namespace PSol.Data.Migrations
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(PSol.Data.PSolDataContext context)
+        protected override void Seed(PSolDataContext context)
         {
             //  This method will be called after migrating to the latest version.
 
@@ -35,11 +33,9 @@ namespace PSol.Data.Migrations
                 Id = "d2f03d3c-c465-4ae2-a887-d783037253ef",
                 Name = "Scathe",
                 X = 4000,
-                Y = 700,
+                Y = 5000,
                 Planets = new List<Planet>()
             });
-
-            context.SaveChanges();
 
             context.MobTypes.AddOrUpdate(new MobType
             {

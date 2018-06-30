@@ -22,9 +22,11 @@ namespace PSol.Client
         public TextInput txtPassReg;
         public TextInput txtPas2Reg;
         public static TextInput messageText;
+        public static Image mapPlayer;
 
         // IGUI textures
         private static Texture2D mapStar;
+        private static Texture2D mapDiamond;
         private static Texture2D closeIcon;
         private Texture2D mapPanel;
         private Texture2D registerPanel;
@@ -45,6 +47,7 @@ namespace PSol.Client
             button_down = content.Load<Texture2D>("Panels/button_default_down");
             mapPanel = content.Load<Texture2D>("Panels/Map");
             mapStar = content.Load<Texture2D>("Panels/starIco");
+            mapDiamond = content.Load<Texture2D>("Panels/diamondIco");
             closeIcon = content.Load<Texture2D>("Panels/closeIco");
 
             CreateChats();
@@ -183,7 +186,7 @@ namespace PSol.Client
             };
             txtPass.Validators.Add(new Validators.AlphaNumValidator());
             Label lblRegister = new Label("No account?  Register here", Anchor.AutoCenter, null, new Vector2(0, 25));
-            
+
             lblStatus = new MulticolorParagraph("Server status:{{RED}} offline", Anchor.BottomLeft);
             UserInterface.Active.AddEntity(panel);
 
@@ -217,7 +220,7 @@ namespace PSol.Client
             loginButton.OnMouseDown += entity => { loginButton.Texture = button_down; };
             loginButton.OnMouseReleased += entity => { loginButton.Texture = button; };
 
-            loginLabel.OnClick += entity => { Login(); };
+            loginLabel.ClickThrough = true;
 
             lblRegister.OnClick += entity =>
             {
@@ -296,18 +299,12 @@ namespace PSol.Client
             {
                 MenuManager.ChangeMenu(MenuManager.Menu.Login);
             };
-            backLabel.OnClick += entity =>
-            {
-                MenuManager.ChangeMenu(MenuManager.Menu.Login);
-            };
+            backLabel.ClickThrough = true;
             registerButton.OnClick += entity =>
             {
                 Register();
             };
-            registerLabel.OnClick += entity =>
-            {
-                Register();
-            };
+            registerLabel.ClickThrough = true;
 
             txtUserReg.OnValueChange = textUserReg => { Globals.registerUsername = txtUserReg.Value; };
             txtPassReg.OnValueChange = textPassReg => { Globals.registerPassword = txtPassReg.Value; };
@@ -371,7 +368,7 @@ namespace PSol.Client
             //  Create Entities
             galaxyMap = new Panel(new Vector2(800, 500));
             Image image = new Image(mapPanel, new Vector2(800, 500), ImageDrawMode.Panel, Anchor.TopLeft, new Vector2(-30, -29));
-            starLabel = new Paragraph("", Anchor.TopLeft, new Vector2(500,20), new Vector2(-30, -10)) { FillColor = Color.DarkGray, FontOverride = Globals.Font10, AlignToCenter = true};
+            starLabel = new Paragraph("", Anchor.TopLeft, new Vector2(500, 20), new Vector2(-30, -10)) { FillColor = Color.DarkGray, FontOverride = Globals.Font10, AlignToCenter = true };
             Image navButton = new Image(button, new Vector2(125, 40), ImageDrawMode.Stretch, Anchor.BottomRight, new Vector2(-10, 0));
             Paragraph navLabel = new Paragraph("Navigate", Anchor.BottomRight, null, new Vector2(0, 5)) { FillColor = Color.DarkGray };
             Image canxButton = new Image(button, new Vector2(125, 40), ImageDrawMode.Stretch, Anchor.BottomRight, new Vector2(140, 0));
@@ -411,8 +408,15 @@ namespace PSol.Client
             canxLabel.ClickThrough = true;
             canxButton.OnClick += entity =>
             {
-                starDetail.Texture = Graphics.Planets[0];
-                GameLogic.selectedMapItem = -1;
+                if (GameLogic.selectedPlanet != -1)
+                {
+                    starDetail.Texture = Graphics.Planets[0];
+                    GameLogic.selectedMapItem = -1;
+                }
+                else
+                {
+                    MenuManager.Clear(4);
+                }
             };
 
             CreateWindow(galaxyMap);
@@ -429,20 +433,24 @@ namespace PSol.Client
                 Opacity = 100
             };
             galaxyMap.AddChild(starDetail);
+            mapPlayer = new Image(mapDiamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopLeft,
+                    new Vector2(Types.Player[GameLogic.PlayerIndex].X * scale,
+                        Types.Player[GameLogic.PlayerIndex].Y * scale))
+            { ClickThrough = true };
+            galaxyMap.AddChild(mapPlayer);
             for (int i = 0; i < GameLogic.Galaxy.Count; i++)
             {
                 var n = i; // Idk why this works but it does- trust it
                 Image image = new Image(mapStar, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopLeft, new Vector2(GameLogic.Galaxy[n].X * scale, GameLogic.Galaxy[n].Y * scale));
                 galaxyMap.AddChild(image);
-                image.OnMouseEnter += (starEnter) => { starLabel.Text = GameLogic.Galaxy[n].Name; };
-                image.OnMouseLeave += (starLeave) => { starLabel.Text = ""; };
+                image.OnMouseEnter += (starEnter) => { starLabel.Text = GameLogic.Galaxy[n].Name; UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+                image.OnMouseLeave += (starLeave) => { starLabel.Text = ""; UserInterface.Active.SetCursor(CursorType.Default); };
                 image.OnClick += (starClick) =>
                 {
                     GameLogic.selectedMapItem = n;
                     starDetail.Texture = Graphics.Planets[4];
                 };
             }
-
             galaxyMap.AddChild(closeBtn);
             closeBtn.OnMouseEnter += (closeEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
             closeBtn.OnMouseLeave += (closeLeave) => { UserInterface.Active.SetCursor(CursorType.Default); };

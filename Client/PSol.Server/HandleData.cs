@@ -23,7 +23,7 @@ namespace PSol.Server
 
         public void InitializeMessages()
         {
-            Console.WriteLine("Initializing Network Packets...");
+            Console.WriteLine(@"Initializing Network Packets...");
             packets = new Dictionary<int, Packet_>
             {
                 {(int) ClientPackets.CLogin, HandleLogin},
@@ -32,7 +32,7 @@ namespace PSol.Server
                 {(int) ClientPackets.CChat, ParseChat}
             };
             Console.SetCursorPosition(0, Console.CursorTop - 1);
-            Console.WriteLine("Initializing Network Packets... PASS");
+            Console.WriteLine(@"Initializing Network Packets... PASS");
         }
 
         public void HandleNetworkMessages(int index, byte[] data)
@@ -50,7 +50,7 @@ namespace PSol.Server
 
         private void HandleLogin(int index, byte[] data)
         {
-            Console.WriteLine("Received login packet");
+            Console.WriteLine(@"Received login packet");
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
@@ -74,6 +74,7 @@ namespace PSol.Server
             XFerLoad(index);
             SendGalaxy(index);
             Console.WriteLine(username + @" logged in successfully.");
+            ServerTCP.tempPlayer[index].receiving = true;
         }
 
         private void HandleRegister(int index, byte[] data)
@@ -121,7 +122,7 @@ namespace PSol.Server
             }
             catch
             {
-                Console.WriteLine(@"Unable to send packet- client disconnected");
+                // Console.WriteLine(@"Unable to send packet- client disconnected");
             }
 
             buffer.Dispose();
@@ -190,7 +191,7 @@ namespace PSol.Server
             var mobRange = 200;
             for (var i = 1; i < Constants.MAX_PLAYERS; i++)
             {
-                if (ServerTCP.Clients[i].Socket != null && ServerTCP.tempPlayer[i].inGame)
+                if (ServerTCP.Clients[i].Socket != null && ServerTCP.tempPlayer[i].inGame && ServerTCP.tempPlayer[i].receiving)
                 {
                     var buffer = new PacketBuffer();
                     buffer.AddInteger((int)ServerPackets.SPulse);
@@ -209,13 +210,13 @@ namespace PSol.Server
 
                     if (ServerTCP.tempPlayer[i].inGame)
                     {
-                        buffer.AddArray(_mobService.GetMobs((int) Types.Player[i].X - mobRange,
-                            (int) Types.Player[i].X + mobRange,
-                            (int) Types.Player[i].Y - mobRange, (int) Types.Player[i].Y + mobRange).ToArray());
+                        buffer.AddArray(_mobService.GetMobs((int)Types.Player[i].X - mobRange,
+                            (int)Types.Player[i].X + mobRange,
+                            (int)Types.Player[i].Y - mobRange, (int)Types.Player[i].Y + mobRange).ToArray());
                     }
                     else
                     {
-                        buffer.AddArray(new Mob[]{});
+                        buffer.AddArray(new Mob[] { });
                     }
 
                     SendData(i, buffer.ToArray());

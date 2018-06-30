@@ -382,10 +382,17 @@ namespace PSol.Client
                 }
 
             }
+            DrawString(Globals.Font10, (int)Types.Player[GameLogic.PlayerIndex].X / 100 + ":" + (int)Types.Player[GameLogic.PlayerIndex].Y / 100, -1, 10, true, Color.DimGray);
+            if (GameLogic.Navigating)
+            {
+                DrawString(Globals.Font8, "Navigating to: " + (int)GameLogic.Destination.X / 100 + ":" + (int)GameLogic.Destination.Y / 100, -1, 30, true, Color.DimGray);
+                DrawString(Globals.Font8, "Distance remaining: " + ((int)GameLogic.distance / 100) + "AU", -1, 50, true, Color.DimGray);
+            }
+            else
+            {
+                DrawString(Globals.Font8, GameLogic.PlayerIndex.ToString(), -1, 30, true, Color.Green);
+            }
 
-            Game1.spriteBatch.DrawString(Globals.Font10, (int)Types.Player[GameLogic.PlayerIndex].X / 100 + ":" + (int)Types.Player[GameLogic.PlayerIndex].Y / 100,
-                new Vector2(Globals.PreferredBackBufferWidth / 2.0f, 10), Color.DimGray);
-            Game1.spriteBatch.DrawString(Globals.Font10, GameLogic.PlayerIndex.ToString(), new Vector2(512, 30), Color.Green);
             Game1.spriteBatch.End();
         }
 
@@ -407,6 +414,18 @@ namespace PSol.Client
                 rectangleToDraw.Y + rectangleToDraw.Height - thicknessOfBorder,
                 rectangleToDraw.Width,
                 thicknessOfBorder), borderColor);
+        }
+
+        public static void DrawString(SpriteFont font, string text, float X, float Y, bool align, Color color)
+        {
+            if (X == -1) { X = Globals.PreferredBackBufferWidth / 2.0F; }
+            Vector2 size = font.MeasureString(text);
+            Vector2 pos = new Vector2(X, Y);
+            if (align)
+            {
+                pos.X -= size.X / 2;
+            }
+            Game1.spriteBatch.DrawString(font, text, pos, color);
         }
     }
 }
