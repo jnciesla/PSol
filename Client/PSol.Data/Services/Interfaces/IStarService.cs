@@ -1,9 +1,10 @@
-﻿using PSol.Data.Models;
+﻿using System.Collections.Generic;
+using PSol.Data.Models;
 
 namespace PSol.Data.Services.Interfaces
 {
     public interface IStarService
     {
-        Star[] LoadStars();
+        ICollection<Star> LoadStars();
     }
 }

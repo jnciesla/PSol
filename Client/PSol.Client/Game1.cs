@@ -283,7 +283,7 @@ namespace PSol.Client
                 Globals.Details1 = Keyboard.GetState().IsKeyDown(Keys.LeftAlt);
                 Globals.Details2 = Keyboard.GetState().IsKeyDown(Keys.RightAlt);
 
-                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { GameLogic.Selected = ""; GameLogic.selectedPlanet = -1; GameLogic.Navigating = false; }
+                if (Keyboard.GetState().IsKeyDown(Keys.Escape)) { GameLogic.Selected = ""; GameLogic.selectedPlanet = ""; GameLogic.Navigating = false; }
                 if (KC.KeyPress(Keys.T))
                 {
                     MenuManager.ChangeMenu(MenuManager.Menu.Message);

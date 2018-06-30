@@ -266,7 +266,7 @@ namespace PSol.Server
         {
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SGalaxy);
-            buffer.AddArray(Globals.Galaxy);
+            buffer.AddArray(Globals.Galaxy.ToArray());
             SendData(index, buffer.ToArray());
             buffer.Dispose();
         }

@@ -1,4 +1,5 @@
-﻿using PSol.Data.Models;
+﻿using System.Collections.Generic;
+using PSol.Data.Models;
 using PSol.Data.Repositories.Interfaces;
 using PSol.Data.Services.Interfaces;
 
@@ -13,7 +14,7 @@ namespace PSol.Data.Services
             _starRep = starRep;
         }
 
-        public Star[] LoadStars()
+        public ICollection<Star> LoadStars()
         {
             return _starRep.LoadStars();
         }

@@ -408,7 +408,7 @@ namespace PSol.Client
             canxLabel.ClickThrough = true;
             canxButton.OnClick += entity =>
             {
-                if (GameLogic.selectedPlanet != -1)
+                if (GameLogic.selectedPlanet != "")
                 {
                     starDetail.Texture = Graphics.Planets[0];
                     GameLogic.selectedMapItem = -1;

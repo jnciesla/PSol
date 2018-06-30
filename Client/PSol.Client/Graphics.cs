@@ -54,6 +54,10 @@ namespace PSol.Client
 
         public static void DrawSystems()
         {
+            var ms = Mouse.GetState();
+            float x = ms.X + -Camera.transform.M41;
+            float y = ms.Y + -Camera.transform.M42;
+
             int SpriteNum = 4;
             float scale = .3F;
             for (var i = 0; i != GameLogic.Galaxy.Count; i++)
@@ -64,28 +68,31 @@ namespace PSol.Client
                 var Bound = new Rectangle((int)GameLogic.Galaxy[i].X - (int)(Planets[SpriteNum].Width * scale) / 2,
                     (int)GameLogic.Galaxy[i].Y - (int)(Planets[SpriteNum].Height * scale) / 2, (int)(Planets[SpriteNum].Width * scale),
                     (int)(Planets[SpriteNum].Height * scale));
-                var ms = Mouse.GetState();
-                float x = ms.X + -Camera.transform.M41;
-                float y = ms.Y + -Camera.transform.M42;
                 Vector2 position = new Vector2(x, y);
                 if (Bound.Contains(position) && !Globals.windowOpen)
                 {
                     UserInterface.Active.SetCursor(Cursors[1]);
-                    if (ms.LeftButton == ButtonState.Pressed && GameLogic.selectedPlanet != i)
+                    if (ms.LeftButton == ButtonState.Pressed && GameLogic.selectedPlanet != GameLogic.Galaxy[i].Id)
                     {
-                        GameLogic.selectedPlanet = i;
+                        GameLogic.selectedPlanet = GameLogic.Galaxy[i].Id;
                         GameLogic.Selected = "";
                         GameLogic.SelectedType = "";
                     }
                 }
-
-                if (GameLogic.selectedPlanet == i)
+                if (GameLogic.selectedPlanet == GameLogic.Galaxy[i].Id)
                 {
                     DrawBorder(Bound, 1, Color.DarkGray * .25F);
                     Game1.spriteBatch.DrawString(Globals.Font10, GameLogic.Galaxy[i].Name,
                         new Vector2(GameLogic.Galaxy[i].X - Globals.Font10.MeasureString(GameLogic.Galaxy[i].Name).X / 2,
                             GameLogic.Galaxy[i].Y - (int)(Planets[SpriteNum].Height * scale) / 2.0F - 20), Color.AntiqueWhite);
                 }
+                // Get orbiting planets
+                foreach (var planet in GameLogic.Galaxy[i].Planets)
+                {
+                    var _origin = new Vector2(Planets[planet.Sprite].Width / 2f, Planets[planet.Sprite].Height / 2f);
+                    DrawPlanet(planet.Sprite, new Vector2(planet.X, planet.Y), _origin, scale);
+                }
+
             }
         }
 
@@ -197,7 +204,7 @@ namespace PSol.Client
                     {
                         GameLogic.Selected = Types.Player[i].Id;
                         GameLogic.SelectedType = "PLAYER";
-                        GameLogic.selectedPlanet = -1;
+                        GameLogic.selectedPlanet = "";
                     }
                 }
 
@@ -318,7 +325,7 @@ namespace PSol.Client
                     {
                         GameLogic.Selected = mob.Id;
                         GameLogic.SelectedType = "MOB";
-                        GameLogic.selectedPlanet = -1;
+                        GameLogic.selectedPlanet = "";
                     }
                 }
 

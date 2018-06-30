@@ -16,10 +16,10 @@ namespace PSol.Server
 
         public void DownloadGalaxy()
         {
-            Console.WriteLine("Downloading galaxy data...");
+            Console.WriteLine(@"Downloading galaxy data...");
             Globals.Galaxy = _starService.LoadStars();
             Console.SetCursorPosition(0, Console.CursorTop - 1);
-            Console.WriteLine("Downloading galaxy data... PASS");
+            Console.WriteLine(@"Downloading galaxy data... PASS");
         }
     }
 }

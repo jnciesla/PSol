@@ -1,4 +1,5 @@
-﻿using PSol.Data.Models;
+﻿using System.Collections.Generic;
+using PSol.Data.Models;
 
 namespace PSol.Server
 {
@@ -9,6 +10,6 @@ namespace PSol.Server
         /// </summary>
         public static bool FullData;
 
-        public static Star[] Galaxy;
+        public static ICollection<Star> Galaxy;
     }
 }

@@ -11,7 +11,7 @@ namespace PSol.Client
         public static int PlayerIndex = -1;
         public static string Selected = "";
         public static string SelectedType = "";
-        public static int selectedPlanet = -1;
+        public static string selectedPlanet = "";
         public static int selectedMapItem = -1;
         public static float distance;
         public static Vector2 Destination;

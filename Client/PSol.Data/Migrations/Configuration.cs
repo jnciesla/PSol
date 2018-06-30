@@ -37,6 +37,18 @@ namespace PSol.Data.Migrations
                 Planets = new List<Planet>()
             });
 
+            context.Planets.AddOrUpdate(new Planet
+            {
+                Id = "c804ef2e-793f-43f1-9d8f-d90a2df71d3a",
+                StarId = "7179FC09-EBAA-49D8-8ED4-A53F7B95F260",
+                Name = "Vyt I",
+                Orbit = 600,
+                Sprite = 2,
+                X = 1600,
+                Y = 1600,
+                Color = 1
+            });
+
             context.MobTypes.AddOrUpdate(new MobType
             {
                 Id = "7A93241E-D251-4E7E-A565-46B0E274B5C6",
