@@ -8,9 +8,10 @@ using System.Linq;
 
 namespace PSol.Data.Services
 {
-    public class MobService: IMobService
+    public class MobService : IMobService
     {
         private readonly IMobRepository _mobRepo;
+        private ICollection<Mob> _mobs;
 
         public MobService(IMobRepository mobRepo)
         {
@@ -19,10 +20,15 @@ namespace PSol.Data.Services
 
         public ICollection<Mob> GetMobs(int minX = 0, int maxX = Constants.PLAY_AREA_WIDTH, int minY = 0, int maxY = Constants.PLAY_AREA_HEIGHT)
         {
-            return _mobRepo.GetAllMobs(minX, maxX, minY, maxY);
+            if (_mobs == null)
+            {
+                _mobs = _mobRepo.GetAllMobs();
+            }
+
+            return _mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY).ToList();
         }
 
-        public void repopGalaxy(bool forceAll = false)
+        public void RepopGalaxy(bool forceAll = false)
         {
             Console.WriteLine(@"Repop");
             // Get all mobs and count them
@@ -55,7 +61,7 @@ namespace PSol.Data.Services
                     }
                 }
             }
-            
+
             // Now we know that all of the possible mobs exist in the db (dead or alive). Look at the
             // dead ones and see if any are able to be spawned.
             var deadMobs = _mobRepo.GetAllDeadMobs();
@@ -69,7 +75,7 @@ namespace PSol.Data.Services
                 // If difference is between min and max, flip a coin and see if they want to spawn
                 var coin = random.Next(0, 2) == 0;
                 if (DateTime.UtcNow.Subtract(mob.KilledDate).CompareTo(new TimeSpan(0, 0, mob.MobType.SpawnTimeMax)) < 0 && coin) continue;
-                
+
                 // Otherwise the coin flip passed or we've passed max spawn time
                 Console.WriteLine(@"Spawning " + mob.MobType.Name);
                 mob.Alive = true;
@@ -83,7 +89,7 @@ namespace PSol.Data.Services
                 mob.X = mob.X < 0 ? mob.X * -1 : mob.X;
                 mob.Y = mob.MobType.Star.Y + yMod;
                 mob.Y = mob.Y < 0 ? mob.Y * -1 : mob.Y;
-                _mobRepo.SaveMob(mob);
+                _mobs.Add(mob);
             }
         }
 
@@ -95,7 +101,16 @@ namespace PSol.Data.Services
                 KilledDate = DateTime.UtcNow,
                 MobTypeId = type.Id
             };
-            _mobRepo.Add(mob);
+            _mobs.Add(mob);
+        }
+
+        public void SaveMobs()
+        {
+            if (_mobs == null) return;
+            foreach (var mob in _mobs)
+            {
+                _mobRepo.SaveMob(mob);
+            }
         }
     }
 }

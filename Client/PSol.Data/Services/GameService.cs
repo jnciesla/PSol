@@ -10,9 +10,11 @@ namespace PSol.Data.Services
     public class GameService : IGameService
     {
         private readonly IUserRepository _userRepository;
-        public GameService(IUserRepository userRepository)
+        private readonly IMobService _mobService;
+        public GameService(IUserRepository userRepository, IMobService mobService)
         {
             _userRepository = userRepository;
+            _mobService = mobService;
         }
         public void SaveGame(List<User> users)
         {
@@ -21,6 +23,7 @@ namespace PSol.Data.Services
             {
                 _userRepository.SavePlayer(user);
             });
+            _mobService.SaveMobs();
             Console.SetCursorPosition(0, Console.CursorTop - 1);
             Console.WriteLine("Saving database... PASS");
         }
