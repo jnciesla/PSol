@@ -60,6 +60,7 @@ namespace Bindings
 
         public void AddString(string Input)
         {
+            Input = Input ?? "";
             buff.AddRange(BitConverter.GetBytes(Input.Length));
             buff.AddRange(Encoding.ASCII.GetBytes(Input));
             buffUpdate = true;

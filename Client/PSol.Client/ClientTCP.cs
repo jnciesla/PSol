@@ -93,10 +93,9 @@ namespace PSol.Client
         public void SendData(byte[] data)
         {
             var buffer = new PacketBuffer();
+            buffer.AddInteger(data.Length);
             buffer.AddBytes(data);
             myStream.Write(buffer.ToArray(), 0, buffer.ToArray().Length);
-
-
             buffer.Dispose();
         }
 
