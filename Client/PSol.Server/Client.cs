@@ -64,6 +64,8 @@ namespace PSol.Server
             _gameService.SaveGame(new List<User> { Types.Player[index] });
             ServerTCP.tempPlayer[index].inGame = false;
             ServerTCP.tempPlayer[index].receiving = false;
+            Stream.Close();
+            Stream = null;
             Socket.Close();
             Socket = null;
             Types.Player[index] = Types.Default;

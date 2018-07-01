@@ -1,7 +1,10 @@
 ﻿using System;
+using System.IO;
 using System.Net.Sockets;
+using System.Threading;
 using Bindings;
 using Microsoft.Xna.Framework;
+using Newtonsoft.Json.Serialization;
 
 namespace PSol.Client
 {
@@ -10,16 +13,15 @@ namespace PSol.Client
         public TcpClient PlayerSocket;
         public static NetworkStream myStream;
         private HandleData chd;
-        private byte[] asyncBuff;
         private bool connected;
         public bool isOnline;
 
         public void ConnectToServer()
         {
             // Already connected.  Destroy connection and re-connect
-            if(PlayerSocket != null)
+            if (PlayerSocket != null)
             {
-                if(PlayerSocket.Connected || connected)
+                if (PlayerSocket.Connected || connected)
                 {
                     PlayerSocket.Close();
                     PlayerSocket = null;
@@ -28,10 +30,7 @@ namespace PSol.Client
 
             PlayerSocket = new TcpClient();
             chd = new HandleData();
-            PlayerSocket.ReceiveBufferSize = 4096;
-            PlayerSocket.SendBufferSize = 4096;
             PlayerSocket.NoDelay = false;
-            Array.Resize(ref asyncBuff, 8192);
             PlayerSocket.BeginConnect("127.0.0.1", 8000, ConnectCallback, PlayerSocket);
         }
 
@@ -41,38 +40,54 @@ namespace PSol.Client
             {
                 PlayerSocket.EndConnect(ar);
                 isOnline = true;
-            } catch
+            }
+            catch
             {
                 isOnline = false;
                 ConnectToServer();
             }
-            if(PlayerSocket.Connected == false)
+            if (PlayerSocket.Connected == false)
             {
                 connected = false;
-            } else {
+            }
+            else
+            {
                 PlayerSocket.NoDelay = true;
-                myStream = PlayerSocket.GetStream();
-                myStream.BeginRead(asyncBuff, 0, 8192, OnReceive, null);
                 connected = true;
+                myStream = PlayerSocket.GetStream();
+                NetworkListen();
             }
         }
 
-        private void OnReceive(IAsyncResult ar)
+        private void NetworkListen()
         {
-            int byteAmt = myStream.EndRead(ar);
-            byte[] myBytes = null;
-            Array.Resize(ref myBytes, byteAmt);
-            Buffer.BlockCopy(asyncBuff, 0, myBytes, 0, byteAmt);
+            while (PlayerSocket.Connected)
+            {
+                do
+                {
+                    Thread.Sleep(20);
+                } while (!myStream.DataAvailable);
 
-            if(byteAmt == 0)
+                var bytesData = new byte[4];
+                myStream.Read(bytesData, 0, 4);
+                var bytesInMessage = BitConverter.ToInt32(bytesData, 0);
+
+                var data = new byte[bytesInMessage];
+                myStream.Read(data, 0, bytesInMessage);
+                OnReceive(data);
+            }
+        }
+
+        private void OnReceive(byte[] data)
+        {
+            if (data.Length == 0)
             {
                 // Destroy game; empty packet received
                 return;
             }
 
             // Handle network packets
-            chd.HandleNetworkMessages(myBytes);
-            myStream.BeginRead(asyncBuff, 0, 8192, OnReceive, null);
+            chd.HandleNetworkMessages(data);
         }
 
         public void SendData(byte[] data)
@@ -80,6 +95,8 @@ namespace PSol.Client
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             myStream.Write(buffer.ToArray(), 0, buffer.ToArray().Length);
+
+
             buffer.Dispose();
         }
 

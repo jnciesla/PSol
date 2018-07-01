@@ -9,7 +9,5 @@ namespace PSol.Server
         /// "Static" data has changed.  Set this bool to broadcast data not in normal broadcast
         /// </summary>
         public static bool FullData;
-
-        public static ICollection<Star> Galaxy;
     }
 }

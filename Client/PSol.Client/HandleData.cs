@@ -17,7 +17,7 @@ namespace PSol.Client
         private static Dictionary<int, Packet_> packets;
 
 
-        public void InitializeMesssages()
+        public void InitializeMessages()
         {
             ctcp = new ClientTCP();
             packets = new Dictionary<int, Packet_>

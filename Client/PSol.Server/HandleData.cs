@@ -2,6 +2,8 @@
 using Bindings;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using Newtonsoft.Json;
 using Ninject;
 using PSol.Data.Models;
 using PSol.Data.Services.Interfaces;
@@ -14,11 +16,13 @@ namespace PSol.Server
         private static Dictionary<int, Packet_> packets;
         private readonly IUserService _userService;
         private readonly IMobService _mobService;
+        private readonly IStarService _starService;
 
         public HandleData(IKernel kernel)
         {
             _userService = kernel.Get<IUserService>();
             _mobService = kernel.Get<IMobService>();
+            _starService = kernel.Get<IStarService>();
         }
 
         public void InitializeMessages()
@@ -114,11 +118,11 @@ namespace PSol.Server
         public void SendData(int index, byte[] data)
         {
             var buffer = new PacketBuffer();
+            buffer.AddInteger(data.Length);
             buffer.AddBytes(data);
             try
             {
-                ServerTCP.Clients[index].Stream
-                    .BeginWrite(buffer.ToArray(), 0, buffer.ToArray().Length, null, null);
+                ServerTCP.Clients[index].Stream.Write(buffer.ToArray(), 0, buffer.ToArray().Length);
             }
             catch
             {
@@ -188,7 +192,7 @@ namespace PSol.Server
 
         public void PreparePulseBroadcast()
         {
-            var mobRange = 200;
+            var mobRange = 2000;
             for (var i = 1; i < Constants.MAX_PLAYERS; i++)
             {
                 if (ServerTCP.Clients[i].Socket != null && ServerTCP.tempPlayer[i].inGame && ServerTCP.tempPlayer[i].receiving)
@@ -264,9 +268,10 @@ namespace PSol.Server
 
         public void SendGalaxy(int index)
         {
+            var stars = _starService.LoadStars();
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SGalaxy);
-            buffer.AddArray(Globals.Galaxy.ToArray());
+            buffer.AddArray(stars.ToArray());
             SendData(index, buffer.ToArray());
             buffer.Dispose();
         }

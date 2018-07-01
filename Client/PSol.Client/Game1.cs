@@ -68,7 +68,7 @@ namespace PSol.Client
             chd = new HandleData();
             renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
             camera = new Camera(GraphicsDevice.Viewport);
-            chd.InitializeMesssages();
+            chd.InitializeMessages();
             ctcp.ConnectToServer();
             Graphics.InitializeGraphics(Content);
             UserInterface.Initialize(Content, "classic");

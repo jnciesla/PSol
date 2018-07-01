@@ -17,7 +17,7 @@ namespace PSol.Server
         public void DownloadGalaxy()
         {
             Console.WriteLine(@"Downloading galaxy data...");
-            Globals.Galaxy = _starService.LoadStars();
+            _starService.LoadStars();
             Console.SetCursorPosition(0, Console.CursorTop - 1);
             Console.WriteLine(@"Downloading galaxy data... PASS");
         }

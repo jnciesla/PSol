@@ -8,6 +8,7 @@ namespace PSol.Data.Services
     public class StarService: IStarService
     {
         private readonly IStarRepository _starRep;
+        private ICollection<Star> _stars;
 
         public StarService(IStarRepository starRep)
         {
@@ -16,7 +17,9 @@ namespace PSol.Data.Services
 
         public ICollection<Star> LoadStars()
         {
-            return _starRep.LoadStars();
+            if (_stars != null) return _stars;
+            _stars = _starRep.LoadStars();
+            return _stars;
         }
     }
 }
