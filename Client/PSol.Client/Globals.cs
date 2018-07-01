@@ -16,6 +16,7 @@ namespace PSol.Client
         public static int PreferredBackBufferHeight = 768;
 
         public static float PlanetaryRotation = 0;
+        public static float serverTime = 0;
 
         // GUI Stuff
         public static Panel chatPanel;

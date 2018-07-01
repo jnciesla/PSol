@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Content;
+﻿using System;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
 using Bindings;
@@ -57,6 +58,7 @@ namespace PSol.Client
             var ms = Mouse.GetState();
             float x = ms.X + -Camera.transform.M41;
             float y = ms.Y + -Camera.transform.M42;
+            Vector2 position = new Vector2(x, y);
 
             int SpriteNum = 4;
             float scale = .3F;
@@ -68,7 +70,6 @@ namespace PSol.Client
                 var Bound = new Rectangle((int)GameLogic.Galaxy[i].X - (int)(Planets[SpriteNum].Width * scale) / 2,
                     (int)GameLogic.Galaxy[i].Y - (int)(Planets[SpriteNum].Height * scale) / 2, (int)(Planets[SpriteNum].Width * scale),
                     (int)(Planets[SpriteNum].Height * scale));
-                Vector2 position = new Vector2(x, y);
                 if (Bound.Contains(position) && !Globals.windowOpen)
                 {
                     UserInterface.Active.SetCursor(Cursors[1]);
@@ -90,7 +91,32 @@ namespace PSol.Client
                 foreach (var planet in GameLogic.Galaxy[i].Planets)
                 {
                     var _origin = new Vector2(Planets[planet.Sprite].Width / 2f, Planets[planet.Sprite].Height / 2f);
-                    DrawPlanet(planet.Sprite, new Vector2(planet.X, planet.Y), _origin, scale);
+                    var orbitalX = planet.Orbit * Math.Cos(MathHelper.TwoPi * DateTime.UtcNow.TimeOfDay.TotalMilliseconds / Math.Pow(10, 7)) + GameLogic.Galaxy[i].X;
+                    var orbitalY = planet.Orbit * Math.Sin(MathHelper.TwoPi * DateTime.UtcNow.TimeOfDay.TotalMilliseconds / Math.Pow(10, 7)) + GameLogic.Galaxy[i].Y;
+                    planet.X = (float)orbitalX;
+                    planet.Y = (float)orbitalY;
+                    DrawPlanet(planet.Sprite, new Vector2((float)orbitalX, (float)orbitalY), _origin, scale);
+                    // OnClick
+                    var _Bound = new Rectangle((int)planet.X - (int)(Planets[planet.Sprite].Width * scale) / 2,
+                        (int)planet.Y - (int)(Planets[planet.Sprite].Height * scale) / 2, (int)(Planets[planet.Sprite].Width * scale),
+                        (int)(Planets[planet.Sprite].Height * scale));
+                    if (_Bound.Contains(position) && !Globals.windowOpen)
+                    {
+                        UserInterface.Active.SetCursor(Cursors[1]);
+                        if (ms.LeftButton == ButtonState.Pressed && GameLogic.selectedPlanet != planet.Id)
+                        {
+                            GameLogic.selectedPlanet = planet.Id;
+                            GameLogic.Selected = "";
+                            GameLogic.SelectedType = "";
+                        }
+                    }
+                    if (GameLogic.selectedPlanet == planet.Id)
+                    {
+                        DrawBorder(_Bound, 1, Color.DarkGray * .25F);
+                        Game1.spriteBatch.DrawString(Globals.Font10, planet.Name,
+                            new Vector2(planet.X - Globals.Font10.MeasureString(planet.Name).X / 2,
+                                planet.Y - (int)(Planets[planet.Sprite].Height * scale) / 2.0F - 20), Color.AntiqueWhite);
+                    }
                 }
 
             }

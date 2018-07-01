@@ -112,7 +112,7 @@ namespace PSol.Client
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger(); // Packet Type
-            var timestamp = BitConverter.ToInt64(buffer.GetBytes(8), 0);
+            Globals.serverTime = BitConverter.ToInt64(buffer.GetBytes(8), 0);
             for (var i = 1; i != Constants.MAX_PLAYERS; i++)
             {
                 var X = buffer.GetFloat();
@@ -125,8 +125,10 @@ namespace PSol.Client
                 var inGame = BitConverter.ToBoolean(buffer.GetBytes(1), 0);
                 // If the buffer is not in game or its ourselves, skip the update
                 if (!inGame || i == GameLogic.PlayerIndex) continue;
-                Types.Player[i].X = X;
-                Types.Player[i].Y = Y;
+                Types.TEMP[i].newX = X;
+                Types.TEMP[i].newY = Y;
+                //Types.Player[i].X = X;
+                //Types.Player[i].Y = Y;
                 Types.Player[i].Rotation = Rotation;
                 Types.Player[i].Health = Health;
                 Types.Player[i].MaxHealth = MaxHealth;
