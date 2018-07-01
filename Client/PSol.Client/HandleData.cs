@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Text;
 using System.IO;
+using System.IO.Compression;
 using System.Runtime.CompilerServices;
 using Microsoft.Xna.Framework;
 using PSol.Data.Models;

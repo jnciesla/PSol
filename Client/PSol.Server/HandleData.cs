@@ -1,7 +1,10 @@
 ﻿using System;
 using Bindings;
 using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 using Ninject;
@@ -118,8 +121,9 @@ namespace PSol.Server
         public void SendData(int index, byte[] data)
         {
             var buffer = new PacketBuffer();
-            buffer.AddInteger(data.Length);
-            buffer.AddBytes(data);
+            var compressed = Compress(data);
+            buffer.AddInteger(compressed.Length);
+            buffer.AddBytes(compressed);
             try
             {
                 ServerTCP.Clients[index].Stream.Write(buffer.ToArray(), 0, buffer.ToArray().Length);
@@ -276,6 +280,32 @@ namespace PSol.Server
             buffer.AddArray(stars.ToArray());
             SendData(index, buffer.ToArray());
             buffer.Dispose();
+        }
+
+        public byte[] Compress(byte[] bytes)
+        {
+            using (var msi = new MemoryStream(bytes))
+            using (var mso = new MemoryStream())
+            {
+                using (var gs = new GZipStream(mso, CompressionLevel.Optimal))
+                {
+                    msi.CopyTo(gs);
+                }
+                return mso.ToArray();
+            }
+        }
+
+        public byte[] Decompress(byte[] bytes)
+        {
+            using (var msi = new MemoryStream(bytes))
+            using (var mso = new MemoryStream())
+            {
+                using (var gs = new GZipStream(msi, CompressionMode.Decompress))
+                {
+                    gs.CopyTo(mso);
+                }
+                return mso.ToArray();
+            }
         }
 
     }

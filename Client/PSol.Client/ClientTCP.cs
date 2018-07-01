@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO;
+using System.IO.Compression;
 using System.Net.Sockets;
 using System.Threading;
 using Bindings;
@@ -87,7 +88,7 @@ namespace PSol.Client
             }
 
             // Handle network packets
-            chd.HandleNetworkMessages(data);
+            chd.HandleNetworkMessages(Decompress(data));
         }
 
         public void SendData(byte[] data)
@@ -140,6 +141,32 @@ namespace PSol.Client
             buffer.AddString(message);
             SendData(buffer.ToArray());
             buffer.Dispose();
+        }
+
+        public byte[] Compress(byte[] bytes)
+        {
+            using (var msi = new MemoryStream(bytes))
+            using (var mso = new MemoryStream())
+            {
+                using (var gs = new GZipStream(mso, CompressionMode.Compress))
+                {
+                    msi.CopyTo(gs);
+                }
+                return mso.ToArray();
+            }
+        }
+
+        public byte[] Decompress(byte[] bytes)
+        {
+            using (var msi = new MemoryStream(bytes))
+            using (var mso = new MemoryStream())
+            {
+                using (var gs = new GZipStream(msi, CompressionMode.Decompress))
+                {
+                    gs.CopyTo(mso);
+                }
+                return mso.ToArray();
+            }
         }
 
     }
