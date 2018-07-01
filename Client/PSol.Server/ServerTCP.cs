@@ -34,8 +34,8 @@ namespace PSol.Server
                     Clients[i].Socket = client;
                     Clients[i].Index = i;
                     Clients[i].IP = client.Client.RemoteEndPoint.ToString();
-                    Clients[i].Start();
                     Console.WriteLine(@"Connection received from " + Clients[i].IP);
+                    Clients[i].Start();
                     return;
                 }
             }

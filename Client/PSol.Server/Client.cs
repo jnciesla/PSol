@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Runtime.Remoting.Messaging;
 using System.Threading;
 using Bindings;
 using Ninject;
@@ -39,6 +40,9 @@ namespace PSol.Server
                 do
                 {
                     Thread.Sleep(20);
+                    if (Socket.Connected) continue;
+                    CloseSocket(Index);
+                    return;
                 } while (!Stream.DataAvailable);
 
                 var bytesData = new byte[4];

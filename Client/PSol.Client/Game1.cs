@@ -8,6 +8,7 @@ using Bindings;
 using PSol.Data.Models;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Sockets;
 
 namespace PSol.Client
 {
@@ -104,6 +105,13 @@ namespace PSol.Client
         protected override void UnloadContent()
         {
             // TODO: Unload any non ContentManager content here
+        }
+
+        protected override void OnExiting(object sender, EventArgs args)
+        {
+            base.OnExiting(sender, args);
+            ctcp.PlayerSocket.Client.Shutdown(SocketShutdown.Both);
+            ctcp.PlayerSocket.Client.Close();
         }
 
         /// <summary>

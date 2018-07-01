@@ -67,8 +67,9 @@ namespace PSol.Client
                 do
                 {
                     Thread.Sleep(20);
-                } while (!myStream.DataAvailable);
+                } while (PlayerSocket.Connected && !myStream.DataAvailable);
 
+                if (!PlayerSocket.Connected) break;
                 var bytesData = new byte[4];
                 myStream.Read(bytesData, 0, 4);
                 var bytesInMessage = BitConverter.ToInt32(bytesData, 0);
