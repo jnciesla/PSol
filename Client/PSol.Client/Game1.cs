@@ -183,7 +183,7 @@ namespace PSol.Client
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, Camera.transform);
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
             Graphics.DrawBorder(Globals.playArea, 2, Color.DarkOliveGreen);
-            if (GameLogic.Galaxy != null)
+            if (GameLogic.Galaxy != null )
             {
                 Graphics.DrawSystems();
             }

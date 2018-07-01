@@ -114,7 +114,7 @@ namespace PSol.Client
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger(); // Packet Type
-            var timestamp = BitConverter.ToInt64(buffer.GetBytes(8), 0);
+            Globals.serverTime = BitConverter.ToInt64(buffer.GetBytes(8), 0);
             for (var i = 1; i != Constants.MAX_PLAYERS; i++)
             {
                 var Id = buffer.GetString();
