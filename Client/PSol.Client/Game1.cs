@@ -252,7 +252,7 @@ namespace PSol.Client
                     {
                         if (GameLogic.Selected != Types.Player[GameLogic.PlayerIndex].Id)
                         {
-                            var player = Types.Player.First(p => p.Id == GameLogic.Selected);
+                            var player = Types.Player.FirstOrDefault(user => user?.Id == GameLogic.Selected);
                             if (player != null)
                             {
                                 x = player.X;

@@ -176,6 +176,7 @@ namespace PSol.Server
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)ServerPackets.SPlayerData);
             buffer.AddInteger(index);
+            buffer.AddString(Types.Player[index].Id);
             buffer.AddString(Types.Player[index].Name);
             buffer.AddFloat(Types.Player[index].X);
             buffer.AddFloat(Types.Player[index].Y);
@@ -202,6 +203,7 @@ namespace PSol.Server
                     buffer.AddBytes(BitConverter.GetBytes(DateTime.UtcNow.ToBinary()));
                     for (var j = 1; j < Constants.MAX_PLAYERS; j++)
                     {
+                        buffer.AddString(Types.Player[j].Id);
                         buffer.AddFloat(Types.Player[j].X);
                         buffer.AddFloat(Types.Player[j].Y);
                         buffer.AddFloat(Types.Player[j].Rotation);

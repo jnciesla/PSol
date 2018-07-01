@@ -77,6 +77,7 @@ namespace PSol.Client
             var i = GameLogic.PlayerIndex;
             Types.Player[i] = new User
             {
+                Id = buffer.GetString(),
                 Name = buffer.GetString(),
                 X = buffer.GetFloat(),
                 Y = buffer.GetFloat(),
@@ -115,6 +116,7 @@ namespace PSol.Client
             var timestamp = BitConverter.ToInt64(buffer.GetBytes(8), 0);
             for (var i = 1; i != Constants.MAX_PLAYERS; i++)
             {
+                var Id = buffer.GetString();
                 var X = buffer.GetFloat();
                 var Y = buffer.GetFloat();
                 var Rotation = buffer.GetFloat();
@@ -125,6 +127,7 @@ namespace PSol.Client
                 var inGame = BitConverter.ToBoolean(buffer.GetBytes(1), 0);
                 // If the buffer is not in game or its ourselves, skip the update
                 if (!inGame || i == GameLogic.PlayerIndex) continue;
+                Types.Player[i].Id = Id;
                 Types.Player[i].X = X;
                 Types.Player[i].Y = Y;
                 Types.Player[i].Rotation = Rotation;

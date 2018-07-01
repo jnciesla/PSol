@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Threading;
 using Bindings;
 using Ninject;
 using PSol.Data.Models;
@@ -16,7 +17,6 @@ namespace PSol.Server
         public NetworkStream Stream;
         private readonly HandleData _shd;
         private readonly IGameService _gameService;
-        public byte[] readBuff;
 
         public Client(HandleData shd, IKernel kernel)
         {
@@ -29,32 +29,37 @@ namespace PSol.Server
             Socket.SendBufferSize = 4096;
             Socket.ReceiveBufferSize = 4096;
             Stream = Socket.GetStream();
-            Array.Resize(ref readBuff, Socket.ReceiveBufferSize);
-            Stream.BeginRead(readBuff, 0, Socket.ReceiveBufferSize, OnReceiveData, null);
+            NetworkListen();
         }
 
-        private void OnReceiveData(IAsyncResult ar)
+        private void NetworkListen()
         {
-            try
+            while (Socket.Connected)
             {
-                int readBytes = Stream.EndRead(ar);
-                if (readBytes <= 0)
+                do
                 {
-                    CloseSocket(Index); // Disconnect client when stream is <= 0 bytes
-                    return;
-                }
+                    Thread.Sleep(20);
+                } while (!Stream.DataAvailable);
 
-                byte[] newBytes = null;
-                Array.Resize(ref newBytes, readBytes);
-                Buffer.BlockCopy(readBuff, 0, newBytes, 0, readBytes);
-                // Handle Data
-                _shd.HandleNetworkMessages(Index, newBytes);
-                Stream.BeginRead(readBuff, 0, Socket.ReceiveBufferSize, OnReceiveData, null);
+                var bytesData = new byte[4];
+                Stream.Read(bytesData, 0, 4);
+                var bytesInMessage = BitConverter.ToInt32(bytesData, 0);
+
+                var data = new byte[bytesInMessage];
+                Stream.Read(data, 0, bytesInMessage);
+                OnReceiveData(data);
             }
-            catch
+        }
+
+        private void OnReceiveData(byte[] data)
+        {
+            if (data.Length <= 0)
             {
-                CloseSocket(Index);
+                CloseSocket(Index); // Disconnect client when stream is <= 0 bytes
+                return;
             }
+            // Handle Data
+            _shd.HandleNetworkMessages(Index, data);
         }
 
         private void CloseSocket(int index)
