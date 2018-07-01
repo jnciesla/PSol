@@ -27,24 +27,14 @@ namespace PSol.Server
 
         public void Start()
         {
-            Socket.SendBufferSize = 4096;
-            Socket.ReceiveBufferSize = 4096;
             Stream = Socket.GetStream();
             NetworkListen();
         }
 
         private void NetworkListen()
         {
-            while (Socket.Connected)
+            while (Socket != null && Socket.Connected)
             {
-                do
-                {
-                    Thread.Sleep(20);
-                    if (Socket.Connected) continue;
-                    CloseSocket(Index);
-                    return;
-                } while (!Stream.DataAvailable);
-
                 var bytesData = new byte[4];
                 Stream.Read(bytesData, 0, 4);
                 var bytesInMessage = BitConverter.ToInt32(bytesData, 0);

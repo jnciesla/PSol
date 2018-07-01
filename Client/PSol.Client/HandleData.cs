@@ -126,8 +126,8 @@ namespace PSol.Client
                 var Shield = buffer.GetInteger();
                 var MaxShield = buffer.GetInteger();
                 var inGame = BitConverter.ToBoolean(buffer.GetBytes(1), 0);
-                // If the buffer is not in game or its ourselves, skip the update
-                if (!inGame || i == GameLogic.PlayerIndex) continue;
+                // If the buffer is not ourselves, skip the update - need to do not in game characters to remove logged out users
+                if (i == GameLogic.PlayerIndex) continue;
                 Types.Player[i].Id = Id;
                 Types.Player[i].X = X;
                 Types.Player[i].Y = Y;

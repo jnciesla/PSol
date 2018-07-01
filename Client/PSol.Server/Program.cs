@@ -47,7 +47,7 @@ namespace PSol.Server
                 },
                 null,
                 TimeSpan.FromSeconds(1),
-                TimeSpan.FromMilliseconds(50));
+                TimeSpan.FromMilliseconds(25));
 
             var repopTimer = new Timer(e => _mobService.RepopGalaxy(),
                 null,
@@ -64,7 +64,7 @@ namespace PSol.Server
                     Console.SetCursorPosition(0,Console.CursorTop -1);
                     _gameService.SaveGame(Types.Player.ToList());
                 }
-                else if (command != "end")
+                else if (command != "end" && command != "e" && command != "exit" && command != "q" && command != "quit")
                 {
                     Console.WriteLine(@"Unknown Command");
                 }
