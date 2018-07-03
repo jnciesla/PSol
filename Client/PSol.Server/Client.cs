@@ -35,13 +35,20 @@ namespace PSol.Server
         {
             while (Socket != null && Socket.Connected)
             {
-                var bytesData = new byte[4];
-                Stream.Read(bytesData, 0, 4);
-                var bytesInMessage = BitConverter.ToInt32(bytesData, 0);
+                try
+                {
+                    var bytesData = new byte[4];
+                    Stream.Read(bytesData, 0, 4);
+                    var bytesInMessage = BitConverter.ToInt32(bytesData, 0);
 
-                var data = new byte[bytesInMessage];
-                Stream.Read(data, 0, bytesInMessage);
-                OnReceiveData(data);
+                    var data = new byte[bytesInMessage];
+                    Stream.Read(data, 0, bytesInMessage);
+                    OnReceiveData(data);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                }
             }
         }
 

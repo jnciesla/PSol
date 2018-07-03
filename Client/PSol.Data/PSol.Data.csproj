@@ -36,6 +36,7 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
+    <Reference Include="MonoGame.Framework, Version=3.6.0.1625, Culture=neutral, processorArchitecture=MSIL" />
     <Reference Include="Newtonsoft.Json, Version=11.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.11.0.2\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -67,6 +68,7 @@
       <DependentUpon>201806270901213_planets.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
+    <Compile Include="Models\Combat.cs" />
     <Compile Include="Models\MobType.cs" />
     <Compile Include="Models\Mob.cs" />
     <Compile Include="Models\Planet.cs" />
@@ -82,10 +84,12 @@
     <Compile Include="Repositories\UserRepository.cs" />
     <Compile Include="Services\GameService.cs" />
     <Compile Include="Services\Interfaces\IGameService.cs" />
+    <Compile Include="Services\Interfaces\ICombatService.cs" />
     <Compile Include="Services\Interfaces\IStarService.cs" />
     <Compile Include="Services\Interfaces\IMobService.cs" />
     <Compile Include="Services\Interfaces\IUserService.cs" />
     <Compile Include="Services\MobService.cs" />
+    <Compile Include="Services\CombatService.cs" />
     <Compile Include="Services\StarService.cs" />
     <Compile Include="Services\UserService.cs" />
   </ItemGroup>

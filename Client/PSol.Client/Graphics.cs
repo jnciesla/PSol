@@ -21,6 +21,8 @@ namespace PSol.Client
         public static Texture2D laserMid;
 
         public static Texture2D[] Cursors = new Texture2D[3];
+        private static Laser _beam;
+        private static Laser _bolt;
 
         public static void InitializeGraphics(ContentManager manager)
         {
@@ -51,6 +53,14 @@ namespace PSol.Client
         private static void DrawPlanet(int sprite, Vector2 position, Vector2 origin, float scale)
         {
             Game1.spriteBatch.Draw(Planets[sprite], position, null, Color.White, Globals.PlanetaryRotation, origin, scale, SpriteEffects.None, 0);
+        }
+
+        public static void DrawWeapons(SpriteBatch spriteBatch)
+        {
+            _bolt?.Update();
+            _beam?.Update();
+            _bolt?.Draw(spriteBatch);
+            _beam?.Draw(spriteBatch);
         }
 
         public static void DrawSystems()
@@ -239,6 +249,12 @@ namespace PSol.Client
                     DrawBorder(Bound, 1, Color.DarkGray * .25F);
                 }
             }
+        }
+
+        public static void DrawLaser(Vector2 source, Vector2 target)
+        {
+            _beam = new Laser(source, target, Color.HotPink, 2, false);
+            _bolt = new Laser(source, target, Color.Red);
         }
 
         private static void DrawMobs()

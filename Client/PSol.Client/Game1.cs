@@ -9,6 +9,7 @@ using PSol.Data.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
+using System.Threading;
 
 namespace PSol.Client
 {
@@ -32,8 +33,9 @@ namespace PSol.Client
         public new static int Tick;
         public static int ElapsedTime;
         public static int FrameTime;
-        Laser beam;
-        Laser bolt;
+
+        private bool _laserCharged = true;
+        private int _laserTimer = 0;
 
         public Game1()
         {
@@ -133,8 +135,8 @@ namespace PSol.Client
             IGUI.lblStatus.Text = ctcp.isOnline ? "Server status:{{GREEN}} online" : "Server status:{{RED}} offline";
             CheckKeys();
 
-            bolt?.Update();
-            beam?.Update();
+            //            bolt?.Update();
+            //            beam?.Update();
 
             camera.Update(gameTime, this);
             base.Update(gameTime);
@@ -191,13 +193,12 @@ namespace PSol.Client
             spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, Camera.transform);
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
             Graphics.DrawBorder(Globals.playArea, 2, Color.DarkOliveGreen);
-            if (GameLogic.Galaxy != null )
+            if (GameLogic.Galaxy != null)
             {
                 Graphics.DrawSystems();
             }
 
-            bolt?.Draw(spriteBatch);
-            beam?.Draw(spriteBatch);
+            Graphics.DrawWeapons(spriteBatch);
 
             particleEngine.Draw(spriteBatch);
             Graphics.RenderPlayers();
@@ -236,6 +237,18 @@ namespace PSol.Client
 
             Globals.Control = KC.CheckCtrl();
 
+            // TODO: This is dumb - replace with a timer or something else when we get real weapons
+            if (!_laserCharged)
+            {
+                _laserTimer++;
+            }
+
+            if (_laserTimer > 100)
+            {
+                _laserCharged = true;
+                _laserTimer = 0;
+            }
+
             if (!Globals.windowOpen && !Globals.Control) // Don't allow game input when menus are open or CTRL is pressed
             {
                 if (GameLogic.Selected != "")
@@ -249,6 +262,14 @@ namespace PSol.Client
                         {
                             x = mob.X;
                             y = mob.Y;
+                            if (Mouse.GetState().RightButton == ButtonState.Pressed)
+                            {
+                                if (_laserCharged)
+                                {
+                                    _laserCharged = false;
+                                    ctcp.SendCombat(mob.Id, "");
+                                }
+                            }
                         }
                         else
                         {
@@ -272,12 +293,6 @@ namespace PSol.Client
                                 GameLogic.SelectedType = "";
                             }
                         }
-                    }
-                    if (Keyboard.GetState().IsKeyDown(Keys.Space) && (int)x != 0 && (int)y != 0)
-                    {
-                        beam = new Laser(new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y), new Vector2(x, y), Color.HotPink, 2, false);
-                        bolt = new Laser(new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y),
-                            new Vector2(x, y), Color.Red);
                     }
                 }
 
