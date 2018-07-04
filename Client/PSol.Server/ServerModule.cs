@@ -18,6 +18,7 @@ namespace PSol.Server
             Bind(typeof(IStarService)).To(typeof(StarService)).InSingletonScope();
             Bind(typeof(IMobRepository)).To(typeof(MobRepository)).InSingletonScope();
             Bind(typeof(IMobService)).To(typeof(MobService)).InSingletonScope();
+            Bind(typeof(ICombatService)).To(typeof(CombatService)).InSingletonScope();
         }
     }
 }

@@ -144,6 +144,16 @@ namespace PSol.Client
             buffer.Dispose();
         }
 
+        public void SendCombat(string targetId, string weaponId)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int)ClientPackets.CCombat);
+            buffer.AddString(targetId);
+            buffer.AddString(weaponId);
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
         public byte[] Compress(byte[] bytes)
         {
             using (var msi = new MemoryStream(bytes))

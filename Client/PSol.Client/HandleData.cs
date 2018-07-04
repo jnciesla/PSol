@@ -139,6 +139,8 @@ namespace PSol.Client
             }
 
             GameLogic.LocalMobs = buffer.GetList<Mob>();
+            GameLogic.LocalCombat = buffer.GetList<Combat>();
+            GameLogic.WatchCombat();
             buffer.Dispose();
         }
 

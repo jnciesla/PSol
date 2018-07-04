@@ -20,12 +20,14 @@ namespace PSol.Server
         private readonly IUserService _userService;
         private readonly IMobService _mobService;
         private readonly IStarService _starService;
+        private readonly ICombatService _combatService;
 
         public HandleData(IKernel kernel)
         {
             _userService = kernel.Get<IUserService>();
             _mobService = kernel.Get<IMobService>();
             _starService = kernel.Get<IStarService>();
+            _combatService = kernel.Get<ICombatService>();
         }
 
         public void InitializeMessages()
@@ -36,7 +38,8 @@ namespace PSol.Server
                 {(int) ClientPackets.CLogin, HandleLogin},
                 {(int) ClientPackets.CRegister, HandleRegister},
                 {(int) ClientPackets.CPlayerData, RecvPlayer},
-                {(int) ClientPackets.CChat, ParseChat}
+                {(int) ClientPackets.CChat, ParseChat},
+                {(int) ClientPackets.CCombat, HandleCombat }
             };
             Console.SetCursorPosition(0, Console.CursorTop - 1);
             Console.WriteLine(@"Initializing Network Packets... PASS");
@@ -198,6 +201,7 @@ namespace PSol.Server
         public void PreparePulseBroadcast()
         {
             var mobRange = 2000;
+            _combatService.CycleArrays();
             for (var i = 1; i < Constants.MAX_PLAYERS; i++)
             {
                 if (ServerTCP.Clients[i].Socket != null && ServerTCP.tempPlayer[i].inGame && ServerTCP.tempPlayer[i].receiving)
@@ -223,6 +227,7 @@ namespace PSol.Server
                         buffer.AddArray(_mobService.GetMobs((int)Types.Player[i].X - mobRange,
                             (int)Types.Player[i].X + mobRange,
                             (int)Types.Player[i].Y - mobRange, (int)Types.Player[i].Y + mobRange).ToArray());
+                        buffer.AddArray(_combatService.GetCombats((int)Types.Player[i].X, (int)Types.Player[i].Y).ToArray());
                     }
                     else
                     {
@@ -253,10 +258,9 @@ namespace PSol.Server
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
-            string str = buffer.GetString();
+            var str = buffer.GetString();
             if (str.ToLower().StartsWith("/c"))
             {
-
                 RelayChat(index, str.Substring(3));
             }
         }
@@ -270,6 +274,23 @@ namespace PSol.Server
             buffer.AddString(newString);
             BroadcastData(buffer.ToArray());
             buffer.Dispose();
+        }
+
+        public void HandleCombat(int index, byte[] data)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            var targetId = buffer.GetString();
+            var weaponId = buffer.GetString();
+            var combat = _combatService.DoAttack(targetId, Types.Player[index].Id, weaponId, Types.Player.ToList());
+            var targetPlayer = Types.Player.ToList().FirstOrDefault(p => p?.Id == combat.TargetId);
+
+            if (targetPlayer == null) return;
+            targetPlayer.Shield -= combat.WeaponDamage;
+            if (targetPlayer.Shield >= 0) return;
+            targetPlayer.Health += targetPlayer.Shield;
+            targetPlayer.Shield = 0;
         }
 
         public void SendGalaxy(int index)

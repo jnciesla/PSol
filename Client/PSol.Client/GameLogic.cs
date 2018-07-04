@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Bindings;
 using Microsoft.Xna.Framework;
 using PSol.Data.Models;
@@ -20,6 +21,7 @@ namespace PSol.Client
         private static int messageTime;
         public static List<Star> Galaxy;
         public static List<Mob> LocalMobs;
+        public static List<Combat> LocalCombat;
 
         public static bool IsMoving()
         {
@@ -139,6 +141,27 @@ namespace PSol.Client
             {
                 messageTime = Game1.Tick;
                 InterfaceGUI.AddChats("We shouldn't go beyond the edge of the mapped galaxy.", Color.DarkGoldenrod);
+            }
+        }
+
+        public static void WatchCombat()
+        {
+            foreach (var combat in LocalCombat)
+            {
+                var source = new Vector2(0, 0);
+                var target = new Vector2(0, 0);
+                var sourcePlayer = Types.Player.ToList().Find(p => p?.Id == combat.SourceId);
+                var sourceMob = LocalMobs.Find(m => m.Id == combat.SourceId);
+                var targetPlayer = Types.Player.ToList().Find(p => p?.Id == combat.TargetId);
+                var targetMob = LocalMobs.Find(m => m.Id == combat.TargetId);
+                source = sourcePlayer != null ? new Vector2(sourcePlayer.X, sourcePlayer.Y) : source;
+                source = sourceMob != null ? new Vector2(sourceMob.X, sourceMob.Y) : source;
+                target = targetPlayer != null ? new Vector2(targetPlayer.X, targetPlayer.Y) : target;
+                target = targetMob != null ? new Vector2(targetMob.X, targetMob.Y) : target;
+                if (source.X.CompareTo(0) > 0 && source.Y.CompareTo(0) > 0 && target.X.CompareTo(0) > 0 && target.Y.CompareTo(0) > 0)
+                {
+                    Graphics.DrawLaser(source, target);
+                }
             }
         }
 

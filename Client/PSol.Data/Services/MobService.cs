@@ -18,21 +18,21 @@ namespace PSol.Data.Services
             _mobRepo = mobRepo;
         }
 
-        public ICollection<Mob> GetMobs(int minX = 0, int maxX = Constants.PLAY_AREA_WIDTH, int minY = 0, int maxY = Constants.PLAY_AREA_HEIGHT)
+        public ICollection<Mob> GetMobs(int minX = 0, int maxX = Constants.PLAY_AREA_WIDTH, int minY = 0, int maxY = Constants.PLAY_AREA_HEIGHT, bool getDead = false)
         {
             if (_mobs == null)
             {
                 _mobs = _mobRepo.GetAllMobs();
             }
 
-            return _mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY).ToList();
+            return _mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY && m.Alive != getDead).ToList();
         }
 
         public void RepopGalaxy(bool forceAll = false)
         {
             Console.WriteLine(@"Repop");
             // Get all mobs and count them
-            var activeMobs = GetMobs();
+            var activeMobs = GetMobs(getDead: true);
             var countOfAllMobs = activeMobs.GroupBy(g => g.MobTypeId)
                 .Select(s => new Tuple<string, int>(s.Key, s.Count())).ToList();
             // Get all mob types
