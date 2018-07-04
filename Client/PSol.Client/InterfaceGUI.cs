@@ -12,9 +12,6 @@ namespace PSol.Client
     {
         public static List<Panel> Windows = new List<Panel>();
         private readonly ClientTCP ctcp = new ClientTCP();
-        public static Panel galaxyMap;
-        public static Paragraph starLabel;
-        public static Image starDetail;
         public MulticolorParagraph lblStatus;
         public TextInput txtUser;
         public TextInput txtPass;
@@ -22,7 +19,13 @@ namespace PSol.Client
         public TextInput txtPassReg;
         public TextInput txtPas2Reg;
         public static TextInput messageText;
+
+        // Map stuff
         public static Image mapPlayer;
+        public static Panel galaxyMap;
+        public static Paragraph starLabel;
+        public static Image starDetail;
+        public static Paragraph[] mapLine;
 
         // IGUI textures
         private static Texture2D mapStar;
@@ -49,6 +52,8 @@ namespace PSol.Client
             mapStar = content.Load<Texture2D>("Panels/starIco");
             mapDiamond = content.Load<Texture2D>("Panels/diamondIco");
             closeIcon = content.Load<Texture2D>("Panels/closeIco");
+
+            mapLine = new Paragraph[5];
 
             CreateChats();
             CreateWindow_Login();
@@ -373,6 +378,11 @@ namespace PSol.Client
             Paragraph navLabel = new Paragraph("Navigate", Anchor.BottomRight, null, new Vector2(0, 5)) { FillColor = Color.DarkGray };
             Image canxButton = new Image(button, new Vector2(125, 40), ImageDrawMode.Stretch, Anchor.BottomRight, new Vector2(140, 0));
             Paragraph canxLabel = new Paragraph("Cancel", Anchor.BottomRight, null, new Vector2(165, 5)) { FillColor = Color.DarkGray };
+            mapLine[0] = new Paragraph("Name: ", Anchor.BottomLeft, null, new Vector2(475, 200)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[1] = new Paragraph("Classification: ", Anchor.BottomLeft, null, new Vector2(475, 180)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[2] = new Paragraph("Coordinates: ", Anchor.BottomLeft, null, new Vector2(475, 160)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[3] = new Paragraph("Belligerence: ", Anchor.BottomLeft, null, new Vector2(475, 140)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[4] = new Paragraph("Planets: ", Anchor.BottomLeft, null, new Vector2(475, 120)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
             galaxyMap.Draggable = true;
             galaxyMap.Skin = PanelSkin.None;
 
@@ -383,6 +393,7 @@ namespace PSol.Client
             galaxyMap.AddChild(navLabel);
             galaxyMap.AddChild(canxButton);
             galaxyMap.AddChild(canxLabel);
+            for (int i = 0; i < 5; i++) { galaxyMap.AddChild(mapLine[i]); }
             UserInterface.Active.AddEntity(galaxyMap);
 
             // Actions
@@ -408,7 +419,7 @@ namespace PSol.Client
             canxLabel.ClickThrough = true;
             canxButton.OnClick += entity =>
             {
-                if (GameLogic.selectedPlanet != "")
+                if (GameLogic.selectedMapItem != -1)
                 {
                     starDetail.Texture = Graphics.Planets[0];
                     GameLogic.selectedMapItem = -1;
@@ -449,6 +460,11 @@ namespace PSol.Client
                 {
                     GameLogic.selectedMapItem = n;
                     starDetail.Texture = Graphics.Planets[4];
+                    mapLine[0].Text = "Name: " + GameLogic.Galaxy[n].Name;
+                    mapLine[1].Text = "Classification: " + "Secchi class III";
+                    mapLine[2].Text = "Coordinates: " + GameLogic.Galaxy[n].X / 100 + ":" + GameLogic.Galaxy[n].Y / 100;
+                    mapLine[3].Text = "Belligerence: " + "Moderate";
+                    mapLine[4].Text = "Planets: " + GameLogic.Galaxy[n].Planets.Count;
                 };
             }
             galaxyMap.AddChild(closeBtn);

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
-using System.Runtime.Remoting.Messaging;
-using System.Threading;
 using Bindings;
 using Ninject;
 using PSol.Data.Models;
@@ -33,7 +31,7 @@ namespace PSol.Server
 
         private void NetworkListen()
         {
-            while (Socket != null && Socket.Connected)
+            while (Socket != null && Socket.Connected && Stream.CanRead)
             {
                 var bytesData = new byte[4];
                 Stream.Read(bytesData, 0, 4);
@@ -63,8 +61,6 @@ namespace PSol.Server
             _gameService.SaveGame(new List<User> { Types.Player[index] });
             ServerTCP.tempPlayer[index].inGame = false;
             ServerTCP.tempPlayer[index].receiving = false;
-            Stream.Close();
-            Stream = null;
             Socket.Close();
             Socket = null;
             Types.Player[index] = Types.Default;
