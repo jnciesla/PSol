@@ -1,10 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <XnaContent xmlns:ns="Microsoft.Xna.Framework">
   <Asset Type="GeonBit.UI.DataTypes.ThemeSettings">
-    <ThemeName>Clean</ThemeName>
-    <AuthorName>Ronen Ness</AuthorName>
-    <Description>A simple, editor-like UI theme.</Description>
-    <Credits>Made by Ronen Ness</Credits>
+    <ThemeName>Classic</ThemeName>
+    <AuthorName>Jeremy Ciesla</AuthorName>
+    <Description>Classic PSol metal theme</Description>
+    <Credits>Made by JCiesla</Credits>
     <Version>1.0.0</Version>
     <RepoUrl></RepoUrl>
 	<License>MIT</License>

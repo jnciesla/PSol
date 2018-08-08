@@ -6,6 +6,7 @@ using Bindings;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using GeonBit.UI;
+using PSol.Data.Models;
 
 namespace PSol.Client
 {
@@ -13,10 +14,12 @@ namespace PSol.Client
     {
         public static Texture2D[] Characters = new Texture2D[3];
         public static Texture2D[] Planets = new Texture2D[5];
+        public static Texture2D[] Objects = new Texture2D[2];
         public static Texture2D scanner;
         public static Texture2D Shield;
         public static Texture2D pixel;
         public static Texture2D triangle;
+        public static Texture2D circle;
 
         public static Texture2D laserMid;
 
@@ -29,9 +32,11 @@ namespace PSol.Client
             LoadCharacters(manager);
             LoadPlanets(manager);
             LoadCursors(manager);
+            LoadObjects(manager);
             laserMid = manager.Load<Texture2D>("Particles/laserMid");
             scanner = manager.Load<Texture2D>("Panels/scanner");
             triangle = manager.Load<Texture2D>("Panels/triangle");
+            circle = manager.Load<Texture2D>("Panels/circleIco");
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
         }
@@ -404,9 +409,19 @@ namespace PSol.Client
             }
         }
 
+        private static void LoadObjects(ContentManager manager)
+        {
+            for (int i = 1; i < Objects.Length; i++)
+            {
+                Objects[i] = manager.Load<Texture2D>("Objects/" + i);
+            }
+        }
+
         public static void DrawHud(ContentManager manager)
         {
             if (GameLogic.PlayerIndex <= -1) return;
+            const float scaleX = (float)200 / 1024;
+            const float scaleY = (float)200 / 768;
             Game1.spriteBatch.Begin();
             // Draw scanner
             if (Globals.scanner)
@@ -415,6 +430,17 @@ namespace PSol.Client
                     Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                 Game1.spriteBatch.Draw(triangle, new Vector2(100, Globals.PreferredBackBufferHeight - 100), null,
                     Color.White, Types.Player[GameLogic.PlayerIndex].Rotation, new Vector2(8, 8), 1, SpriteEffects.None, 0);
+                if (GameLogic.LocalMobs != null && GameLogic.LocalMobs.Count > 0)
+                {
+                    foreach (var m in GameLogic.LocalMobs)
+                    {
+                        
+                        Game1.spriteBatch.Draw(circle,
+                            new Vector2(m.X * scaleX,
+                                Globals.PreferredBackBufferHeight - m.Y * scaleY), null,
+                            Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                    }
+                }
 
                 // Click to close
                 Rectangle Bound = new Rectangle(186, Globals.PreferredBackBufferHeight - 196, 12, 12);
@@ -426,7 +452,6 @@ namespace PSol.Client
                     if (ms.LeftButton == ButtonState.Pressed)
                     {
                         Globals.scanner = false;
-
                     };
                 }
 

@@ -22,6 +22,7 @@ namespace PSol.Client
         public static List<Star> Galaxy;
         public static List<Mob> LocalMobs;
         public static List<Combat> LocalCombat;
+        private static Random random;
 
         public static bool IsMoving()
         {
@@ -67,7 +68,6 @@ namespace PSol.Client
             if (Types.Player[PlayerIndex].Rotation != angle && Types.Player[PlayerIndex].Rotation >= angle)
                 Rotate(0);
             Globals.DirUp = true;
-            Console.WriteLine(distance);
             if (distance <= 50)
             {
                 Navigating = false;
@@ -146,6 +146,7 @@ namespace PSol.Client
 
         public static void WatchCombat()
         {
+            random = new Random();
             foreach (var combat in LocalCombat)
             {
                 var source = new Vector2(0, 0);
@@ -161,6 +162,7 @@ namespace PSol.Client
                 if (source.X.CompareTo(0) > 0 && source.Y.CompareTo(0) > 0 && target.X.CompareTo(0) > 0 && target.Y.CompareTo(0) > 0)
                 {
                     Graphics.DrawLaser(source, target);
+                    Game1.smallExplosion.Create(new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
                 }
             }
         }

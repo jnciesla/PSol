@@ -26,6 +26,7 @@ namespace PSol.Client
             Size = size;
             TTL = ttl;
             Opacity = 1f;
+
             Color = new Color
             {
                 R = 255,
@@ -36,12 +37,10 @@ namespace PSol.Client
 
         public void Update()
         {
-            TTL--;
             Position += Velocity;
             Angle += AngularVelocity;
-            Opacity -= .05f;
-            Color.G -= 15;
-
+            Opacity -= (float)10 / TTL;
+            if (Color.G >= 1) { Color.G -= 15; } else { Color.R -= 15; }
         }
 
         public void Draw(SpriteBatch spriteBatch)

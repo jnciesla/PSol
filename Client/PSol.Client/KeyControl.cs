@@ -55,5 +55,13 @@ namespace PSol.Client
             }
             return false;
         }
+        public bool CheckShift()
+        {
+            if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift))
+            {
+                return true;
+            }
+            return false;
+        }
     }
 }

@@ -1,7 +1,9 @@
-﻿using GeonBit.UI.Entities;
+﻿using System;
+using GeonBit.UI.Entities;
 using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
+using System.ComponentModel;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Bindings;
@@ -25,13 +27,22 @@ namespace PSol.Client
         public static Panel galaxyMap;
         public static Paragraph starLabel;
         public static Image starDetail;
-        public static Paragraph[] mapLine;
+        private static Paragraph[] mapLine;
+        private static Paragraph canxLabel;
+
+        // Inventory stuff
+        public static Paragraph detailsHeader;
+        public static Paragraph detailsBody;
 
         // IGUI textures
         private static Texture2D mapStar;
         private static Texture2D mapDiamond;
         private static Texture2D closeIcon;
+        private static Texture2D plusIcon;
+        private static Texture2D minusIcon;
+        private static Panel itemList;
         private Texture2D mapPanel;
+        private Texture2D inventoryPanel;
         private Texture2D registerPanel;
         private Texture2D loginPanel;
         private Texture2D button;
@@ -45,6 +56,7 @@ namespace PSol.Client
             // Initialize custom graphics
             loginPanel = content.Load<Texture2D>("Panels/Login");
             registerPanel = content.Load<Texture2D>("Panels/Register");
+            inventoryPanel = content.Load<Texture2D>("Panels/Inventory");
             button = content.Load<Texture2D>("Panels/button_default");
             button_hover = content.Load<Texture2D>("Panels/button_default_hover");
             button_down = content.Load<Texture2D>("Panels/button_default_down");
@@ -52,14 +64,17 @@ namespace PSol.Client
             mapStar = content.Load<Texture2D>("Panels/starIco");
             mapDiamond = content.Load<Texture2D>("Panels/diamondIco");
             closeIcon = content.Load<Texture2D>("Panels/closeIco");
+            plusIcon = content.Load<Texture2D>("Panels/plusIco");
+            minusIcon = content.Load<Texture2D>("Panels/minusIco");
 
-            mapLine = new Paragraph[5];
+            mapLine = new Paragraph[10];
 
             CreateChats();
             CreateWindow_Login();
             CreateWindow_Register();
             CreateMessage();
             CreateMap();
+            CreateInventory();
         }
 
         public void CreateWindow(Panel panel)
@@ -126,6 +141,10 @@ namespace PSol.Client
                     else if (messageText.Value.ToLower() == "/scan" || messageText.Value.ToLower() == "/scanner")
                     {
                         Globals.scanner = !Globals.scanner;
+                    }
+                    else if (messageText.Value.ToLower() == "/look")
+                    {
+                        AddChats(GameLogic.LocalMobs.Count.ToString(), Color.Red);
                     }
                     else
                     {
@@ -339,6 +358,7 @@ namespace PSol.Client
             panel.Scrollbar.Opacity = 0;
             Globals.pauseChat = false;
             Globals.chatPanel = panel;
+            Globals.chatPanel.Scrollbar.AdjustMaxAutomatically = true;
             CreateWindow(Globals.chatPanel);
         }
 
@@ -377,12 +397,17 @@ namespace PSol.Client
             Image navButton = new Image(button, new Vector2(125, 40), ImageDrawMode.Stretch, Anchor.BottomRight, new Vector2(-10, 0));
             Paragraph navLabel = new Paragraph("Navigate", Anchor.BottomRight, null, new Vector2(0, 5)) { FillColor = Color.DarkGray };
             Image canxButton = new Image(button, new Vector2(125, 40), ImageDrawMode.Stretch, Anchor.BottomRight, new Vector2(140, 0));
-            Paragraph canxLabel = new Paragraph("Cancel", Anchor.BottomRight, null, new Vector2(165, 5)) { FillColor = Color.DarkGray };
+            canxLabel = new Paragraph("Cancel", Anchor.BottomRight, null, new Vector2(165, 5)) { FillColor = Color.DarkGray };
             mapLine[0] = new Paragraph("Name: ", Anchor.BottomLeft, null, new Vector2(475, 200)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
-            mapLine[1] = new Paragraph("Classification: ", Anchor.BottomLeft, null, new Vector2(475, 180)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
-            mapLine[2] = new Paragraph("Coordinates: ", Anchor.BottomLeft, null, new Vector2(475, 160)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
-            mapLine[3] = new Paragraph("Belligerence: ", Anchor.BottomLeft, null, new Vector2(475, 140)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
-            mapLine[4] = new Paragraph("Planets: ", Anchor.BottomLeft, null, new Vector2(475, 120)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[1] = new Paragraph("Classification: ", Anchor.BottomLeft, null, new Vector2(475, 185)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[2] = new Paragraph("Coordinates: ", Anchor.BottomLeft, null, new Vector2(475, 170)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[3] = new Paragraph("Belligerence: ", Anchor.BottomLeft, null, new Vector2(475, 155)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[4] = new Paragraph("Planets: ", Anchor.BottomLeft, null, new Vector2(475, 140)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[5] = new Paragraph("", Anchor.BottomLeft, null, new Vector2(500, 125)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[6] = new Paragraph("", Anchor.BottomLeft, null, new Vector2(500, 110)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[7] = new Paragraph("", Anchor.BottomLeft, null, new Vector2(500, 95)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[8] = new Paragraph("", Anchor.BottomLeft, null, new Vector2(500, 80)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
+            mapLine[9] = new Paragraph("", Anchor.BottomLeft, null, new Vector2(500, 65)) { FillColor = Color.DarkOliveGreen, FontOverride = Globals.Font10 };
             galaxyMap.Draggable = true;
             galaxyMap.Skin = PanelSkin.None;
 
@@ -393,7 +418,7 @@ namespace PSol.Client
             galaxyMap.AddChild(navLabel);
             galaxyMap.AddChild(canxButton);
             galaxyMap.AddChild(canxLabel);
-            for (int i = 0; i < 5; i++) { galaxyMap.AddChild(mapLine[i]); }
+            for (int i = 0; i < 10; i++) { galaxyMap.AddChild(mapLine[i]); }
             UserInterface.Active.AddEntity(galaxyMap);
 
             // Actions
@@ -423,6 +448,16 @@ namespace PSol.Client
                 {
                     starDetail.Texture = Graphics.Planets[0];
                     GameLogic.selectedMapItem = -1;
+                    mapLine[0].Text = "Name: ";
+                    mapLine[1].Text = "Classification: ";
+                    mapLine[2].Text = "Coordinates: ";
+                    mapLine[3].Text = "Belligerence: ";
+                    mapLine[4].Text = "Planets: ";
+                    for (int i = 5; i < 10; i++)
+                    {
+                        mapLine[i].Text = "";
+                        mapLine[i].OnMouseEnter += pEntity => { UserInterface.Active.SetCursor(CursorType.Default); };
+                    }
                 }
                 else
                 {
@@ -430,7 +465,163 @@ namespace PSol.Client
                 }
             };
 
+            mapLine[5].OnMouseLeave += pEntity => { UserInterface.Active.SetCursor(CursorType.Default); };
+            mapLine[6].OnMouseLeave += pEntity => { UserInterface.Active.SetCursor(CursorType.Default); };
+            mapLine[7].OnMouseLeave += pEntity => { UserInterface.Active.SetCursor(CursorType.Default); };
+            mapLine[8].OnMouseLeave += pEntity => { UserInterface.Active.SetCursor(CursorType.Default); };
+            mapLine[9].OnMouseLeave += pEntity => { UserInterface.Active.SetCursor(CursorType.Default); };
+
             CreateWindow(galaxyMap);
+        }
+
+        public void CreateInventory()
+        {
+            int BUY = 1, SELL = 2;
+            Panel panel = new Panel(new Vector2(600, 400), PanelSkin.None, Anchor.AutoCenter) { Draggable = true };
+            Image image = new Image(inventoryPanel, new Vector2(600, 400), ImageDrawMode.Panel, Anchor.TopLeft, new Vector2(-30, -29));
+            detailsHeader = new Paragraph(" ", Anchor.TopRight, new Color(12, 57, 14), null, null, new Vector2(200, 5)) { FontOverride = Globals.Font14, OutlineOpacity = 0 };
+            detailsBody = new Paragraph(" ", Anchor.TopCenter, new Color(12, 57, 14), null, null, new Vector2(-30, 22)) { FontOverride = Globals.Font10, OutlineOpacity = 0 };
+            Image closeBtn = new Image(closeIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(-30, -29));
+            itemList = new Panel(new Vector2(208, 380), PanelSkin.None, Anchor.TopLeft, new Vector2(-25, -20));
+            Label itemName = new Label("", Anchor.TopRight);
+
+            itemList.PanelOverflowBehavior = PanelOverflowBehavior.VerticalScroll;
+            itemList.Padding = Vector2.Zero;
+
+            UserInterface.Active.AddEntity(panel);
+            panel.AddChild(image);
+            panel.AddChild(closeBtn);
+            panel.AddChild(itemList);
+            panel.AddChild(itemName);
+            panel.AddChild(detailsHeader);
+            panel.AddChild(detailsBody);
+
+            closeBtn.OnMouseEnter += (closeEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            closeBtn.OnMouseLeave += (closeLeave) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            closeBtn.OnClick += (closeClick) => { MenuManager.Clear(5); };
+
+            PopulateInventory(0);
+
+            CreateWindow(panel);
+        }
+
+        public void PopulateInventory(int type)
+        {
+            // Replace parameters with actual item IDs when those exist
+            itemList.AddChild(GenerateItem("Item name #1", 1, type));
+            itemList.AddChild(GenerateItem("Item name #2", 1, type));
+            itemList.AddChild(GenerateItem("Item name #3", 1, type));
+            itemList.AddChild(GenerateItem("Item name #4", 1, type));
+            itemList.AddChild(GenerateItem("Item name #5", 1, type));
+            itemList.AddChild(GenerateItem("Item name #6", 1, type));
+            itemList.AddChild(GenerateItem("Item name #7", 1, type));
+            itemList.AddChild(GenerateItem("Item name #8", 1, type));
+            itemList.AddChild(GenerateItem("Item name #9", 1, type));
+            itemList.AddChild(GenerateItem("Item name #10", 1, type));
+        }
+
+        public Panel GenerateItem(string name, int image, int type)
+        {
+            int qty = 0, BUY = 1, SELL = 2, max;
+            Panel item = new Panel(new Vector2(180, 64), PanelSkin.Default, Anchor.Auto);
+            Image itemImage = new Image(Graphics.Objects[image], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopLeft, new Vector2(-32, -32));
+            item.AddChild(new Paragraph(name, Anchor.TopLeft, Color.DarkGoldenrod, null, null, new Vector2(32, -28)) { FontOverride = Globals.Font10 });
+            item.AddChild(new Paragraph("Item type", Anchor.Auto, Color.AntiqueWhite, null, null, new Vector2(32, -8)) { FontOverride = Globals.Font10 });
+            max = 100;                      // Quantity in inventory for sell or other
+            if (type == BUY) { max = 255; } // Allow user to buy 255 of anything (right now)
+            if (type == BUY || type == SELL)
+            {
+                item.AddChild(
+                    new Paragraph("$100k", Anchor.Auto, Color.DimGray, null, null, new Vector2(32, -8))
+                    {
+                        FontOverride = Globals.Font14
+                    });
+            }
+            else
+            {
+                item.AddChild(
+                    new Paragraph(" " + qty, Anchor.Auto, Color.DimGray, null, null, new Vector2(32, -8))
+                    {
+                        FontOverride = Globals.Font14
+                    });
+            }
+
+            Paragraph qtyStr = new Paragraph(qty.ToString(), Anchor.BottomRight, Color.WhiteSmoke, null, new Vector2(18, 8), new Vector2(-7, -17)) { FontOverride = Globals.Font8, AlignToCenter = true };
+            Image decBtn = new Image(minusIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.BottomRight, new Vector2(15, -17));
+            Image incBtn = new Image(plusIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.BottomRight, new Vector2(-25, -17));
+
+            item.AddChild(qtyStr);
+            item.AddChild(decBtn);
+            item.AddChild(incBtn);
+            item.AddChild(itemImage);
+
+            itemImage.OnMouseEnter += (imageEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            itemImage.OnMouseLeave += (imageLeave) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            itemImage.OnClick += (imageClick) =>
+            {
+                detailsHeader.Text = name;
+                detailsBody.Text = "Test\nTest2";
+            };
+
+            decBtn.OnMouseEnter += (decEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            decBtn.OnMouseLeave += (decLeave) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            decBtn.OnClick += (decClick) =>
+            {
+                if (qty > 0)
+                {
+                    if (Globals.Control)
+                    {
+                        qty -= 10;
+                        if (qty < 0)
+                            qty = 0;
+                    }
+                    else if (Globals.Alt)
+                    {
+                        qty -= 100;
+                        if (qty < 0)
+                            qty = 0;
+                    }
+                    else if (Globals.Shift)
+                    {
+                        qty = 0;
+                    }
+                    else
+                    {
+                        qty--;
+                    }
+                    qtyStr.Text = qty.ToString();
+                }
+            };
+            incBtn.OnMouseEnter += (incEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            incBtn.OnMouseLeave += (incLeave) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            incBtn.OnClick += (incClick) =>
+            {
+                if (qty < max)
+                {
+                    if (Globals.Control)
+                    {
+                        qty += 10;
+                        if (qty > max)
+                            qty = max;
+                    }
+                    else if (Globals.Alt)
+                    {
+                        qty += 100;
+                        if (qty > max)
+                            qty = max;
+                    }
+                    else if (Globals.Shift)
+                    {
+                        qty = max;
+                    }
+                    else
+                    {
+                        qty++;
+                    }
+                    qtyStr.Text = qty.ToString();
+                }
+            };
+            return item;
         }
 
         public static void PopulateMap()
@@ -459,12 +650,7 @@ namespace PSol.Client
                 image.OnClick += (starClick) =>
                 {
                     GameLogic.selectedMapItem = n;
-                    starDetail.Texture = Graphics.Planets[4];
-                    mapLine[0].Text = "Name: " + GameLogic.Galaxy[n].Name;
-                    mapLine[1].Text = "Classification: " + "Secchi class III";
-                    mapLine[2].Text = "Coordinates: " + GameLogic.Galaxy[n].X / 100 + ":" + GameLogic.Galaxy[n].Y / 100;
-                    mapLine[3].Text = "Belligerence: " + "Moderate";
-                    mapLine[4].Text = "Planets: " + GameLogic.Galaxy[n].Planets.Count;
+                    MapDetail(n);
                 };
             }
             galaxyMap.AddChild(closeBtn);
@@ -473,5 +659,51 @@ namespace PSol.Client
             closeBtn.OnClick += (closeClick) => { MenuManager.Clear(4); };
 
         }
+
+        private static void MapDetail(int n)
+        {
+            starDetail.Texture = Graphics.Planets[4];
+            mapLine[0].Text = "Name: " + GameLogic.Galaxy[n].Name;
+            mapLine[1].Text = "Classification: " + "Secchi class III";
+            mapLine[2].Text = "Coordinates: " + GameLogic.Galaxy[n].X / 100 + ":" + GameLogic.Galaxy[n].Y / 100;
+            mapLine[3].Text = "Belligerence: " + "Moderate";
+            for (int index = 5; index < 10; index++)
+            {
+                mapLine[index].Text = "";
+            }
+            if (GameLogic.Galaxy[n].Planets.Count == 0)
+            {
+                mapLine[4].Text = "Planets: None";
+            }
+            else
+            {
+                mapLine[4].Text = "Planets: " + GameLogic.Galaxy[n].Planets.Count;
+                int j = 5;
+                foreach (var planet in GameLogic.Galaxy[n].Planets)
+                {
+                    mapLine[j].OnMouseEnter += entity => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+                    mapLine[j].OnClick += entity =>
+                    {
+                        starDetail.Texture = Graphics.Planets[planet.Sprite];
+                        mapLine[0].Text = "Name: " + planet.Name;
+                        mapLine[1].Text = "Classification: " + "Terrestrial";
+                        mapLine[2].Text = "Coordinates: " + (int)planet.X / 100 + ":" + (int)planet.Y / 100;
+                        mapLine[3].Text = "Belligerence: " + "Moderate";
+                        for (int index = 4; index < 9; index++)
+                        {
+                            mapLine[index].Text = "";
+                        }
+
+                        mapLine[9].Text = "<- Back";
+                        mapLine[9].OnMouseEnter += Entity => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+                        mapLine[9].OnMouseLeave += Entity => { UserInterface.Active.SetCursor(CursorType.Default); };
+                        mapLine[9].OnClick += Entity => { MapDetail(n); };
+                    };
+                    mapLine[j].Text = planet.Name;
+                    j++;
+                }
+            }
+        }
+
     }
 }

@@ -26,6 +26,9 @@ namespace PSol.Client
 
         public static Color Luminosity = Color.White;
         public static bool Control = false;
+        public static bool Shift = false;
+        public static bool Alt = false;
+
 
         public static string loginUsername = "";
         public static string loginPassword = "";
@@ -39,14 +42,12 @@ namespace PSol.Client
         public static bool DirLt;
         public static bool DirRt;
 
-        public static bool ZoomIn;
-        public static bool ZoomOut;
-        public static bool ZoomDefault;
-
         public static bool Details1;
         public static bool Details2;
 
         // Fonts
+        public static SpriteFont Font14;
+        public static SpriteFont Font12;
         public static SpriteFont Font10;
         public static SpriteFont Font8;
     }

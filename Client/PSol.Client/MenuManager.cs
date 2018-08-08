@@ -1,5 +1,4 @@
-﻿using System;
-using Bindings;
+﻿using Bindings;
 using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
@@ -8,15 +7,14 @@ namespace PSol.Client
 {
     internal class MenuManager
     {
-        public static Menu menu;
-
         public enum Menu
         {
             Chats,
             Login,
             Register,
             Message,
-            Map
+            Map,
+            Inventory
         }
 
         public static void ChangeMenu(Menu menu)
@@ -24,12 +22,12 @@ namespace PSol.Client
             Clear();
             InterfaceGUI.Windows[(int)menu].Visible = true;
             Globals.windowOpen = true;
-            if (menu == Menu.Login || menu == Menu.Register || menu == Menu.Map)
+            if (menu == Menu.Login || menu == Menu.Register || menu == Menu.Map || menu == Menu.Inventory)
             {
                 Globals.cursorOverride = true;
             }
 
-            if ((int)menu == 3)
+            if (menu == Menu.Message)
             {
                 if (Globals.scanner)
                 {

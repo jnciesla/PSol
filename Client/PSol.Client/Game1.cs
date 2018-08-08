@@ -3,13 +3,12 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using GeonBit.UI;
-
 using Bindings;
 using PSol.Data.Models;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Sockets;
-using System.Threading;
+using GeonBit.UI.Entities;
 
 namespace PSol.Client
 {
@@ -18,6 +17,7 @@ namespace PSol.Client
         public static GraphicsDeviceManager graphics;
         public static SpriteBatch spriteBatch;
         public static ParticleEngine particleEngine;
+        public static SmallExplosion smallExplosion;
         private Texture2D backGroundTexture;
         private Vector2 backgroundPos;
         private RenderTarget2D renderTarget;
@@ -35,7 +35,7 @@ namespace PSol.Client
         public static int FrameTime;
 
         private bool _laserCharged = true;
-        private int _laserTimer = 0;
+        private int _laserTimer;
 
         public Game1()
         {
@@ -60,8 +60,10 @@ namespace PSol.Client
         protected override void Initialize()
         {
             // Initialize fonts
-            Globals.Font10 = Content.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size10");
-            Globals.Font8 = Content.Load<SpriteFont>("GeonBit.UI/themes/editor/fonts/Size8");
+            Globals.Font14 = Content.Load<SpriteFont>("GeonBit.UI/themes/classic/fonts/Size14");
+            Globals.Font12 = Content.Load<SpriteFont>("GeonBit.UI/themes/classic/fonts/Size12");
+            Globals.Font10 = Content.Load<SpriteFont>("GeonBit.UI/themes/classic/fonts/Size10");
+            Globals.Font8 = Content.Load<SpriteFont>("GeonBit.UI/themes/classic/fonts/Size8");
 
             for (var i = 1; i < Constants.MAX_PLAYERS; i++)
             {
@@ -94,10 +96,12 @@ namespace PSol.Client
             backgroundPos = new Vector2(-Globals.PreferredBackBufferWidth / 2.0F, -Globals.PreferredBackBufferHeight / 2.0F);
 
             // Particle engine textures
-            List<Texture2D> textures = new List<Texture2D>();
-            textures.Add(Content.Load<Texture2D>("Particles/circle"));
-            particleEngine = new ParticleEngine(textures, new Vector2(0, 0));
+            List<Texture2D> engineTextures = new List<Texture2D> { Content.Load<Texture2D>("Particles/circle") };
+            particleEngine = new ParticleEngine(engineTextures, new Vector2(0, 0));
 
+            //Particle small explosion textures
+            List<Texture2D> smallExplosionTextures = new List<Texture2D> { Content.Load<Texture2D>("Particles/circle") };
+            smallExplosion = new SmallExplosion(smallExplosionTextures, new Vector2(0, 0));
         }
 
         /// <summary>
@@ -135,10 +139,9 @@ namespace PSol.Client
             IGUI.lblStatus.Text = ctcp.isOnline ? "Server status:{{GREEN}} online" : "Server status:{{RED}} offline";
             CheckKeys();
 
-            //            bolt?.Update();
-            //            beam?.Update();
-
+            smallExplosion.Update();
             camera.Update(gameTime, this);
+            minicam.Update(gameTime, this);
             base.Update(gameTime);
         }
 
@@ -169,10 +172,10 @@ namespace PSol.Client
         /// Draws the entire scene in the given render target.
         /// </summary>
         /// <returns>A texture2D with the scene drawn in it.</returns>
-        protected void DrawSceneToTexture(RenderTarget2D renderTarget, GameTime gameTime)
+        protected void DrawSceneToTexture(RenderTarget2D _renderTarget, GameTime gameTime)
         {
             // Set the render target
-            GraphicsDevice.SetRenderTarget(renderTarget);
+            GraphicsDevice.SetRenderTarget(_renderTarget);
             GraphicsDevice.DepthStencilState = new DepthStencilState() { DepthBufferEnable = true };
             // Draw the scene
             GraphicsDevice.Clear(Color.Black);
@@ -185,7 +188,6 @@ namespace PSol.Client
             {
                 GameLogic.Navigate();
                 GameLogic.CheckMovement();
-                camera.ZoomController();
                 WalkTimer = Tick + 15;
                 Globals.PlanetaryRotation += MathHelper.ToRadians(.01f);
             }
@@ -202,6 +204,7 @@ namespace PSol.Client
 
             particleEngine.Draw(spriteBatch);
             Graphics.RenderPlayers();
+            smallExplosion.Draw(spriteBatch);
             spriteBatch.End();
 
             Graphics.DrawHud(Content);
@@ -215,14 +218,7 @@ namespace PSol.Client
         {
             if (KC.KeyPress(Keys.L) && Globals.Control)
             {
-                if (Globals.Luminosity == Color.White)
-                {
-                    Globals.Luminosity = Color.Gray;
-                }
-                else
-                {
-                    Globals.Luminosity = Color.White;
-                }
+                Globals.Luminosity = Globals.Luminosity == Color.White ? Color.Gray : Color.White;
             }
 
             if (KC.KeyPress(Keys.Q) && Globals.Control)
@@ -235,7 +231,14 @@ namespace PSol.Client
                 MenuManager.ChangeMenu(MenuManager.Menu.Map);
             }
 
+            if (KC.KeyPress(Keys.I) && Globals.Control)
+            {
+                MenuManager.ChangeMenu(MenuManager.Menu.Inventory);
+            }
+
             Globals.Control = KC.CheckCtrl();
+            Globals.Shift = KC.CheckShift();
+            Globals.Alt = KC.CheckAlt();
 
             // TODO: This is dumb - replace with a timer or something else when we get real weapons
             if (!_laserCharged)
@@ -300,9 +303,6 @@ namespace PSol.Client
                 Globals.DirDn = Keyboard.GetState().IsKeyDown(Keys.S);
                 Globals.DirLt = Keyboard.GetState().IsKeyDown(Keys.A);
                 Globals.DirRt = Keyboard.GetState().IsKeyDown(Keys.D);
-                Globals.ZoomIn = Keyboard.GetState().IsKeyDown(Keys.E);
-                Globals.ZoomOut = Keyboard.GetState().IsKeyDown(Keys.Q);
-                Globals.ZoomDefault = Keyboard.GetState().IsKeyDown(Keys.R);
                 Globals.Details1 = Keyboard.GetState().IsKeyDown(Keys.LeftAlt);
                 Globals.Details2 = Keyboard.GetState().IsKeyDown(Keys.RightAlt);
 
