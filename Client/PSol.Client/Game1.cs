@@ -141,7 +141,7 @@ namespace PSol.Client
 
             smallExplosion.Update();
             camera.Update(gameTime, this);
-            minicam.Update(gameTime, this);
+            
             base.Update(gameTime);
         }
 

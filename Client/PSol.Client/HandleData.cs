@@ -1,11 +1,14 @@
-﻿using System;
+﻿#pragma warning disable CS0436 // Type conflicts with imported type
+using System;
 using Bindings;
 using System.Collections.Generic;
 using System.Xml;
 using System.Text;
 using System.IO;
+using System.Linq;
 using Microsoft.Xna.Framework;
 using PSol.Data.Models;
+using static Bindings.ServerPackets;
 
 namespace PSol.Client
 {
@@ -21,12 +24,13 @@ namespace PSol.Client
             ctcp = new ClientTCP();
             packets = new Dictionary<int, Packet_>
             {
-                {(int) ServerPackets.SMessage, HandleMessage},
-                {(int) ServerPackets.SPlayerData, DownloadData},
-                {(int) ServerPackets.SAckRegister, GoodRegister},
-                {(int) ServerPackets.SPulse, HandleServerPulse},
-                {(int) ServerPackets.SFullData, GetStaticPulse},
-                {(int) ServerPackets.SGalaxy, HandleGalaxy }
+                {(int) SMessage, HandleMessage},
+                {(int) SPlayerData, DownloadData},
+                {(int) SAckRegister, GoodRegister},
+                {(int) SPulse, HandleServerPulse},
+                {(int) SFullData, GetStaticPulse},
+                {(int) SGalaxy, HandleGalaxy },
+                {(int) SItems, HandleItems }
             };
         }
 
@@ -84,9 +88,9 @@ namespace PSol.Client
                 Health = buffer.GetInteger(),
                 MaxHealth = buffer.GetInteger(),
                 Shield = buffer.GetInteger(),
-                MaxShield = buffer.GetInteger()
+                MaxShield = buffer.GetInteger(),
+                Inventory = buffer.GetList<Inventory>()
             };
-
             buffer.Dispose();
             MenuManager.Clear(1);
             InterfaceGUI.AddChats("User data downloaded.", Color.DarkOliveGreen);
@@ -153,12 +157,22 @@ namespace PSol.Client
             buffer.Dispose();
         }
 
+        private void HandleItems(byte[] data)
+        {
+            InterfaceGUI.AddChats("Item dictionary downloaded.", Color.DarkOliveGreen);
+            PacketBuffer buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            GameLogic.Items = buffer.GetList<Item>();
+            buffer.Dispose();
+        }
+
         //
         // XML DATA
         //
         private static XmlDocument XML = new XmlDocument();
-        private static string Root = "PSOL";
-        private static string Filename = "settings.xml";
+        private const string Root = "PSOL";
+        private const string Filename = "settings.xml";
 
         public static void NewXMLDoc()
         {

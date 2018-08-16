@@ -22,6 +22,7 @@ namespace PSol.Data.Models
         public int Sprite { get; set; }
         public int Level { get; set; }
         public int Exp { get; set; }
+        public virtual ICollection<Inventory> Inventory { get; set; }
 
         // Position
         public int Map { get; set; }

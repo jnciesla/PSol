@@ -66,6 +66,33 @@ namespace PSol.Data.Migrations
                 Star = context.Stars.FirstOrDefault(s => s.Name == "Vyt")
             });
 
+            context.Items.AddOrUpdate(new Item
+            {
+                Id = "50521cfe-7d63-4495-a1cf-b900fb8d225f",
+                Name = "Item 1",
+                Description = "The very first item added to the game.",
+                Type = "Biospecimen",
+                Image = 0,
+                Color = 0,
+                Mass = 1,
+                Cost = 500,
+                Stack = true,
+                Level = 0,
+                Hull = 0,
+                Shield = 0,
+                Armor = 0,
+                Thrust = 0,
+                Power = 0,
+                Damage = 0,
+                Recharge = 0,
+                Repair = 0,
+                Defense = 0,
+                Offense = 0,
+                Capacity = 0,
+                Weapons = 0,
+                Special = 0
+            });
+
             context.SaveChanges();
         }
     }

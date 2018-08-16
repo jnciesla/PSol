@@ -1,10 +1,12 @@
-﻿using System;
+﻿#pragma warning disable CS0436 // Type conflicts with imported type
+using System;
 using System.Collections.Generic;
 using System.Net.Sockets;
 using Bindings;
 using Ninject;
 using PSol.Data.Models;
 using PSol.Data.Services.Interfaces;
+using static Bindings.MessageColors;
 
 namespace PSol.Server
 {
@@ -64,7 +66,7 @@ namespace PSol.Server
         private void CloseSocket(int index)
         {
             Console.WriteLine("Connection from " + IP + " has been terminated.");
-            _shd.SendMessage(-1, Types.Player[index].Name + " has disconnected.", MessageColors.Notification);
+            _shd.SendMessage(-1, Types.Player[index].Name + " has disconnected.", Notification);
             _gameService.SaveGame(new List<User> { Types.Player[index] });
             ServerTCP.tempPlayer[index].inGame = false;
             ServerTCP.tempPlayer[index].receiving = false;

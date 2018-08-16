@@ -1,11 +1,12 @@
-﻿using System;
+﻿#pragma warning disable CS0436 // Type conflicts with imported type
+using System;
 using System.IO;
 using System.IO.Compression;
 using System.Net.Sockets;
 using System.Threading;
 using Bindings;
 using Microsoft.Xna.Framework;
-using Newtonsoft.Json.Serialization;
+using static Bindings.ClientPackets;
 
 namespace PSol.Client
 {
@@ -105,7 +106,7 @@ namespace PSol.Client
         {
             InterfaceGUI.AddChats("Logging in...", Color.DarkOliveGreen);
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ClientPackets.CLogin);
+            buffer.AddInteger((int)CLogin);
             buffer.AddString(Globals.loginUsername);
             buffer.AddString(Globals.loginPassword);
             SendData(buffer.ToArray());
@@ -116,7 +117,7 @@ namespace PSol.Client
         {
             InterfaceGUI.AddChats("Registering new user...", Color.DarkOliveGreen);
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ClientPackets.CRegister);
+            buffer.AddInteger((int)CRegister);
             buffer.AddString(Globals.registerUsername);
             buffer.AddString(Globals.registerPassword);
             SendData(buffer.ToArray());
@@ -126,7 +127,7 @@ namespace PSol.Client
         public void XFerPlayer()
         {
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ClientPackets.CPlayerData);
+            buffer.AddInteger((int)CPlayerData);
             buffer.AddFloat(Types.Player[GameLogic.PlayerIndex].X);
             buffer.AddFloat(Types.Player[GameLogic.PlayerIndex].Y);
             buffer.AddFloat(Types.Player[GameLogic.PlayerIndex].Rotation);
@@ -138,7 +139,7 @@ namespace PSol.Client
         public void SendChat(string message)
         {
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ClientPackets.CChat);
+            buffer.AddInteger((int)CChat);
             buffer.AddString(message);
             SendData(buffer.ToArray());
             buffer.Dispose();
@@ -147,7 +148,7 @@ namespace PSol.Client
         public void SendCombat(string targetId, string weaponId)
         {
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ClientPackets.CCombat);
+            buffer.AddInteger((int)CCombat);
             buffer.AddString(targetId);
             buffer.AddString(weaponId);
             SendData(buffer.ToArray());

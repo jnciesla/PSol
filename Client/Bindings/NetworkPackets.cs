@@ -7,7 +7,8 @@
         SAckRegister = 3,
         SPlayerData = 4,
 		SPulse = 5,
-        SGalaxy = 6
+        SGalaxy = 6,
+        SItems = 7
     }
 
     public enum ClientPackets

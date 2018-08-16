@@ -18,14 +18,15 @@ namespace PSol.Data.Services
         }
         public void SaveGame(List<User> users)
         {
-            Console.WriteLine("Saving database...");
+            int pos = Console.CursorTop;
+            Console.WriteLine(@"Saving database...");
             users.Where(u => u?.Id != null).ToList().ForEach(user =>
             {
                 _userRepository.SavePlayer(user);
             });
             _mobService.SaveMobs();
-            Console.SetCursorPosition(0, Console.CursorTop - 1);
-            Console.WriteLine("Saving database... PASS");
+            Console.SetCursorPosition(0, pos);
+            Console.WriteLine(@"Saving database... PASS");
         }
     }
 }

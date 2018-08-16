@@ -11,15 +11,14 @@ namespace PSol.Server
     {
         private static Thread consoleThread;
         private static DataLoader dataLoader;
-        private static PacketBuffer packet;
         private static General general;
         private static HandleData shd;
         private static IGameService _gameService;
         private static IMobService _mobService;
 
+
         private static void Main(string[] args)
         {
-            packet = new PacketBuffer();
             IKernel kernel = new StandardKernel(new ServerModule());
             _gameService = kernel.Get<IGameService>();
             _mobService = kernel.Get<IMobService>();
@@ -27,8 +26,9 @@ namespace PSol.Server
             general = new General(kernel);
             
             shd = general.InitializeServer();
-            dataLoader.initialize();
+            dataLoader.Initialize();
             dataLoader.DownloadGalaxy();
+            dataLoader.DownloadItems();
             consoleThread = new Thread(ConsoleThread);
             consoleThread.Start();
         }

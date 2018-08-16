@@ -434,10 +434,9 @@ namespace PSol.Client
                 {
                     foreach (var m in GameLogic.LocalMobs)
                     {
-                        
                         Game1.spriteBatch.Draw(circle,
-                            new Vector2(m.X * scaleX,
-                                Globals.PreferredBackBufferHeight - m.Y * scaleY), null,
+                            new Vector2((m.X + -Camera.transform.M41) * scaleX,
+                                (m.Y + -Camera.transform.M42) * scaleY), null,
                             Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                     }
                 }

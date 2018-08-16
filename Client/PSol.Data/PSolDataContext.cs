@@ -11,6 +11,8 @@ namespace PSol.Data
         public DbSet<Planet> Planets { get; set; }
         public DbSet<MobType> MobTypes { get; set; }
         public DbSet<Mob> Mobs { get; set; }
+        public DbSet<Item> Items { get; set; }
+        public DbSet<Inventory> Inventory { get; set; }
 
         public PSolDataContext() : base("PSolDataConnection")
         {
@@ -54,6 +56,22 @@ namespace PSol.Data
             modelBuilder.Entity<Mob>()
                 .Property(m => m.SpawnDate)
                 .HasColumnType("datetime2");
+
+            modelBuilder.Entity<Item>()
+                .Property(i => i.Id)
+                .HasMaxLength(MaxIdLength);
+
+            modelBuilder.Entity<Inventory>()
+                .Property(i => i.Id)
+                .HasMaxLength(MaxIdLength);
+
+            modelBuilder.Entity<Inventory>()
+                .Property(i => i.UserId)
+                .HasMaxLength(MaxIdLength);
+
+            modelBuilder.Entity<Inventory>()
+                .Property(i => i.ItemId)
+                .HasMaxLength(MaxIdLength);
         }
     }
 }

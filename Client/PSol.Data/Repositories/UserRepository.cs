@@ -2,6 +2,7 @@
 using System.Linq;
 using PSol.Data.Models;
 using PSol.Data.Repositories.Interfaces;
+using System.Data.Entity;
 
 namespace PSol.Data.Repositories
 {
@@ -29,7 +30,7 @@ namespace PSol.Data.Repositories
 
         public User LoadPlayer(string username)
         {
-            return _context.Users.FirstOrDefault(u => u.Name == username);
+            return _context.Users.Include(i => i.Inventory).ToList().FirstOrDefault(u => u.Name == username);
         }
 
         public void SavePlayer(User user)

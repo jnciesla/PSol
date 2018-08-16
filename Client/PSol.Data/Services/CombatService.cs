@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Bindings;
 using Microsoft.Xna.Framework;
 using PSol.Data.Models;
 using PSol.Data.Services.Interfaces;

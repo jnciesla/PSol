@@ -67,8 +67,18 @@
     <Compile Include="Migrations\201806270901213_planets.Designer.cs">
       <DependentUpon>201806270901213_planets.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201808090706246_items.cs" />
+    <Compile Include="Migrations\201808090706246_items.Designer.cs">
+      <DependentUpon>201808090706246_items.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201808121548360_Inventory.cs" />
+    <Compile Include="Migrations\201808121548360_Inventory.Designer.cs">
+      <DependentUpon>201808121548360_Inventory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Combat.cs" />
+    <Compile Include="Models\Inventory.cs" />
+    <Compile Include="Models\Item.cs" />
     <Compile Include="Models\MobType.cs" />
     <Compile Include="Models\Mob.cs" />
     <Compile Include="Models\Planet.cs" />
@@ -76,6 +86,8 @@
     <Compile Include="Models\User.cs" />
     <Compile Include="PSolDataContext.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Repositories\Interfaces\IItemRepository.cs" />
+    <Compile Include="Repositories\ItemRepository.cs" />
     <Compile Include="Repositories\MobRepository.cs" />
     <Compile Include="Repositories\Interfaces\IStarRepository.cs" />
     <Compile Include="Repositories\Interfaces\IMobRepository.cs" />
@@ -85,9 +97,11 @@
     <Compile Include="Services\GameService.cs" />
     <Compile Include="Services\Interfaces\IGameService.cs" />
     <Compile Include="Services\Interfaces\ICombatService.cs" />
+    <Compile Include="Services\Interfaces\IItemService.cs" />
     <Compile Include="Services\Interfaces\IStarService.cs" />
     <Compile Include="Services\Interfaces\IMobService.cs" />
     <Compile Include="Services\Interfaces\IUserService.cs" />
+    <Compile Include="Services\ItemService.cs" />
     <Compile Include="Services\MobService.cs" />
     <Compile Include="Services\CombatService.cs" />
     <Compile Include="Services\StarService.cs" />
@@ -109,6 +123,12 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201806270901213_planets.resx">
       <DependentUpon>201806270901213_planets.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808090706246_items.resx">
+      <DependentUpon>201808090706246_items.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201808121548360_Inventory.resx">
+      <DependentUpon>201808121548360_Inventory.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Bindings\Bindings.projitems" Label="Shared" />

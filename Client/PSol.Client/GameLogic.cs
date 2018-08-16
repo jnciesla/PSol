@@ -20,6 +20,7 @@ namespace PSol.Client
         private static readonly ClientTCP ctcp = new ClientTCP();
         private static int messageTime;
         public static List<Star> Galaxy;
+        public static List<Item> Items;
         public static List<Mob> LocalMobs;
         public static List<Combat> LocalCombat;
         private static Random random;

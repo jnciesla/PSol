@@ -19,6 +19,8 @@ namespace PSol.Server
             Bind(typeof(IMobRepository)).To(typeof(MobRepository)).InSingletonScope();
             Bind(typeof(IMobService)).To(typeof(MobService)).InSingletonScope();
             Bind(typeof(ICombatService)).To(typeof(CombatService)).InSingletonScope();
+            Bind(typeof(IItemRepository)).To(typeof(ItemRepository)).InSingletonScope();
+            Bind(typeof(IItemService)).To(typeof(ItemService)).InSingletonScope();
         }
     }
 }

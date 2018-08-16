@@ -1,15 +1,16 @@
-﻿using System;
+﻿#pragma warning disable CS0436 // Type conflicts with imported type
+using System;
 using Bindings;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
-using System.Text;
-using System.Threading;
-using Newtonsoft.Json;
 using Ninject;
 using PSol.Data.Models;
 using PSol.Data.Services.Interfaces;
+using static Bindings.ClientPackets;
+using static Bindings.MessageColors;
+using static Bindings.ServerPackets;
 
 namespace PSol.Server
 {
@@ -19,29 +20,28 @@ namespace PSol.Server
         private static Dictionary<int, Packet_> packets;
         private readonly IUserService _userService;
         private readonly IMobService _mobService;
-        private readonly IStarService _starService;
         private readonly ICombatService _combatService;
 
         public HandleData(IKernel kernel)
         {
             _userService = kernel.Get<IUserService>();
             _mobService = kernel.Get<IMobService>();
-            _starService = kernel.Get<IStarService>();
             _combatService = kernel.Get<ICombatService>();
         }
 
         public void InitializeMessages()
         {
+            int pos = Console.CursorTop;
             Console.WriteLine(@"Initializing Network Packets...");
             packets = new Dictionary<int, Packet_>
             {
-                {(int) ClientPackets.CLogin, HandleLogin},
-                {(int) ClientPackets.CRegister, HandleRegister},
-                {(int) ClientPackets.CPlayerData, RecvPlayer},
-                {(int) ClientPackets.CChat, ParseChat},
-                {(int) ClientPackets.CCombat, HandleCombat }
+                {(int) CLogin, HandleLogin},
+                {(int) CRegister, HandleRegister},
+                {(int) CPlayerData, RecvPlayer},
+                {(int) CChat, ParseChat},
+                {(int) CCombat, HandleCombat }
             };
-            Console.SetCursorPosition(0, Console.CursorTop - 1);
+            Console.SetCursorPosition(0, pos);
             Console.WriteLine(@"Initializing Network Packets... PASS");
         }
 
@@ -69,13 +69,13 @@ namespace PSol.Server
 
             if (!_userService.AccountExists(username))
             {
-                SendMessage(index, "Username does not exist!", MessageColors.Warning);
+                SendMessage(index, @"Username does not exist!", Warning);
                 return;
             }
 
             if (!_userService.PasswordOK(username, password))
             {
-                SendMessage(index, "Password incorrect!", MessageColors.Warning);
+                SendMessage(index, @"Password incorrect!", Warning);
                 return;
             }
 
@@ -83,6 +83,7 @@ namespace PSol.Server
             ServerTCP.tempPlayer[index].inGame = true;
             XFerLoad(index);
             SendGalaxy(index);
+            SendItems(index);
             Console.WriteLine(username + @" logged in successfully.");
             ServerTCP.tempPlayer[index].receiving = true;
         }
@@ -104,7 +105,7 @@ namespace PSol.Server
             }
             else
             {
-                SendMessage(index, "That username already exists!", MessageColors.Warning);
+                SendMessage(index, "That username already exists!", Warning);
             }
         }
 
@@ -153,7 +154,7 @@ namespace PSol.Server
         public void SendMessage(int index, string message, MessageColors color)
         {
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ServerPackets.SMessage);
+            buffer.AddInteger((int)SMessage);
             buffer.AddInteger((int)color);
             buffer.AddString(message);
             // Use index -1 to broadcast from server to all players
@@ -172,7 +173,7 @@ namespace PSol.Server
         public void AcknowledgeRegister(int index)
         {
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ServerPackets.SAckRegister);
+            buffer.AddInteger((int)SAckRegister);
             buffer.AddInteger(index);
             SendData(index, buffer.ToArray());
             buffer.Dispose();
@@ -181,7 +182,7 @@ namespace PSol.Server
         public void XFerLoad(int index)
         {
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ServerPackets.SPlayerData);
+            buffer.AddInteger((int)SPlayerData);
             buffer.AddInteger(index);
             buffer.AddString(Types.Player[index].Id);
             buffer.AddString(Types.Player[index].Name);
@@ -192,9 +193,10 @@ namespace PSol.Server
             buffer.AddInteger(Types.Player[index].MaxHealth);
             buffer.AddInteger(Types.Player[index].Shield);
             buffer.AddInteger(Types.Player[index].MaxShield);
+            buffer.AddArray(Types.Player[index].Inventory.ToArray());
             SendData(index, buffer.ToArray());
             buffer.Dispose();
-            SendMessage(-1, Types.Player[index].Name + " has connected.", MessageColors.Notification);
+            SendMessage(-1, Types.Player[index].Name + " has connected.", Notification);
             Globals.FullData = true;
         }
 
@@ -207,7 +209,7 @@ namespace PSol.Server
                 if (ServerTCP.Clients[i].Socket != null && ServerTCP.tempPlayer[i].inGame && ServerTCP.tempPlayer[i].receiving)
                 {
                     var buffer = new PacketBuffer();
-                    buffer.AddInteger((int)ServerPackets.SPulse);
+                    buffer.AddInteger((int)SPulse);
                     buffer.AddBytes(BitConverter.GetBytes(DateTime.UtcNow.ToBinary()));
                     for (var j = 1; j < Constants.MAX_PLAYERS; j++)
                     {
@@ -244,7 +246,7 @@ namespace PSol.Server
         {
             Globals.FullData = false;
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ServerPackets.SFullData);
+            buffer.AddInteger((int)SFullData);
             for (var i = 1; i < Constants.MAX_PLAYERS; i++)
             {
                 buffer.AddString(Types.Player[i].Name ?? ""); // Don't send null
@@ -269,8 +271,8 @@ namespace PSol.Server
         {
             var buffer = new PacketBuffer();
             var newString = Types.Player[index].Name + ": " + str;
-            buffer.AddInteger((int)ServerPackets.SMessage);
-            buffer.AddInteger((int)MessageColors.Chat);
+            buffer.AddInteger((int)SMessage);
+            buffer.AddInteger((int)Chat);
             buffer.AddString(newString);
             BroadcastData(buffer.ToArray());
             buffer.Dispose();
@@ -295,10 +297,18 @@ namespace PSol.Server
 
         public void SendGalaxy(int index)
         {
-            var stars = _starService.LoadStars();
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int)ServerPackets.SGalaxy);
-            buffer.AddArray(stars.ToArray());
+            buffer.AddInteger((int)SGalaxy);
+            buffer.AddArray(Globals.Galaxy.ToArray());
+            SendData(index, buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void SendItems(int index)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int)SItems);
+            buffer.AddArray(Globals.Items.ToArray());
             SendData(index, buffer.ToArray());
             buffer.Dispose();
         }
