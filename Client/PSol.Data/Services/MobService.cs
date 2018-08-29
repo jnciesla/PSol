@@ -101,7 +101,7 @@ namespace PSol.Data.Services
                 KilledDate = DateTime.UtcNow,
                 MobTypeId = type.Id
             };
-            _mobs.Add(mob);
+            _mobs.Add(_mobRepo.Add(mob));
         }
 
         public void SaveMobs()
@@ -109,7 +109,8 @@ namespace PSol.Data.Services
             if (_mobs == null) return;
             foreach (var mob in _mobs)
             {
-                _mobRepo.SaveMob(mob);
+                if (mob.Id != null)
+                    _mobRepo.SaveMob(mob);
             }
         }
     }

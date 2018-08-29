@@ -3,10 +3,10 @@ using GeonBit.UI.Entities;
 using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using System.Collections.Generic;
-using System.ComponentModel;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Bindings;
+using Microsoft.Xna.Framework.Input;
 
 namespace PSol.Client
 {
@@ -31,12 +31,15 @@ namespace PSol.Client
         private static Paragraph canxLabel;
 
         // Inventory stuff
+        public static Panel invPanel;
+        public static Texture2D equipImage;
+        public static Panel hoverPanel;
         public static Paragraph detailsHeader;
         public static Paragraph detailsBody;
 
         // IGUI textures
+        public static Panel HUD;
         private static Texture2D mapStar;
-        private static Texture2D mapDiamond;
         private static Texture2D closeIcon;
         private static Texture2D plusIcon;
         private static Texture2D minusIcon;
@@ -62,10 +65,10 @@ namespace PSol.Client
             button_down = content.Load<Texture2D>("Panels/button_default_down");
             mapPanel = content.Load<Texture2D>("Panels/Map");
             mapStar = content.Load<Texture2D>("Panels/starIco");
-            mapDiamond = content.Load<Texture2D>("Panels/diamondIco");
             closeIcon = content.Load<Texture2D>("Panels/closeIco");
             plusIcon = content.Load<Texture2D>("Panels/plusIco");
             minusIcon = content.Load<Texture2D>("Panels/minusIco");
+            equipImage = content.Load<Texture2D>("Panels/Equipment");
 
             mapLine = new Paragraph[10];
 
@@ -75,6 +78,7 @@ namespace PSol.Client
             CreateMessage();
             CreateMap();
             CreateInventory();
+            // CreateHud();
         }
 
         public void CreateWindow(Panel panel)
@@ -476,11 +480,11 @@ namespace PSol.Client
 
         public void CreateInventory()
         {
-            int BUY = 1, SELL = 2;
-            Panel panel = new Panel(new Vector2(600, 400), PanelSkin.None, Anchor.AutoCenter) { Draggable = true };
+            invPanel = new Panel(new Vector2(600, 400), PanelSkin.None, Anchor.AutoCenter) { Draggable = true };
             Image image = new Image(inventoryPanel, new Vector2(600, 400), ImageDrawMode.Panel, Anchor.TopLeft, new Vector2(-30, -29));
-            detailsHeader = new Paragraph(" ", Anchor.TopRight, new Color(12, 57, 14), null, null, new Vector2(200, 5)) { FontOverride = Globals.Font14, OutlineOpacity = 0 };
-            detailsBody = new Paragraph(" ", Anchor.TopCenter, new Color(12, 57, 14), null, null, new Vector2(-30, 22)) { FontOverride = Globals.Font10, OutlineOpacity = 0 };
+            hoverPanel = new Panel(new Vector2(300, 100), PanelSkin.Default, Anchor.TopLeft) { Opacity = 240, Visible = false };
+            detailsHeader = new Paragraph(" ", Anchor.TopLeft, Color.DarkGray, null, null, new Vector2(200, 90)) { FontOverride = Globals.Font12, OutlineOpacity = 0 };
+            detailsBody = new Paragraph(" ", Anchor.TopLeft, Color.DarkGray, null, null, new Vector2(200, 110)) { FontOverride = Globals.Font10, OutlineOpacity = 0 };
             Image closeBtn = new Image(closeIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(-30, -29));
             itemList = new Panel(new Vector2(208, 380), PanelSkin.None, Anchor.TopLeft, new Vector2(-25, -20));
             Label itemName = new Label("", Anchor.TopRight);
@@ -488,25 +492,74 @@ namespace PSol.Client
             itemList.PanelOverflowBehavior = PanelOverflowBehavior.VerticalScroll;
             itemList.Padding = Vector2.Zero;
 
-            UserInterface.Active.AddEntity(panel);
-            panel.AddChild(image);
-            panel.AddChild(closeBtn);
-            panel.AddChild(itemList);
-            panel.AddChild(itemName);
-            panel.AddChild(detailsHeader);
-            panel.AddChild(detailsBody);
+            UserInterface.Active.AddEntity(invPanel);
+            invPanel.AddChild(image);
+            invPanel.AddChild(closeBtn);
+            invPanel.AddChild(itemList);
+            invPanel.AddChild(itemName);
+            invPanel.AddChild(detailsHeader);
+            invPanel.AddChild(detailsBody);
+            invPanel.AddChild(hoverPanel);
 
+            invPanel.OnMouseLeave += (panelLeave) => { hoverPanel.Visible = false; };
             closeBtn.OnMouseEnter += (closeEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
             closeBtn.OnMouseLeave += (closeLeave) => { UserInterface.Active.SetCursor(CursorType.Default); };
             closeBtn.OnClick += (closeClick) => { MenuManager.Clear(5); };
 
-            PopulateInventory(0);
-
-            CreateWindow(panel);
+            CreateWindow(invPanel);
         }
 
         public void PopulateInventory(int type)
         {
+            if (type == 0)
+            {
+                Paragraph[] par = new Paragraph[15];
+                Image[] img = new Image[7];
+                img[0] = new Image(equipImage, new Vector2(340, 80), ImageDrawMode.Panel, Anchor.TopRight, new Vector2(-3, 5));                                                         // Equipment background
+                img[1] = new Image(Graphics.Characters[1], new Vector2(64, 64), ImageDrawMode.Panel, Anchor.TopRight, new Vector2(165, 8));                                             // Hull
+                par[0] = new Paragraph("Flight Computer", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(20, 5)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };        // FCA
+                par[1] = new Paragraph("Shield Generator", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(20, 22)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };      // SGA
+                par[2] = new Paragraph("Hull Plating", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(20, 39)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };          // SPA
+                par[3] = new Paragraph("Propulsion Drive", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(20, 56)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };      // PDS
+                par[4] = new Paragraph("Auxiliary Payload", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(20, 73)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };     // APy
+                par[5] = new Paragraph("Weapons:", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(278, 5)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };              // Wps
+                par[6] = new Paragraph("Ammunition:", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(258, 36)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };          // AMO
+                par[7] = new Paragraph("1", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(322, 22)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };                    // Mn1
+                par[8] = new Paragraph("2", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(304, 22)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };                    // Mn2
+                par[9] = new Paragraph("3", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(288, 22)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };                    // Mn3
+                par[10] = new Paragraph("4", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(271, 22)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };                   // Mn4
+                par[11] = new Paragraph("5", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(254, 22)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };                   // Mn5
+                par[12] = new Paragraph("999", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(253, 68)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };                 // Ss1
+                par[13] = new Paragraph("999", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(281, 68)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };                 // Ss2
+                par[14] = new Paragraph("999", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(309, 68)) { FontOverride = Globals.Font8, OutlineOpacity = 0 };                 // Ss3
+                img[2] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(0, 5)) { FillColor = Color.Red };                         // FCA stat
+                img[3] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(0, 22)) { FillColor = Color.Red };                        // SGA stat
+                img[4] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(0, 39)) { FillColor = Color.Red };                        // SPA stat
+                img[5] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(0, 56)) { FillColor = Color.Red };                        // PDS stat
+                img[6] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(0, 73)) { FillColor = Color.Red };                        // APy stat
+                for (var i = 0; i < 7; i++)
+                    invPanel.AddChild(img[i]);
+                for (var i = 0; i < 15; i++)
+                {
+                    int n = i; // Access to modified closure
+                    invPanel.AddChild(par[i]);
+                    if (n != 5 && n != 6)
+                    {
+                        par[n].OnMouseEnter += (parEnter) =>
+                        {
+                            UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0));
+                            par[n].FillColor = Color.WhiteSmoke;
+                        };
+                        par[n].OnMouseLeave += (parLeave) =>
+                        {
+                            UserInterface.Active.SetCursor(CursorType.Default);
+                            par[n].FillColor = Color.DarkGray;
+                        };
+                    }
+                }
+
+
+            }
             // Replace parameters with actual item IDs when those exist
             itemList.AddChild(GenerateItem("Item name #1", 1, type));
             itemList.AddChild(GenerateItem("Item name #2", 1, type));
@@ -555,14 +608,26 @@ namespace PSol.Client
             item.AddChild(incBtn);
             item.AddChild(itemImage);
 
+            itemImage.WhileMouseHover += (imageHover) =>
+            {
+                hoverPanel.Visible = true;
+                var ms = Mouse.GetState();
+                var x = ms.X - invPanel.GetRelativeOffset().X;
+                var y = ms.Y - invPanel.GetRelativeOffset().Y;
+                hoverPanel.SetOffset(new Vector2(x - 150, y));
+
+            };
             itemImage.OnMouseEnter += (imageEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
-            itemImage.OnMouseLeave += (imageLeave) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            itemImage.OnMouseLeave += (imageLeave) =>
+            {
+                UserInterface.Active.SetCursor(CursorType.Default);
+                hoverPanel.Visible = false;
+            };
             itemImage.OnClick += (imageClick) =>
             {
                 detailsHeader.Text = name;
                 detailsBody.Text = "Test\nTest2";
             };
-
             decBtn.OnMouseEnter += (decEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
             decBtn.OnMouseLeave += (decLeave) => { UserInterface.Active.SetCursor(CursorType.Default); };
             decBtn.OnClick += (decClick) =>
@@ -635,10 +700,8 @@ namespace PSol.Client
                 Opacity = 100
             };
             galaxyMap.AddChild(starDetail);
-            mapPlayer = new Image(mapDiamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopLeft,
-                    new Vector2(Types.Player[GameLogic.PlayerIndex].X * scale,
-                        Types.Player[GameLogic.PlayerIndex].Y * scale))
-            { ClickThrough = true };
+            mapPlayer = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopLeft, new Vector2(Types.Player[GameLogic.PlayerIndex].X * scale, Types.Player[GameLogic.PlayerIndex].Y * scale))
+            { ClickThrough = true, FillColor = Color.OliveDrab };
             galaxyMap.AddChild(mapPlayer);
             for (int i = 0; i < GameLogic.Galaxy.Count; i++)
             {
@@ -703,6 +766,56 @@ namespace PSol.Client
                     j++;
                 }
             }
+        }
+
+        public void CreateHud()
+        {
+            //  Create Entities
+            HUD = new Panel(new Vector2(200, 200), PanelSkin.None, Anchor.BottomLeft);
+            Image image = new Image(Graphics.scanner, new Vector2(200, 200), ImageDrawMode.Panel, Anchor.TopLeft, new Vector2(-30, -29));
+            Image closeBtn = new Image(closeIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(-30, -29));
+            Image player = new Image(Graphics.triangle, new Vector2(16, 16), ImageDrawMode.Panel, Anchor.Center);
+
+            UserInterface.Active.AddEntity(HUD);
+            HUD.AddChild(image);
+            HUD.AddChild(player);
+            HUD.AddChild(closeBtn);
+
+            closeBtn.WhileMouseHover += (HUDhover) => { Globals.cursorOverride = true; };
+            image.WhileMouseHover += (HUDhover) => { Globals.cursorOverride = true; };
+            image.OnMouseLeave += (HUDout) => { Globals.cursorOverride = false; };
+
+            closeBtn.OnMouseEnter += (closeEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            closeBtn.OnMouseLeave += (closeLeave) => { Globals.cursorOverride = false; UserInterface.Active.SetCursor(CursorType.Default); };
+            closeBtn.OnClick += (closeClick) => { MenuManager.Clear(6); };
+
+            CreateWindow(HUD);
+        }
+
+        public void Update()
+        {
+            if (Windows[4].Visible)
+            {
+                const float scale = (float)500 / Constants.PLAY_AREA_WIDTH;
+                mapPlayer.SetOffset(new Vector2(Types.Player[GameLogic.PlayerIndex].X * scale, Types.Player[GameLogic.PlayerIndex].Y * scale));
+            }
+
+/*            if (Windows[6].Visible)
+            {
+                const float scale = (float)200 / 2000;
+                Vector2 offset = new Vector2(100, Globals.PreferredBackBufferHeight - 100);
+                if (GameLogic.LocalMobs != null && GameLogic.LocalMobs.Count > 0)
+                {
+                    foreach (var m in GameLogic.LocalMobs)
+                    {
+                        Vector2 mobPosition = offset + new Vector2(((m.X + -Camera.transform.M41) - (Types.Player[GameLogic.PlayerIndex].X + -Camera.transform.M41)) * scale,
+                                                  ((m.Y + -Camera.transform.M42) - (Types.Player[GameLogic.PlayerIndex].Y - Camera.transform.M42)) * scale);
+                        if (mobPosition.X > 17 && mobPosition.X < 185 && mobPosition.Y > Globals.PreferredBackBufferHeight - 183 && mobPosition.Y < Globals.PreferredBackBufferHeight - 16)
+                            HUD.AddChild(new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Panel, Anchor.AutoInline));
+                        // Game1.spriteBatch.Draw(Graphics.diamond, mobPosition, null, new Color(88, 170, 76), m.Rotation, new Vector2(6, 6), 1, SpriteEffects.None, 0);
+                    }
+                }
+            }*/
         }
 
     }

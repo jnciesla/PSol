@@ -1,5 +1,4 @@
-﻿using Bindings;
-using GeonBit.UI;
+﻿using GeonBit.UI;
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
 
@@ -38,12 +37,6 @@ namespace PSol.Client
                     InterfaceGUI.Windows[(int)menu].SetPosition(Anchor.BottomLeft, new Vector2(-50, 40));
                 }
             }
-
-            if (menu == Menu.Map)
-            {
-                const float scale = (float)500 / Constants.PLAY_AREA_WIDTH;
-                InterfaceGUI.mapPlayer.SetOffset(new Vector2(Types.Player[GameLogic.PlayerIndex].X * scale, Types.Player[GameLogic.PlayerIndex].Y * scale));
-            }
         }
 
         public static void Clear(int which = -1)
@@ -53,7 +46,7 @@ namespace PSol.Client
             {
                 foreach (var window in InterfaceGUI.Windows)
                 {
-                    if (window == InterfaceGUI.Windows[0] || window == InterfaceGUI.Windows[1]) // Don't close chats or login
+                    if (window == InterfaceGUI.Windows[0] || window == InterfaceGUI.Windows[1]) // Don't close chats, login
                         continue;
                     UserInterface.Active.SetCursor(CursorType.Default);
                     window.Visible = false;

@@ -6,7 +6,6 @@ using Bindings;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using GeonBit.UI;
-using PSol.Data.Models;
 
 namespace PSol.Client
 {
@@ -20,6 +19,7 @@ namespace PSol.Client
         public static Texture2D pixel;
         public static Texture2D triangle;
         public static Texture2D circle;
+        public static Texture2D diamond;
 
         public static Texture2D laserMid;
 
@@ -37,6 +37,7 @@ namespace PSol.Client
             scanner = manager.Load<Texture2D>("Panels/scanner");
             triangle = manager.Load<Texture2D>("Panels/triangle");
             circle = manager.Load<Texture2D>("Panels/circleIco");
+            diamond = manager.Load<Texture2D>("Panels/diamondIco");
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
         }
@@ -162,7 +163,8 @@ namespace PSol.Client
                             new Vector2(Shield.Width / 2f, Shield.Height / 2f), 1, SpriteEffects.None, 0);
                     }
 
-                    Game1.spriteBatch.DrawString(Globals.Font10, Types.Player[i].Name, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(Types.Player[i].Name).X / 2, Types.Player[i].Y - (Characters[SpriteNum].Height / 2) - 10), Color.AntiqueWhite);
+                    int h = Characters[SpriteNum].Height / 2;
+                    Game1.spriteBatch.DrawString(Globals.Font10, Types.Player[i].Name, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(Types.Player[i].Name).X / 2, Types.Player[i].Y - h - 10), Color.AntiqueWhite);
 
                     // Health
                     Color HealthColor1 = Color.Green;
@@ -420,24 +422,23 @@ namespace PSol.Client
         public static void DrawHud(ContentManager manager)
         {
             if (GameLogic.PlayerIndex <= -1) return;
-            const float scaleX = (float)200 / 1024;
-            const float scaleY = (float)200 / 768;
+            const float scale = (float)200 / 2000;
+            Vector2 offset = new Vector2(100, Globals.PreferredBackBufferHeight - 100);
             Game1.spriteBatch.Begin();
             // Draw scanner
             if (Globals.scanner)
             {
                 Game1.spriteBatch.Draw(scanner, new Vector2(0, Globals.PreferredBackBufferHeight - 200), null,
                     Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                Game1.spriteBatch.Draw(triangle, new Vector2(100, Globals.PreferredBackBufferHeight - 100), null,
-                    Color.White, Types.Player[GameLogic.PlayerIndex].Rotation, new Vector2(8, 8), 1, SpriteEffects.None, 0);
+                Game1.spriteBatch.Draw(triangle, offset, null, Color.White, Types.Player[GameLogic.PlayerIndex].Rotation, new Vector2(8, 8), 1, SpriteEffects.None, 0);
                 if (GameLogic.LocalMobs != null && GameLogic.LocalMobs.Count > 0)
                 {
                     foreach (var m in GameLogic.LocalMobs)
                     {
-                        Game1.spriteBatch.Draw(circle,
-                            new Vector2((m.X + -Camera.transform.M41) * scaleX,
-                                (m.Y + -Camera.transform.M42) * scaleY), null,
-                            Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                        Vector2 mobPosition = offset + new Vector2(((m.X + -Camera.transform.M41) - (Types.Player[GameLogic.PlayerIndex].X + -Camera.transform.M41)) * scale,
+                            ((m.Y + -Camera.transform.M42) - (Types.Player[GameLogic.PlayerIndex].Y - Camera.transform.M42)) * scale);
+                        if (mobPosition.X > 17 && mobPosition.X < 185 && mobPosition.Y > Globals.PreferredBackBufferHeight - 183 && mobPosition.Y < Globals.PreferredBackBufferHeight - 16)
+                            Game1.spriteBatch.Draw(diamond, mobPosition, null, new Color(88, 170, 76), m.Rotation, new Vector2(6, 6), 1, SpriteEffects.None, 0);
                     }
                 }
 
@@ -451,7 +452,7 @@ namespace PSol.Client
                     if (ms.LeftButton == ButtonState.Pressed)
                     {
                         Globals.scanner = false;
-                    };
+                    }
                 }
 
             }
@@ -491,7 +492,7 @@ namespace PSol.Client
 
         public static void DrawString(SpriteFont font, string text, float X, float Y, bool align, Color color)
         {
-            if (X == -1) { X = Globals.PreferredBackBufferWidth / 2.0F; }
+            if ((int)X == -1) { X = Globals.PreferredBackBufferWidth / 2.0F; }
             Vector2 size = font.MeasureString(text);
             Vector2 pos = new Vector2(X, Y);
             if (align)

@@ -141,6 +141,8 @@ namespace PSol.Client
 
             smallExplosion.Update();
             camera.Update(gameTime, this);
+
+            IGUI.Update();
             
             base.Update(gameTime);
         }
@@ -163,7 +165,6 @@ namespace PSol.Client
             spriteBatch.Draw(renderTarget, new Rectangle(0, 0, Globals.PreferredBackBufferWidth, Globals.PreferredBackBufferHeight), Globals.Luminosity);
 
             spriteBatch.End();
-
 
             base.Draw(gameTime);
         }
@@ -233,6 +234,7 @@ namespace PSol.Client
 
             if (KC.KeyPress(Keys.I) && Globals.Control)
             {
+                IGUI.PopulateInventory(0);
                 MenuManager.ChangeMenu(MenuManager.Menu.Inventory);
             }
 
