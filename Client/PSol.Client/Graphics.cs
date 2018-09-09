@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework;
@@ -14,12 +15,15 @@ namespace PSol.Client
         public static Texture2D[] Characters = new Texture2D[3];
         public static Texture2D[] Planets = new Texture2D[5];
         public static Texture2D[] Objects = new Texture2D[2];
+        public static Texture2D detailsGfx;
+        public static Texture2D details;
         public static Texture2D scanner;
         public static Texture2D Shield;
         public static Texture2D pixel;
         public static Texture2D triangle;
         public static Texture2D circle;
         public static Texture2D diamond;
+        public static Texture2D star;
 
         public static Texture2D laserMid;
 
@@ -34,10 +38,13 @@ namespace PSol.Client
             LoadCursors(manager);
             LoadObjects(manager);
             laserMid = manager.Load<Texture2D>("Particles/laserMid");
+            detailsGfx = manager.Load<Texture2D>("Panels/Equipment2");
             scanner = manager.Load<Texture2D>("Panels/scanner");
             triangle = manager.Load<Texture2D>("Panels/triangle");
             circle = manager.Load<Texture2D>("Panels/circleIco");
             diamond = manager.Load<Texture2D>("Panels/diamondIco");
+            star = manager.Load<Texture2D>("Panels/starIco");
+            details = manager.Load<Texture2D>("Panels/info");
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
         }
@@ -419,33 +426,200 @@ namespace PSol.Client
             }
         }
 
+        public static void DrawInfo(ContentManager manager)
+        {
+            if (GameLogic.PlayerIndex <= -1) return;
+            int offsetX = 0;
+            Game1.spriteBatch.Begin();
+            if (Globals.scanner) { offsetX = 200; }
+
+            // Draw details panel
+            if (Globals.details)
+            {
+                MouseState ms = Mouse.GetState();
+                Vector2 position = new Vector2(ms.X, ms.Y);
+                Game1.spriteBatch.Draw(details, new Vector2(0 + offsetX, Globals.PreferredBackBufferHeight - 200), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+
+                // Planetary info
+                if (GameLogic.selectedPlanet != "")
+                {
+                    var STAR = GameLogic.Galaxy.FirstOrDefault(p => p.Id == GameLogic.selectedPlanet);
+                    var PLANET = GameLogic.Planets.FirstOrDefault(p => p.Id == GameLogic.selectedPlanet);
+
+                    if (STAR != null)
+                    {
+                        float scale = (float)150 / Planets[4].Width;
+                        Game1.spriteBatch.Draw(Planets[4], new Vector2(20 + offsetX, Globals.PreferredBackBufferHeight - 178), null, Color.White * .5F, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                        DrawString(Globals.Font12, "Name: " + STAR.Name, 150 + offsetX, Globals.PreferredBackBufferHeight - 175, false, Color.DarkGray);
+                        DrawString(Globals.Font10, "Classification: " + "MK - G", 160 + offsetX, Globals.PreferredBackBufferHeight - 155, false, Color.DarkGray);
+                        DrawString(Globals.Font10, " Coordinates: " + STAR.X / 100 + ":" + STAR.Y / 100, 160 + offsetX, Globals.PreferredBackBufferHeight - 140, false, Color.DarkGray);
+                        DrawString(Globals.Font10, "  Belligerence: " + "Moderate", 160 + offsetX, Globals.PreferredBackBufferHeight - 125, false, Color.DarkGray);
+                        DrawString(Globals.Font10, "  Planets: " + STAR.Planets.Count, 160 + offsetX, Globals.PreferredBackBufferHeight - 110, false, Color.DarkGray);
+                    }
+
+                    if (PLANET != null)
+                    {
+                        float scale = (float)150 / Planets[PLANET.Sprite].Width;
+                        Game1.spriteBatch.Draw(Planets[PLANET.Sprite], new Vector2(20 + offsetX, Globals.PreferredBackBufferHeight - 178), null, Color.White * .5F, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
+                        DrawString(Globals.Font12, "Name: " + PLANET.Name, 150 + offsetX, Globals.PreferredBackBufferHeight - 175, false, Color.DarkGray);
+                        DrawString(Globals.Font10, "Classification: " + "Terrestrial", 160 + offsetX, Globals.PreferredBackBufferHeight - 155, false, Color.DarkGray);
+                        DrawString(Globals.Font10, " Coordinates: " + Math.Round(PLANET.X / 100, 2) + ":" + Math.Round(PLANET.Y / 100, 2), 160 + offsetX, Globals.PreferredBackBufferHeight - 140, false, Color.DarkGray);
+                        DrawString(Globals.Font10, "  Belligerence: " + "Moderate", 160 + offsetX, Globals.PreferredBackBufferHeight - 125, false, Color.DarkGray);
+                    }
+                }
+
+                // Mob info
+                if (GameLogic.SelectedType == "MOB")
+                {
+                    var MOB = GameLogic.LocalMobs.FirstOrDefault(m => m.Id == GameLogic.Selected);
+                    if (MOB != null)
+                    {
+                        Game1.spriteBatch.Draw(detailsGfx, new Vector2(82 + offsetX, Globals.PreferredBackBufferHeight - 140), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                        Game1.spriteBatch.Draw(Characters[MOB.MobType.Sprite], new Vector2(90 + offsetX, Globals.PreferredBackBufferHeight - 100 - Characters[MOB.MobType.Sprite].Height / 2), null, Color.White * .5F, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
+                        DrawString(Globals.Font10, "Gocharreg DeadlyMetal the death-dealer", 200 + offsetX, Globals.PreferredBackBufferHeight - 175, true, Color.DarkGray);
+                        DrawString(Globals.Font8, "Type: " + MOB.MobType.Name, 173 + offsetX, Globals.PreferredBackBufferHeight - 138, false, Color.DarkGray);
+                        DrawString(Globals.Font8, "Hull strength: " + MOB.Health / MOB.MobType.MaxHealth * 100 + "%", 173 + offsetX, Globals.PreferredBackBufferHeight - 122, false, Color.DarkGray);
+                        if (MOB.MobType.MaxHealth <= 0)
+                        {
+                            DrawString(Globals.Font8, "Shield strength: " + MOB.Shield / MOB.MobType.MaxShield * 100 + "%", 173 + offsetX, Globals.PreferredBackBufferHeight - 106, false, Color.DarkGray);
+                        }
+                        else
+                        {
+                            DrawString(Globals.Font8, "Shield strength: " + "N/A", 173 + offsetX, Globals.PreferredBackBufferHeight - 106, false, Color.DarkGray);
+                        }
+
+                        DrawString(Globals.Font8, "Experience level: " + MOB.MobType.Level, 173 + offsetX, Globals.PreferredBackBufferHeight - 90, false, Color.DarkGray);
+                        DrawString(Globals.Font8, "Something else: ", 173 + offsetX, Globals.PreferredBackBufferHeight - 74, false, Color.DarkGray);
+                    }
+                }
+
+                // Click to close
+                Rectangle Bound = new Rectangle(386 + offsetX, Globals.PreferredBackBufferHeight - 196, 12, 12);
+                if (Bound.Contains(position))
+                {
+                    UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
+                    if (ms.LeftButton == ButtonState.Pressed)
+                    {
+                        Globals.details = false;
+                    }
+                }
+            }
+            Game1.spriteBatch.End();
+        }
+
         public static void DrawHud(ContentManager manager)
         {
             if (GameLogic.PlayerIndex <= -1) return;
-            const float scale = (float)200 / 2000;
+            const float scale = (float)200 / 2250;
             Vector2 offset = new Vector2(100, Globals.PreferredBackBufferHeight - 100);
             Game1.spriteBatch.Begin();
             // Draw scanner
             if (Globals.scanner)
             {
+                MouseState ms = Mouse.GetState();
+                Vector2 position = new Vector2(ms.X, ms.Y);
+                var _player = Types.Player[GameLogic.PlayerIndex];
+
                 Game1.spriteBatch.Draw(scanner, new Vector2(0, Globals.PreferredBackBufferHeight - 200), null,
                     Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                 Game1.spriteBatch.Draw(triangle, offset, null, Color.White, Types.Player[GameLogic.PlayerIndex].Rotation, new Vector2(8, 8), 1, SpriteEffects.None, 0);
+
+                // Look for mobs and display if within range
                 if (GameLogic.LocalMobs != null && GameLogic.LocalMobs.Count > 0)
                 {
                     foreach (var m in GameLogic.LocalMobs)
                     {
-                        Vector2 mobPosition = offset + new Vector2(((m.X + -Camera.transform.M41) - (Types.Player[GameLogic.PlayerIndex].X + -Camera.transform.M41)) * scale,
-                            ((m.Y + -Camera.transform.M42) - (Types.Player[GameLogic.PlayerIndex].Y - Camera.transform.M42)) * scale);
+                        Vector2 mobPosition = offset + new Vector2(((m.X + -Camera.transform.M41) - (_player.X + -Camera.transform.M41)) * scale, ((m.Y + -Camera.transform.M42) - (_player.Y - Camera.transform.M42)) * scale);
                         if (mobPosition.X > 17 && mobPosition.X < 185 && mobPosition.Y > Globals.PreferredBackBufferHeight - 183 && mobPosition.Y < Globals.PreferredBackBufferHeight - 16)
+                        {
                             Game1.spriteBatch.Draw(diamond, mobPosition, null, new Color(88, 170, 76), m.Rotation, new Vector2(6, 6), 1, SpriteEffects.None, 0);
+                            Rectangle bound = new Rectangle(mobPosition.ToPoint() - new Point(6), new Point(12));
+                            if (bound.Contains(position))
+                            {
+                                UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
+                                if (ms.LeftButton == ButtonState.Pressed && GameLogic.Selected != m.Id)
+                                {
+                                    GameLogic.Selected = m.Id;
+                                    GameLogic.SelectedType = "MOB";
+                                    GameLogic.selectedPlanet = "";
+                                }
+                            }
+                            if (GameLogic.Selected == m.Id)
+                            {
+                                DrawBorder(bound, 1, Color.DarkGreen * .25F);
+                            }
+                        }
+                    }
+                }
+
+                // Look for planets and stars and display if within range
+                if (GameLogic.Galaxy != null)
+                {
+                    foreach (var obj in GameLogic.Galaxy.Where(p =>
+                        p.X + -Camera.transform.M41 >= _player.X + -Camera.transform.M41 - 2000 &&
+                        p.X + -Camera.transform.M41 <= _player.X + -Camera.transform.M41 + 2000 &&
+                        p.Y + -Camera.transform.M42 >= _player.Y + -Camera.transform.M42 - 2000 &&
+                        p.Y + -Camera.transform.M42 <= _player.Y + -Camera.transform.M42 + 2000))
+                    {
+                        Vector2 starPosition =
+                            offset + new Vector2(
+                                ((obj.X + -Camera.transform.M41) - (_player.X + -Camera.transform.M41)) * scale,
+                                ((obj.Y + -Camera.transform.M42) - (_player.Y - Camera.transform.M42)) * scale);
+                        if (starPosition.X > 17 && starPosition.X < 185 &&
+                            starPosition.Y > Globals.PreferredBackBufferHeight - 183 &&
+                            starPosition.Y < Globals.PreferredBackBufferHeight - 16)
+                        {
+                            Game1.spriteBatch.Draw(star, starPosition, null, Color.White, 0, new Vector2(6, 6), 1, SpriteEffects.None, 0);
+                            Rectangle bound = new Rectangle(starPosition.ToPoint() - new Point(6), new Point(12));
+                            if (bound.Contains(position))
+                            {
+                                UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
+                                if (ms.LeftButton == ButtonState.Pressed && GameLogic.Selected != obj.Id)
+                                {
+                                    GameLogic.selectedPlanet = obj.Id;
+                                    GameLogic.Selected = "";
+                                    GameLogic.SelectedType = "";
+                                }
+                            }
+                            if (GameLogic.selectedPlanet == obj.Id)
+                            {
+                                DrawBorder(bound, 1, Color.DarkGreen * .25F);
+                            }
+                        }
+
+                        foreach (var sat in obj.Planets)
+                        {
+                            Vector2 satPosition =
+                                offset + new Vector2(
+                                    ((sat.X + -Camera.transform.M41) - (_player.X + -Camera.transform.M41)) * scale,
+                                    ((sat.Y + -Camera.transform.M42) - (_player.Y - Camera.transform.M42)) * scale);
+                            if (satPosition.X > 17 && satPosition.X < 185 &&
+                                satPosition.Y > Globals.PreferredBackBufferHeight - 183 &&
+                                satPosition.Y < Globals.PreferredBackBufferHeight - 16)
+                            {
+                                Game1.spriteBatch.Draw(circle, satPosition, null, Color.White, 0, new Vector2(6, 6), 1, SpriteEffects.None, 0);
+                                Rectangle bound = new Rectangle(satPosition.ToPoint() - new Point(6), new Point(12));
+                                if (bound.Contains(position))
+                                {
+                                    UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
+                                    if (ms.LeftButton == ButtonState.Pressed && GameLogic.Selected != sat.Id)
+                                    {
+                                        GameLogic.selectedPlanet = sat.Id;
+                                        GameLogic.Selected = "";
+                                        GameLogic.SelectedType = "";
+                                    }
+                                }
+                                if (GameLogic.selectedPlanet == sat.Id)
+                                {
+                                    DrawBorder(bound, 1, Color.DarkGreen * .25F);
+                                }
+                            }
+                        }
                     }
                 }
 
                 // Click to close
                 Rectangle Bound = new Rectangle(186, Globals.PreferredBackBufferHeight - 196, 12, 12);
-                MouseState ms = Mouse.GetState();
-                Vector2 position = new Vector2(ms.X, ms.Y);
                 if (Bound.Contains(position))
                 {
                     UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
@@ -454,7 +628,6 @@ namespace PSol.Client
                         Globals.scanner = false;
                     }
                 }
-
             }
             DrawString(Globals.Font10, (int)Types.Player[GameLogic.PlayerIndex].X / 100 + ":" + (int)Types.Player[GameLogic.PlayerIndex].Y / 100, -1, 10, true, Color.DimGray);
             if (GameLogic.Navigating)

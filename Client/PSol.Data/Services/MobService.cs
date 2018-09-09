@@ -78,6 +78,10 @@ namespace PSol.Data.Services
 
                 // Otherwise the coin flip passed or we've passed max spawn time
                 Console.WriteLine(@"Spawning " + mob.MobType.Name);
+
+                // Determine if he's going to be special
+                if (random.Next(0, 10) == 7) { mob.Special = true; }
+
                 mob.Alive = true;
                 mob.Health = mob.MobType.MaxHealth;
                 mob.Rotation = random.Next(0, 360);
@@ -89,6 +93,7 @@ namespace PSol.Data.Services
                 mob.X = mob.X < 0 ? mob.X * -1 : mob.X;
                 mob.Y = mob.MobType.Star.Y + yMod;
                 mob.Y = mob.Y < 0 ? mob.Y * -1 : mob.Y;
+                mob.Name = GenerateName(mob.Special);
                 _mobs.Add(mob);
             }
         }
@@ -97,11 +102,12 @@ namespace PSol.Data.Services
         {
             var mob = new Mob()
             {
+                Id = Guid.NewGuid().ToString(),
                 Alive = false,
                 KilledDate = DateTime.UtcNow,
                 MobTypeId = type.Id
             };
-            _mobs.Add(_mobRepo.Add(mob));
+            _mobs.Add(mob);
         }
 
         public void SaveMobs()
@@ -109,9 +115,176 @@ namespace PSol.Data.Services
             if (_mobs == null) return;
             foreach (var mob in _mobs)
             {
-                if (mob.Id != null)
-                    _mobRepo.SaveMob(mob);
+                _mobRepo.SaveMob(mob);
             }
+        }
+
+        public string GenerateName(bool special)
+        {
+            string[] vowels = { "a", "e", "i", "o", "u", "a", "e", "i", "o", "u", "y", "oo", "ea" };
+            string[] consonants = {
+                "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "z",
+                "ch", "nd", "qu", "rt", "ck", "st", "rr", "sl", "pl", "'", "ph"
+            };
+            string[] titles =
+            {
+                "angry","black-hearted","brooding","brute","dangerous","deadly","deathly","death-dealer","deceitful","despairing",
+                "destroyer","devouring", "egregious","enraged","evil","fatal","fiery","fighter","foul","ghostly","harmful","hateful",
+                "heathen","hectic","heinous","hopeless","hazardous","ignoble","ignorant","irate","jagged","jarring","jealous",
+                "killer","livid","loathing","lunatic","lurker","lying","malignant","mendacious","mephitic","nag","nefarious",
+                "nightmarish","objectionable","obscene","ominous","overwhelming","paradoxical","pejorative","perturbed","punisher",
+                "quarrelsome","quick","resentful","sinister","sly","tank","taunting","torturous","traitorous","traumatic",
+                "unholy","ungodly","unyielding","vanquisher","vengeful","violent","warrior","wicked","wretched","zealous"
+            };
+            string[] prefix =
+            {
+                "Anger",
+                "Bad",
+                "Black",
+                "Bleak",
+                "Blood",
+                "Break",
+                "Dare",
+                "Dead",
+                "Death",
+                "Devil",
+                "Dire",
+                "Doubt",
+                "Dread",
+                "Empty",
+                "Evil",
+                "Fear",
+                "Fire",
+                "Flight",
+                "Frost",
+                "Ghost",
+                "Hate",
+                "Hell",
+                "Hunger",
+                "Ice",
+                "Ire",
+                "Jagged",
+                "Jarring",
+                "Kill",
+                "Lust",
+                "Metal",
+                "Moon",
+                "Night",
+                "Null",
+                "Quick",
+                "Red",
+                "Shadow",
+                "Slander",
+                "Smoke",
+                "Spark",
+                "Spiked",
+                "Storm",
+                "Strike",
+                "Thorn",
+                "Thunder",
+                "Vile",
+                "Void",
+                "Wicked",
+                "Zealous"
+            };
+            string[] suffix =
+            {
+                "adder",
+                "blast",
+                "blood",
+                "breath",
+                "crush",
+                "death",
+                "demon",
+                "devil",
+                "dusk",
+                "ember",
+                "fade",
+                "fault",
+                "fear",
+                "fight",
+                "fire",
+                "flight",
+                "hate",
+                "jinx",
+                "lightning",
+                "matrix",
+                "moon",
+                "night",
+                "nik",
+                "nova",
+                "null",
+                "pit",
+                "poison",
+                "razor",
+                "rex",
+                "run",
+                "seeker",
+                "shadow",
+                "smoke",
+                "smolder",
+                "snare",
+                "soul",
+                "spark",
+                "spear",
+                "spike",
+                "star",
+                "storm",
+                "strike",
+                "technic",
+                "thunder",
+                "thorn",
+                "trance",
+                "titan",
+                "venom",
+                "void",
+                "wolf"
+            };
+
+            var rnd = new Random();
+            int length = rnd.Next(2, 5);
+
+            // Given name
+            string name = "";
+            for (var i = 0; i < length; i++)
+            {
+                if (i == 0)
+                {
+                    if (rnd.Next(0, 1) == 1)
+                    {
+                        name += vowels[rnd.Next(6)].ToUpper();
+                    }
+                    else
+                    {
+                        name += consonants[rnd.Next(19)].ToUpper();
+                    }
+                }
+                else
+                {
+                    name += vowels[rnd.Next(vowels.Length)];
+                    name += consonants[rnd.Next(consonants.Length)];
+                }
+            }
+
+            // Surname
+            string p = prefix[rnd.Next(prefix.Length)];
+            string s = suffix[rnd.Next(suffix.Length)];
+
+            while (string.Equals(s, p, StringComparison.CurrentCultureIgnoreCase))
+            {
+                s = suffix[rnd.Next(suffix.Length)];
+            }
+
+            name += " " + p + s;
+
+            // Title
+            if (special)
+            {
+                name += " the ";
+                name += titles[rnd.Next(titles.Length)];
+            }
+
+            return name;
         }
     }
 }

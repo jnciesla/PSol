@@ -75,6 +75,10 @@
     <Compile Include="Migrations\201808121548360_Inventory.Designer.cs">
       <DependentUpon>201808121548360_Inventory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201809091024373_Mob names.cs" />
+    <Compile Include="Migrations\201809091024373_Mob names.Designer.cs">
+      <DependentUpon>201809091024373_Mob names.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Combat.cs" />
     <Compile Include="Models\Inventory.cs" />
@@ -129,6 +133,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201808121548360_Inventory.resx">
       <DependentUpon>201808121548360_Inventory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809091024373_Mob names.resx">
+      <DependentUpon>201809091024373_Mob names.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Bindings\Bindings.projitems" Label="Shared" />

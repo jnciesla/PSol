@@ -1,8 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace PSol.Data.Models
 {
@@ -19,5 +15,7 @@ namespace PSol.Data.Models
         public DateTime SpawnDate { get; set; }
         public DateTime KilledDate { get; set; }
         public bool Alive { get; set; } = true;
+        public string Name { get; set; }
+        public bool Special { get; set; }
     }
 }

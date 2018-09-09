@@ -38,8 +38,6 @@ namespace PSol.Client
         public static Paragraph detailsBody;
 
         // IGUI textures
-        public static Panel HUD;
-        private static Texture2D mapStar;
         private static Texture2D closeIcon;
         private static Texture2D plusIcon;
         private static Texture2D minusIcon;
@@ -64,7 +62,6 @@ namespace PSol.Client
             button_hover = content.Load<Texture2D>("Panels/button_default_hover");
             button_down = content.Load<Texture2D>("Panels/button_default_down");
             mapPanel = content.Load<Texture2D>("Panels/Map");
-            mapStar = content.Load<Texture2D>("Panels/starIco");
             closeIcon = content.Load<Texture2D>("Panels/closeIco");
             plusIcon = content.Load<Texture2D>("Panels/plusIco");
             minusIcon = content.Load<Texture2D>("Panels/minusIco");
@@ -78,7 +75,6 @@ namespace PSol.Client
             CreateMessage();
             CreateMap();
             CreateInventory();
-            // CreateHud();
         }
 
         public void CreateWindow(Panel panel)
@@ -142,13 +138,38 @@ namespace PSol.Client
                     {
                         Globals.exitgame = true;
                     }
-                    else if (messageText.Value.ToLower() == "/scan" || messageText.Value.ToLower() == "/scanner")
+                    else if (messageText.Value.ToLower().Substring(0, 5) == "/scan")
+                    {
+                        Globals.scanner = !Globals.scanner;
+                    }
+                    else if (messageText.Value.ToLower().Substring(0, 4) == "/det")
                     {
                         Globals.scanner = !Globals.scanner;
                     }
                     else if (messageText.Value.ToLower() == "/look")
                     {
-                        AddChats(GameLogic.LocalMobs.Count.ToString(), Color.Red);
+                        AddChats(GameLogic.LocalMobs.Count + " hostiles detected in the immediate vicinity.", Color.BurlyWood);
+                    }
+                    else if (messageText.Value.ToLower().Substring(0, 4) == "/nav")
+                    {
+                        int X = 0, Y = 0;
+                        bool resultX = false, resultY = false;
+                        string temp = messageText.Value.Substring(messageText.Value.LastIndexOf(' ') + 1);
+                        if (temp.Contains(","))
+                        {
+                            resultX = Int32.TryParse(temp.Substring(0, temp.IndexOf(',')), out X);
+                            resultY = Int32.TryParse(temp.Substring(temp.IndexOf(',') + 1), out Y);
+                        }
+
+                        if (!resultX || !resultY)
+                        {
+                            AddChats(@"Invalid input to navigation computer", Color.DarkGoldenrod);
+                            return;
+                        }
+
+                        AddChats(@"Navigating to " + X + "," + Y, Color.BurlyWood);
+                        GameLogic.Destination = new Vector2(X, Y);
+                        GameLogic.Navigating = true;
                     }
                     else
                     {
@@ -161,6 +182,12 @@ namespace PSol.Client
                 {
                     MenuManager.Clear(3);
                 }
+            }
+
+            if (!Globals.windowOpen)
+            {
+                MenuManager.ChangeMenu(MenuManager.Menu.Message);
+                messageText.IsFocused = true;
             }
         }
 
@@ -360,6 +387,7 @@ namespace PSol.Client
                 Globals.pauseChat = false;
             };
             panel.Scrollbar.Opacity = 0;
+
             Globals.pauseChat = false;
             Globals.chatPanel = panel;
             Globals.chatPanel.Scrollbar.AdjustMaxAutomatically = true;
@@ -706,7 +734,7 @@ namespace PSol.Client
             for (int i = 0; i < GameLogic.Galaxy.Count; i++)
             {
                 var n = i; // Idk why this works but it does- trust it
-                Image image = new Image(mapStar, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopLeft, new Vector2(GameLogic.Galaxy[n].X * scale, GameLogic.Galaxy[n].Y * scale));
+                Image image = new Image(Graphics.star, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopLeft, new Vector2(GameLogic.Galaxy[n].X * scale, GameLogic.Galaxy[n].Y * scale));
                 galaxyMap.AddChild(image);
                 image.OnMouseEnter += (starEnter) => { starLabel.Text = GameLogic.Galaxy[n].Name; UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
                 image.OnMouseLeave += (starLeave) => { starLabel.Text = ""; UserInterface.Active.SetCursor(CursorType.Default); };
@@ -727,7 +755,7 @@ namespace PSol.Client
         {
             starDetail.Texture = Graphics.Planets[4];
             mapLine[0].Text = "Name: " + GameLogic.Galaxy[n].Name;
-            mapLine[1].Text = "Classification: " + "Secchi class III";
+            mapLine[1].Text = "Classification: " + "MK - G";
             mapLine[2].Text = "Coordinates: " + GameLogic.Galaxy[n].X / 100 + ":" + GameLogic.Galaxy[n].Y / 100;
             mapLine[3].Text = "Belligerence: " + "Moderate";
             for (int index = 5; index < 10; index++)
@@ -768,30 +796,6 @@ namespace PSol.Client
             }
         }
 
-        public void CreateHud()
-        {
-            //  Create Entities
-            HUD = new Panel(new Vector2(200, 200), PanelSkin.None, Anchor.BottomLeft);
-            Image image = new Image(Graphics.scanner, new Vector2(200, 200), ImageDrawMode.Panel, Anchor.TopLeft, new Vector2(-30, -29));
-            Image closeBtn = new Image(closeIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(-30, -29));
-            Image player = new Image(Graphics.triangle, new Vector2(16, 16), ImageDrawMode.Panel, Anchor.Center);
-
-            UserInterface.Active.AddEntity(HUD);
-            HUD.AddChild(image);
-            HUD.AddChild(player);
-            HUD.AddChild(closeBtn);
-
-            closeBtn.WhileMouseHover += (HUDhover) => { Globals.cursorOverride = true; };
-            image.WhileMouseHover += (HUDhover) => { Globals.cursorOverride = true; };
-            image.OnMouseLeave += (HUDout) => { Globals.cursorOverride = false; };
-
-            closeBtn.OnMouseEnter += (closeEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
-            closeBtn.OnMouseLeave += (closeLeave) => { Globals.cursorOverride = false; UserInterface.Active.SetCursor(CursorType.Default); };
-            closeBtn.OnClick += (closeClick) => { MenuManager.Clear(6); };
-
-            CreateWindow(HUD);
-        }
-
         public void Update()
         {
             if (Windows[4].Visible)
@@ -799,23 +803,6 @@ namespace PSol.Client
                 const float scale = (float)500 / Constants.PLAY_AREA_WIDTH;
                 mapPlayer.SetOffset(new Vector2(Types.Player[GameLogic.PlayerIndex].X * scale, Types.Player[GameLogic.PlayerIndex].Y * scale));
             }
-
-/*            if (Windows[6].Visible)
-            {
-                const float scale = (float)200 / 2000;
-                Vector2 offset = new Vector2(100, Globals.PreferredBackBufferHeight - 100);
-                if (GameLogic.LocalMobs != null && GameLogic.LocalMobs.Count > 0)
-                {
-                    foreach (var m in GameLogic.LocalMobs)
-                    {
-                        Vector2 mobPosition = offset + new Vector2(((m.X + -Camera.transform.M41) - (Types.Player[GameLogic.PlayerIndex].X + -Camera.transform.M41)) * scale,
-                                                  ((m.Y + -Camera.transform.M42) - (Types.Player[GameLogic.PlayerIndex].Y - Camera.transform.M42)) * scale);
-                        if (mobPosition.X > 17 && mobPosition.X < 185 && mobPosition.Y > Globals.PreferredBackBufferHeight - 183 && mobPosition.Y < Globals.PreferredBackBufferHeight - 16)
-                            HUD.AddChild(new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Panel, Anchor.AutoInline));
-                        // Game1.spriteBatch.Draw(Graphics.diamond, mobPosition, null, new Color(88, 170, 76), m.Rotation, new Vector2(6, 6), 1, SpriteEffects.None, 0);
-                    }
-                }
-            }*/
         }
 
     }

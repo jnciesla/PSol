@@ -143,7 +143,7 @@ namespace PSol.Client
             camera.Update(gameTime, this);
 
             IGUI.Update();
-            
+
             base.Update(gameTime);
         }
 
@@ -209,6 +209,7 @@ namespace PSol.Client
             spriteBatch.End();
 
             Graphics.DrawHud(Content);
+            Graphics.DrawInfo(Content);
             UserInterface.Active.DrawMainRenderTarget(spriteBatch);
 
             // Drop the render target
@@ -227,6 +228,11 @@ namespace PSol.Client
                 Globals.exitgame = true;
             }
 
+            if (KC.KeyPress(Keys.N) && Globals.Control)
+            {
+                Console.WriteLine(GenerateName(true));
+            }
+
             if (KC.KeyPress(Keys.M) && Globals.Control)
             {
                 MenuManager.ChangeMenu(MenuManager.Menu.Map);
@@ -236,6 +242,16 @@ namespace PSol.Client
             {
                 IGUI.PopulateInventory(0);
                 MenuManager.ChangeMenu(MenuManager.Menu.Inventory);
+            }
+
+            if (KC.KeyPress(Keys.D) && Globals.Control)
+            {
+                Globals.details = !Globals.details;
+            }
+
+            if (KC.KeyPress(Keys.R) && Globals.Control)
+            {
+                Globals.scanner = !Globals.scanner;
             }
 
             Globals.Control = KC.CheckCtrl();
@@ -314,6 +330,23 @@ namespace PSol.Client
                     MenuManager.ChangeMenu(MenuManager.Menu.Message);
                     InterfaceGUI.messageText.IsFocused = true;
                 }
+
+                if (KC.KeyPress(Keys.Tab))
+                {
+                    // Cycle through local mobs
+                    if (GameLogic.Selected == "" || GameLogic.LocalMobs.FindIndex(m => m.Id == GameLogic.Selected) >= GameLogic.LocalMobs.Count - 1)
+                    {
+                        GameLogic.SelectedType = "MOB";
+                        GameLogic.selectedPlanet = "";
+                        GameLogic.Selected = GameLogic.LocalMobs[0].Id;
+                    }
+                    else
+                    {
+                        GameLogic.Selected = GameLogic.LocalMobs[GameLogic.LocalMobs.FindIndex(m => m.Id == GameLogic.Selected) + 1].Id;
+                        GameLogic.SelectedType = "MOB";
+                        GameLogic.selectedPlanet = "";
+                    }
+                }
             }
             else
             {
@@ -323,5 +356,172 @@ namespace PSol.Client
             }
         }
 
+        public string GenerateName(bool special)
+        {
+            string[] vowels = { "a", "e", "i", "o", "u", "a", "e", "i", "o", "u", "y", "oo", "ea" };
+            string[] consonants = {
+                "b", "c", "d", "f", "g", "h", "j", "k", "l", "m", "n", "p", "q", "r", "s", "t", "v", "w", "x", "z",
+                "ch", "nd", "qu", "rt", "ck", "st", "rr", "sl", "pl", "'", "ph"
+            };
+            string[] titles =
+            {
+                "angry","black-hearted","brooding","brute","dangerous","deadly","deathly","death-dealer","deceitful","despairing",
+                "destroyer","devouring", "egregious","enraged","evil","fatal","fiery","fighter","foul","ghostly","harmful","hateful",
+                "heathen","hectic","heinous","hopeless","hazardous","ignoble","ignorant","irate","jagged","jarring","jealous",
+                "killer","livid","loathing","lunatic","lurker","lying","malignant","mendacious","mephitic","nag","nefarious",
+                "nightmarish","objectionable","obscene","ominous","overwhelming","paradoxical","pejorative","perturbed","punisher",
+                "quarrelsome","quick","resentful","sinister","sly","tank","taunting","torturous","traitorous","traumatic",
+                "unholy","ungodly","unyielding","vanquisher","vengeful","violent","warrior","wicked","wretched","zealous"
+            };
+            string[] prefix =
+            {
+                "Anger",
+                "Bad",
+                "Black",
+                "Bleak",
+                "Blood",
+                "Break",
+                "Dare",
+                "Dead",
+                "Death",
+                "Devil",
+                "Dire",
+                "Doubt",
+                "Dread",
+                "Empty",
+                "Evil",
+                "Fear",
+                "Fire",
+                "Flight",
+                "Frost",
+                "Ghost",
+                "Hate",
+                "Hell",
+                "Hunger",
+                "Ice",
+                "Ire",
+                "Jagged",
+                "Jarring",
+                "Kill",
+                "Lust",
+                "Metal",
+                "Moon",
+                "Night",
+                "Null",
+                "Quick",
+                "Red",
+                "Shadow",
+                "Slander",
+                "Smoke",
+                "Spark",
+                "Spiked",
+                "Storm",
+                "Strike",
+                "Thorn",
+                "Thunder",
+                "Vile",
+                "Void",
+                "Wicked",
+                "Zealous"
+            };
+            string[] suffix =
+            {
+                "adder",
+                "blast",
+                "blood",
+                "breath",
+                "crush",
+                "death",
+                "demon",
+                "devil",
+                "dusk",
+                "ember",
+                "fade",
+                "fault",
+                "fear",
+                "fight",
+                "fire",
+                "flight",
+                "hate",
+                "jinx",
+                "lightning",
+                "matrix",
+                "moon",
+                "night",
+                "nik",
+                "nova",
+                "null",
+                "pit",
+                "poison",
+                "razor",
+                "rex",
+                "run",
+                "seeker",
+                "shadow",
+                "smoke",
+                "smolder",
+                "snare",
+                "soul",
+                "spark",
+                "spear",
+                "spike",
+                "star",
+                "storm",
+                "strike",
+                "technic",
+                "thunder",
+                "thorn",
+                "trance",
+                "titan",
+                "venom",
+                "void",
+                "wolf"
+            };
+
+            var rnd = new Random();
+            int length = rnd.Next(2, 5);
+
+            // Given name
+            string name = "";
+            for (var i = 0; i < length; i++)
+            {
+                if (i == 0)
+                {
+                    if (rnd.Next(0, 1) == 1)
+                    {
+                        name += vowels[rnd.Next(6)].ToUpper();
+                    }
+                    else
+                    {
+                        name += consonants[rnd.Next(19)].ToUpper();
+                    }
+                }
+                else
+                {
+                    name += vowels[rnd.Next(vowels.Length)];
+                    name += consonants[rnd.Next(consonants.Length)];
+                }
+            }
+
+            // Surname
+            string p = prefix[rnd.Next(prefix.Length)];
+            string s = suffix[rnd.Next(suffix.Length)];
+
+            while (string.Equals(s, p, StringComparison.CurrentCultureIgnoreCase))
+            {
+                s = suffix[rnd.Next(suffix.Length)];
+            }
+
+            name += " " + p + s;
+
+            // Title
+            if (special)
+            {
+                name += " the ";
+                name += titles[rnd.Next(titles.Length)];
+            }
+
+            return name;
+        }
     }
 }

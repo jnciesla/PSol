@@ -153,6 +153,7 @@ namespace PSol.Client
             buffer.AddBytes(data);
             buffer.GetInteger();
             GameLogic.Galaxy = buffer.GetList<Star>();
+            GameLogic.collectPlanets();
             InterfaceGUI.PopulateMap();
             buffer.Dispose();
         }

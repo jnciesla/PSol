@@ -46,7 +46,7 @@ namespace PSol.Client
             {
                 foreach (var window in InterfaceGUI.Windows)
                 {
-                    if (window == InterfaceGUI.Windows[0] || window == InterfaceGUI.Windows[1]) // Don't close chats, login
+                    if (window == InterfaceGUI.Windows[0] || window == InterfaceGUI.Windows[1]) // Don't close chats or login
                         continue;
                     UserInterface.Active.SetCursor(CursorType.Default);
                     window.Visible = false;

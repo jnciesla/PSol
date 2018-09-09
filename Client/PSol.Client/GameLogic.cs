@@ -20,6 +20,7 @@ namespace PSol.Client
         private static readonly ClientTCP ctcp = new ClientTCP();
         private static int messageTime;
         public static List<Star> Galaxy;
+        public static List<Planet> Planets = new List<Planet>();
         public static List<Item> Items;
         public static List<Mob> LocalMobs;
         public static List<Combat> LocalCombat;
@@ -142,6 +143,14 @@ namespace PSol.Client
             {
                 messageTime = Game1.Tick;
                 InterfaceGUI.AddChats("We shouldn't go beyond the edge of the mapped galaxy.", Color.DarkGoldenrod);
+            }
+        }
+
+        public static void collectPlanets()
+        {
+            foreach (Star s in Galaxy)
+            {
+                Planets.AddRange(s.Planets.ToList());
             }
         }
 

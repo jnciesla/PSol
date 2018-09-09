@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data.Entity;
+using System.Data.Entity.Migrations;
 using System.Linq;
 using PSol.Data.Models;
 using PSol.Data.Repositories.Interfaces;
@@ -33,8 +34,7 @@ namespace PSol.Data.Repositories
 
         public Mob Add(Mob mob)
         {
-            mob.Id = Guid.NewGuid().ToString();
-            _context.Mobs.Add(mob);
+            _context.Mobs.AddOrUpdate(mob);
             _context.SaveChanges();
             return mob;
         }
