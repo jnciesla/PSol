@@ -49,6 +49,8 @@ namespace PSol.Data.Migrations
                 Color = 1
             });
 
+            context.SaveChanges();
+
             context.MobTypes.AddOrUpdate(new MobType
             {
                 Id = "7A93241E-D251-4E7E-A565-46B0E274B5C6",

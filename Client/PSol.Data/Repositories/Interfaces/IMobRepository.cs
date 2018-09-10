@@ -8,7 +8,6 @@ namespace PSol.Data.Repositories.Interfaces
     {
         Mob GetMobById(string id);
         ICollection<Mob> GetAllMobs();
-        ICollection<Mob> GetAllDeadMobs();
         Mob Add(Mob mob);
         void SaveMob(Mob mob);
         ICollection<MobType> GetAllMobTypes();

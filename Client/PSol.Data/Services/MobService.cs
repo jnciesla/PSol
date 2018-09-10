@@ -25,7 +25,8 @@ namespace PSol.Data.Services
                 _mobs = _mobRepo.GetAllMobs();
             }
 
-            return _mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY && m.Alive != getDead).ToList();
+            return getDead ? _mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY).ToList() 
+                : _mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY && m.Alive).ToList();
         }
 
         public void RepopGalaxy(bool forceAll = false)
@@ -64,7 +65,7 @@ namespace PSol.Data.Services
 
             // Now we know that all of the possible mobs exist in the db (dead or alive). Look at the
             // dead ones and see if any are able to be spawned.
-            var deadMobs = _mobRepo.GetAllDeadMobs();
+            var deadMobs = activeMobs.Where(m => m.Alive == false);
             // Go through all the dead mobs and check their spawn timer against their death time
             var random = new Random();
             foreach (var mob in deadMobs)
@@ -105,7 +106,8 @@ namespace PSol.Data.Services
                 Id = Guid.NewGuid().ToString(),
                 Alive = false,
                 KilledDate = DateTime.UtcNow,
-                MobTypeId = type.Id
+                MobTypeId = type.Id,
+                MobType = type
             };
             _mobs.Add(mob);
         }
