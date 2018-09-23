@@ -9,6 +9,8 @@ namespace PSol.Data.Models
         // General
         public string Name { get; set; }
         public ICollection<Planet> Planets { get; set; }
+        public string Belligerence { get; set; }
+        public string Class { get; set; }
 
         // Position
         public float X { get; set; }

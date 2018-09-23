@@ -10,6 +10,7 @@ namespace PSol.Data.Services
 {
     public class MobService : IMobService
     {
+        private static readonly Random rnd = new Random();
         private readonly IMobRepository _mobRepo;
         private ICollection<Mob> _mobs;
 
@@ -67,29 +68,28 @@ namespace PSol.Data.Services
             // dead ones and see if any are able to be spawned.
             var deadMobs = activeMobs.Where(m => m.Alive == false);
             // Go through all the dead mobs and check their spawn timer against their death time
-            var random = new Random();
             foreach (var mob in deadMobs)
             {
                 // If difference is less than min spawn time, skip them
                 if (DateTime.UtcNow.Subtract(mob.KilledDate).CompareTo(new TimeSpan(0, 0, mob.MobType.SpawnTimeMin)) < 0) continue;
 
                 // If difference is between min and max, flip a coin and see if they want to spawn
-                var coin = random.Next(0, 2) == 0;
+                var coin = rnd.Next(0, 2) == 0;
                 if (DateTime.UtcNow.Subtract(mob.KilledDate).CompareTo(new TimeSpan(0, 0, mob.MobType.SpawnTimeMax)) < 0 && coin) continue;
 
                 // Otherwise the coin flip passed or we've passed max spawn time
                 Console.WriteLine(@"Spawning " + mob.MobType.Name);
 
                 // Determine if he's going to be special
-                if (random.Next(0, 10) == 7) { mob.Special = true; }
+                if (rnd.Next(0, 10) == 7) { mob.Special = true; }
 
                 mob.Alive = true;
                 mob.Health = mob.MobType.MaxHealth;
-                mob.Rotation = random.Next(0, 360);
+                mob.Rotation = rnd.Next(0, 360);
                 mob.Shield = mob.MobType.MaxShield;
                 mob.SpawnDate = DateTime.UtcNow;
-                var xMod = random.Next(-1 * mob.MobType.SpawnRadius, mob.MobType.SpawnRadius);
-                var yMod = random.Next(-1 * mob.MobType.SpawnRadius, mob.MobType.SpawnRadius);
+                var xMod = rnd.Next(-1 * mob.MobType.SpawnRadius, mob.MobType.SpawnRadius);
+                var yMod = rnd.Next(-1 * mob.MobType.SpawnRadius, mob.MobType.SpawnRadius);
                 mob.X = mob.MobType.Star.X + xMod;
                 mob.X = mob.X < 0 ? mob.X * -1 : mob.X;
                 mob.Y = mob.MobType.Star.Y + yMod;
@@ -243,7 +243,6 @@ namespace PSol.Data.Services
                 "wolf"
             };
 
-            var rnd = new Random();
             int length = rnd.Next(2, 5);
 
             // Given name

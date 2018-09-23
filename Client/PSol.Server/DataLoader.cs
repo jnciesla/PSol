@@ -18,20 +18,14 @@ namespace PSol.Server
 
         public void DownloadGalaxy()
         {
-            int pos = Console.CursorTop;
-            Console.WriteLine(@"Downloading galaxy data...");
+            Console.WriteLine(@"Downloading galaxy data");
             Globals.Galaxy = _starService.LoadStars();
-            Console.SetCursorPosition(0, pos);
-            Console.WriteLine(@"Downloading galaxy data... PASS");
         }
 
         public void DownloadItems()
         {
-            int pos = Console.CursorTop;
-            Console.WriteLine(@"Downloading item data...");
+            Console.WriteLine(@"Downloading item data");
             Globals.Items = _itemService.LoadItems();
-            Console.SetCursorPosition(0, pos);
-            Console.WriteLine(@"Downloading item data... PASS");
         }
     }
 }

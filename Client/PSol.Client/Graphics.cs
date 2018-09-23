@@ -82,6 +82,7 @@ namespace PSol.Client
             float x = ms.X + -Camera.transform.M41;
             float y = ms.Y + -Camera.transform.M42;
             Vector2 position = new Vector2(x, y);
+            if (Globals.cursorOverride) position = Vector2.Zero;
 
             int SpriteNum = 4;
             float scale = .3F;
@@ -247,6 +248,7 @@ namespace PSol.Client
                 float x = ms.X + -Camera.transform.M41;
                 float y = ms.Y + -Camera.transform.M42;
                 Vector2 position = new Vector2(x, y);
+                if (Globals.cursorOverride) position = Vector2.Zero;
                 if (Bound.Contains(position) && !Globals.windowOpen)
                 {
                     UserInterface.Active.SetCursor(CursorType.Pointer);
@@ -374,6 +376,7 @@ namespace PSol.Client
                 var x = ms.X + -Camera.transform.M41;
                 var y = ms.Y + -Camera.transform.M42;
                 var position = new Vector2(x, y);
+                if (Globals.cursorOverride) position = Vector2.Zero;
                 if (bound.Contains(position))
                 {
                     UserInterface.Active.SetCursor(CursorType.Pointer);
@@ -420,7 +423,7 @@ namespace PSol.Client
 
         private static void LoadObjects(ContentManager manager)
         {
-            for (int i = 1; i < Objects.Length; i++)
+            for (int i = 0; i < Objects.Length; i++)
             {
                 Objects[i] = manager.Load<Texture2D>("Objects/" + i);
             }
@@ -438,6 +441,7 @@ namespace PSol.Client
             {
                 MouseState ms = Mouse.GetState();
                 Vector2 position = new Vector2(ms.X, ms.Y);
+                if (Globals.cursorOverride) position = Vector2.Zero;
                 Game1.spriteBatch.Draw(details, new Vector2(0 + offsetX, Globals.PreferredBackBufferHeight - 200), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
 
                 // Planetary info
@@ -451,9 +455,9 @@ namespace PSol.Client
                         float scale = (float)150 / Planets[4].Width;
                         Game1.spriteBatch.Draw(Planets[4], new Vector2(20 + offsetX, Globals.PreferredBackBufferHeight - 178), null, Color.White * .5F, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
                         DrawString(Globals.Font12, "Name: " + STAR.Name, 150 + offsetX, Globals.PreferredBackBufferHeight - 175, false, Color.DarkGray);
-                        DrawString(Globals.Font10, "Classification: " + "MK - G", 160 + offsetX, Globals.PreferredBackBufferHeight - 155, false, Color.DarkGray);
+                        DrawString(Globals.Font10, "Classification: " + STAR.Class, 160 + offsetX, Globals.PreferredBackBufferHeight - 155, false, Color.DarkGray);
                         DrawString(Globals.Font10, " Coordinates: " + STAR.X / 100 + ":" + STAR.Y / 100, 160 + offsetX, Globals.PreferredBackBufferHeight - 140, false, Color.DarkGray);
-                        DrawString(Globals.Font10, "  Belligerence: " + "Moderate", 160 + offsetX, Globals.PreferredBackBufferHeight - 125, false, Color.DarkGray);
+                        DrawString(Globals.Font10, "  Belligerence: " + STAR.Belligerence, 160 + offsetX, Globals.PreferredBackBufferHeight - 125, false, Color.DarkGray);
                         DrawString(Globals.Font10, "  Planets: " + STAR.Planets.Count, 160 + offsetX, Globals.PreferredBackBufferHeight - 110, false, Color.DarkGray);
                     }
 
@@ -462,9 +466,9 @@ namespace PSol.Client
                         float scale = (float)150 / Planets[PLANET.Sprite].Width;
                         Game1.spriteBatch.Draw(Planets[PLANET.Sprite], new Vector2(20 + offsetX, Globals.PreferredBackBufferHeight - 178), null, Color.White * .5F, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
                         DrawString(Globals.Font12, "Name: " + PLANET.Name, 150 + offsetX, Globals.PreferredBackBufferHeight - 175, false, Color.DarkGray);
-                        DrawString(Globals.Font10, "Classification: " + "Terrestrial", 160 + offsetX, Globals.PreferredBackBufferHeight - 155, false, Color.DarkGray);
+                        DrawString(Globals.Font10, "Classification: " + PLANET.Class, 160 + offsetX, Globals.PreferredBackBufferHeight - 155, false, Color.DarkGray);
                         DrawString(Globals.Font10, " Coordinates: " + Math.Round(PLANET.X / 100, 2) + ":" + Math.Round(PLANET.Y / 100, 2), 160 + offsetX, Globals.PreferredBackBufferHeight - 140, false, Color.DarkGray);
-                        DrawString(Globals.Font10, "  Belligerence: " + "Moderate", 160 + offsetX, Globals.PreferredBackBufferHeight - 125, false, Color.DarkGray);
+                        DrawString(Globals.Font10, "  Belligerence: " + PLANET.Belligerence, 160 + offsetX, Globals.PreferredBackBufferHeight - 125, false, Color.DarkGray);
                     }
                 }
 
@@ -476,7 +480,7 @@ namespace PSol.Client
                     {
                         Game1.spriteBatch.Draw(detailsGfx, new Vector2(82 + offsetX, Globals.PreferredBackBufferHeight - 140), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
                         Game1.spriteBatch.Draw(Characters[MOB.MobType.Sprite], new Vector2(90 + offsetX, Globals.PreferredBackBufferHeight - 100 - Characters[MOB.MobType.Sprite].Height / 2), null, Color.White * .5F, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
-                        DrawString(Globals.Font10, "Gocharreg DeadlyMetal the death-dealer", 200 + offsetX, Globals.PreferredBackBufferHeight - 175, true, Color.DarkGray);
+                        DrawString(Globals.Font10, MOB.Name ?? "Null", 200 + offsetX, Globals.PreferredBackBufferHeight - 175, true, Color.DarkGray);
                         DrawString(Globals.Font8, "Type: " + MOB.MobType.Name, 173 + offsetX, Globals.PreferredBackBufferHeight - 138, false, Color.DarkGray);
                         DrawString(Globals.Font8, "Hull strength: " + MOB.Health / MOB.MobType.MaxHealth * 100 + "%", 173 + offsetX, Globals.PreferredBackBufferHeight - 122, false, Color.DarkGray);
                         if (MOB.MobType.MaxHealth <= 0)
@@ -518,6 +522,7 @@ namespace PSol.Client
             {
                 MouseState ms = Mouse.GetState();
                 Vector2 position = new Vector2(ms.X, ms.Y);
+                if (Globals.cursorOverride) position = Vector2.Zero;
                 var _player = Types.Player[GameLogic.PlayerIndex];
 
                 Game1.spriteBatch.Draw(scanner, new Vector2(0, Globals.PreferredBackBufferHeight - 200), null,

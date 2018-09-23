@@ -9,6 +9,8 @@
         public string Name { get; set; }
         public int Sprite { get; set; }
         public int Color { get; set; }
+        public string Belligerence { get; set; }
+        public string Class { get; set; }
 
         // Position
         public float X { get; set; }

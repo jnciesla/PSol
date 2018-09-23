@@ -79,6 +79,18 @@
     <Compile Include="Migrations\201809091024373_Mob names.Designer.cs">
       <DependentUpon>201809091024373_Mob names.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201809130552285_equipment.cs" />
+    <Compile Include="Migrations\201809130552285_equipment.Designer.cs">
+      <DependentUpon>201809130552285_equipment.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201809130631035_equipment &amp; planet classes.cs" />
+    <Compile Include="Migrations\201809130631035_equipment &amp; planet classes.Designer.cs">
+      <DependentUpon>201809130631035_equipment &amp; planet classes.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201809180834520_slot.cs" />
+    <Compile Include="Migrations\201809180834520_slot.Designer.cs">
+      <DependentUpon>201809180834520_slot.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Combat.cs" />
     <Compile Include="Models\Inventory.cs" />
@@ -136,6 +148,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201809091024373_Mob names.resx">
       <DependentUpon>201809091024373_Mob names.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809130552285_equipment.resx">
+      <DependentUpon>201809130552285_equipment.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809130631035_equipment &amp; planet classes.resx">
+      <DependentUpon>201809130631035_equipment &amp; planet classes.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809180834520_slot.resx">
+      <DependentUpon>201809180834520_slot.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Bindings\Bindings.projitems" Label="Shared" />

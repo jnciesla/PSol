@@ -31,8 +31,7 @@ namespace PSol.Server
 
         public void InitializeMessages()
         {
-            int pos = Console.CursorTop;
-            Console.WriteLine(@"Initializing Network Packets...");
+            Console.WriteLine(@"Initializing Network Packets");
             packets = new Dictionary<int, Packet_>
             {
                 {(int) CLogin, HandleLogin},
@@ -41,8 +40,6 @@ namespace PSol.Server
                 {(int) CChat, ParseChat},
                 {(int) CCombat, HandleCombat }
             };
-            Console.SetCursorPosition(0, pos);
-            Console.WriteLine(@"Initializing Network Packets... PASS");
         }
 
         public void HandleNetworkMessages(int index, byte[] data)
@@ -69,13 +66,13 @@ namespace PSol.Server
 
             if (!_userService.AccountExists(username))
             {
-                SendMessage(index, @"Username does not exist!", Warning);
+                SendMessage(index, "Username does not exist!", Warning);
                 return;
             }
 
             if (!_userService.PasswordOK(username, password))
             {
-                SendMessage(index, @"Password incorrect!", Warning);
+                SendMessage(index, "Password incorrect!", Warning);
                 return;
             }
 

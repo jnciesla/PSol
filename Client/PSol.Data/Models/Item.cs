@@ -16,6 +16,7 @@ namespace PSol.Data.Models
         public int Cost { get; set; }
         public bool Stack { get; set; }
         public int Level { get; set; }
+        public int Slot { get; set; }
 
         // Attributes
         public int Hull { get; set; }

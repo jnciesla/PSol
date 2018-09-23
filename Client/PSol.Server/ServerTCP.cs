@@ -13,13 +13,10 @@ namespace PSol.Server
 
         public void InitializeNetwork()
         {
-            int pos = Console.CursorTop;
-            Console.WriteLine(@"Initializing Server Network...");
+            Console.WriteLine(@"Initializing Server Network");
             ServerSocket = new TcpListener(IPAddress.Any, 8000);
             ServerSocket.Start();
             ServerSocket.BeginAcceptTcpClient(OnClientConnect, null);
-            Console.SetCursorPosition(0, pos);
-            Console.WriteLine(@"Initializing Server Network... PASS");
         }
 
         private void OnClientConnect(IAsyncResult ar)

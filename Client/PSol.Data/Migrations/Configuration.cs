@@ -24,6 +24,8 @@ namespace PSol.Data.Migrations
             {
                 Id = "7179FC09-EBAA-49D8-8ED4-A53F7B95F260",
                 Name = "Vyt",
+                Class = "MK - G",
+                Belligerence = "Moderate",
                 X = 1000,
                 Y = 1000,
                 Planets = new List<Planet>()
@@ -32,6 +34,8 @@ namespace PSol.Data.Migrations
             {
                 Id = "d2f03d3c-c465-4ae2-a887-d783037253ef",
                 Name = "Scathe",
+                Class = "MK - G",
+                Belligerence = "Moderate",
                 X = 4000,
                 Y = 5000,
                 Planets = new List<Planet>()
@@ -42,6 +46,8 @@ namespace PSol.Data.Migrations
                 Id = "c804ef2e-793f-43f1-9d8f-d90a2df71d3a",
                 StarId = "7179FC09-EBAA-49D8-8ED4-A53F7B95F260",
                 Name = "Vyt I",
+                Class = "Terrestrial",
+                Belligerence = "Moderate",
                 Orbit = 600,
                 Sprite = 2,
                 X = 1600,
@@ -71,10 +77,10 @@ namespace PSol.Data.Migrations
             context.Items.AddOrUpdate(new Item
             {
                 Id = "50521cfe-7d63-4495-a1cf-b900fb8d225f",
-                Name = "Item 1",
+                Name = "Weird horse thing",
                 Description = "The very first item added to the game.",
                 Type = "Biospecimen",
-                Image = 0,
+                Image = 1,
                 Color = 0,
                 Mass = 1,
                 Cost = 500,
@@ -92,7 +98,8 @@ namespace PSol.Data.Migrations
                 Offense = 0,
                 Capacity = 0,
                 Weapons = 0,
-                Special = 0
+                Special = 0,
+                Slot = 0
             });
 
             context.SaveChanges();
