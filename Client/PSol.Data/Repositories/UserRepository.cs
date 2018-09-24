@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using PSol.Data.Models;
 using PSol.Data.Repositories.Interfaces;
 using System.Data.Entity;
+using System.Data.Entity.Migrations;
 
 namespace PSol.Data.Repositories
 {
@@ -36,8 +38,24 @@ namespace PSol.Data.Repositories
         public void SavePlayer(User user)
         {
             var dbUser = GetUserById(user.Id);
+            //SaveInventory(user);
             _context.Entry(dbUser).CurrentValues.SetValues(user);
             _context.SaveChanges();
+        }
+
+        private void SaveInventory(User user)
+        {
+            foreach (var inv in user.Inventory)
+            {
+                _context.Inventory.AddOrUpdate(new Inventory
+                {
+                    Id = inv.Id,
+                    ItemId = inv.ItemId,
+                    Quantity = inv.Quantity,
+                    Slot = inv.Slot,
+                    UserId = inv.UserId
+                });
+            }
         }
 
         public bool AccountExists(string username)

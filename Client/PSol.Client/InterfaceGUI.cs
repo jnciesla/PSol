@@ -39,8 +39,8 @@ namespace PSol.Client
         private static Paragraph detailsHeader;
         private static Paragraph detailsBody;
         private static Image detailsImage;
-        private static Image[] slot = new Image[60];
-        private static Rectangle[] slotBounds = new Rectangle[60];
+        private static readonly Image[] slot = new Image[60];
+        private static readonly Rectangle[] slotBounds = new Rectangle[60];
 
         // IGUI textures
         private static Texture2D closeIcon;
@@ -50,10 +50,11 @@ namespace PSol.Client
         private Texture2D inventoryPanel;
         private Texture2D registerPanel;
         private Texture2D loginPanel;
+        private Texture2D exitPanel;
         private Texture2D button;
         private Texture2D button_hover;
         private Texture2D button_down;
-        private int SLOT = 1;
+
 
         private const string mask = "*";
 
@@ -62,6 +63,7 @@ namespace PSol.Client
             // Initialize custom graphics
             loginPanel = content.Load<Texture2D>("Panels/Login");
             registerPanel = content.Load<Texture2D>("Panels/Register");
+            exitPanel = content.Load<Texture2D>("Panels/exit");
             inventoryPanel = content.Load<Texture2D>("Panels/Inventory");
             button = content.Load<Texture2D>("Panels/button_default");
             button_hover = content.Load<Texture2D>("Panels/button_default_hover");
@@ -80,6 +82,7 @@ namespace PSol.Client
             CreateMessage();
             CreateMap();
             CreateInventory();
+            CreateWindow_Exit();
         }
 
         public void CreateWindow(Panel panel)
@@ -229,7 +232,7 @@ namespace PSol.Client
         public void CreateWindow_Login()
         {
             //  Create Entities
-            var panel = new Panel(new Vector2(500, 430));
+            var panel = new Panel(new Vector2(500, 430), PanelSkin.None);
             var image = new Image(loginPanel, new Vector2(496, 427), ImageDrawMode.Panel, Anchor.TopLeft, new Vector2(-30, -29));
             var loginButton = new Image(button, new Vector2(400, 60), ImageDrawMode.Panel, Anchor.AutoCenter);
             var loginLabel = new Paragraph("LOGIN", Anchor.AutoCenter, null, new Vector2(0, -50)) { FillColor = Color.DarkGray };
@@ -245,8 +248,6 @@ namespace PSol.Client
 
             lblStatus = new MulticolorParagraph("Server status:{{RED}} offline", Anchor.BottomLeft);
             UserInterface.Active.AddEntity(panel);
-
-            panel.Skin = PanelSkin.None;
 
             // Entity Settings
             txtUser.PlaceholderText = "Enter username";
@@ -292,6 +293,37 @@ namespace PSol.Client
             txtPass.OnValueChange = textPass => { Globals.loginPassword = txtPass.Value; };
 
             // Create Window
+            CreateWindow(panel);
+        }
+
+        public void CreateWindow_Exit()
+        {
+            //  Create Entities
+            var panel = new Panel(new Vector2(500, 198), PanelSkin.None);
+            var image = new Image(exitPanel, new Vector2(498, 198), ImageDrawMode.Stretch, Anchor.TopLeft, new Vector2(-30, -29));
+            var exitButton = new Image(button, new Vector2(300, 60), ImageDrawMode.Stretch, Anchor.AutoCenter, new Vector2(0, -100));
+            var exitLabel = new Paragraph("EXIT PSol", Anchor.AutoCenter, null, new Vector2(0, -50)) { FillColor = Color.DarkGray, ClickThrough = true };
+            var closeBtn = new Image(closeIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(-30, -29));
+
+            UserInterface.Active.AddEntity(panel);
+            panel.AddChild(image);
+            panel.AddChild(exitButton);
+            panel.AddChild(exitLabel);
+            panel.AddChild(closeBtn);
+
+            closeBtn.OnMouseEnter += (closeEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            closeBtn.OnMouseLeave += (closeLeave) => { UserInterface.Active.SetCursor(CursorType.Default); };
+            closeBtn.OnClick += (closeClick) => { MenuManager.Clear(6); };
+
+            exitButton.OnMouseEnter += entity => { exitButton.Texture = button_hover; UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            exitButton.OnMouseLeave += entity => { exitButton.Texture = button; UserInterface.Active.SetCursor(CursorType.Default); };
+            exitButton.OnMouseDown += entity => { exitButton.Texture = button_down; };
+            exitButton.OnMouseReleased += entity => { exitButton.Texture = button; };
+            exitButton.OnClick += entity =>
+            {
+                Globals.exitgame = true;
+            };
+
             CreateWindow(panel);
         }
 
@@ -625,8 +657,8 @@ namespace PSol.Client
                         }
                         else
                         {
-                            detailsHeader.Text = "No equipment installed in this slot";
-                            detailsBody.Text = "";
+                            detailsHeader.Text = "";
+                            detailsBody.Text = "{{RED}}No equipment installed";
                         }
                     };
                 }
@@ -647,34 +679,34 @@ namespace PSol.Client
                     }
                     else
                     {
-                        detailsHeader.Text = "No equipment installed";
-                        detailsBody.Text = "";
+                        detailsHeader.Text = "";
+                        detailsBody.Text = "{{RED}}No equipment installed";
                     }
                 };
             }
 
             ArrangeInventory();
-
-            foreach (var I in P.Inventory.Where(i => i.Slot > 100))
-            {
-                if (I.ItemId != null)
-                {
-                    Console.WriteLine(@"boop");
-                }
-            }
         }
 
         public void ArrangeInventory()
         {
-            if (invPanel.GetChildren().Contains(slot[SLOT]))
-                invPanel.RemoveChild(slot[SLOT]);
-            slot[SLOT] = new Image(Graphics.Objects[0], new Vector2(32, 32), ImageDrawMode.Stretch, Anchor.TopLeft, new Vector2(slotBounds[SLOT].X, slotBounds[SLOT].Y)) { Draggable = true };
-            invPanel.AddChild(slot[SLOT]);
-
-            for (var i = 0; i < 60; i++)
+            foreach (var invItem in Types.Player[GameLogic.PlayerIndex].Inventory)
             {
-                if (invPanel.GetChildren().Contains(slot[i]))
+                if (invItem.Slot < 101) continue;
+
+                var SLOT = invItem.Slot - 101;
+                var ITEM = GameLogic.Items.FirstOrDefault(i => i.Id == invItem.ItemId);
+
+                if (invPanel.GetChildren().Contains(slot[SLOT]))
+                    invPanel.RemoveChild(slot[SLOT]);
+                slot[SLOT] = new Image(Graphics.Objects[ITEM?.Image ?? 0], new Vector2(32, 32), ImageDrawMode.Stretch, Anchor.TopLeft,
+                    new Vector2(slotBounds[SLOT].X, slotBounds[SLOT].Y))
+                { Draggable = true };
+                invPanel.AddChild(slot[SLOT]);
+
+                for (var i = 0; i < 60; i++)
                 {
+                    if (!invPanel.GetChildren().Contains(slot[i])) continue;
                     var z = i;
                     var dropTest = false;
                     slot[i].OnStopDrag += (entity) =>
@@ -686,20 +718,29 @@ namespace PSol.Client
                                 slot[z].GetRelativeOffset().Y + 16 >= slotBounds[n].Y &&
                                 slot[z].GetRelativeOffset().Y + 16 <= slotBounds[n].Y + 32)
                             {
-                                SLOT = n;
                                 dropTest = true;
                                 invPanel.RemoveChild(slot[z]);
+
+                                if (Types.Player != null)
+                                {
+                                    Inventory first = Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(unknown => unknown.Id == invItem.Id);
+
+                                    if (first != null) first.Slot = 101 + n;
+                                }
+
+                                ctcp.UpdateInventory();
                                 ArrangeInventory();
                                 break;
                             }
                         }
 
-                        if (dropTest == false)
-                        {
-                            SLOT = z;
-                            invPanel.RemoveChild(slot[z]);
-                            ArrangeInventory();
-                        }
+                        if (dropTest) return;
+                        invPanel.RemoveChild(slot[z]);
+                        ArrangeInventory();
+                    };
+                    slot[i].OnClick += (entity) =>
+                    {
+                        DisplayDetails(ITEM);
                     };
                 }
             }

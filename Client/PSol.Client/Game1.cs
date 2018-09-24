@@ -224,7 +224,7 @@ namespace PSol.Client
 
             if (KC.KeyPress(Keys.Q) && Globals.Control)
             {
-                Globals.exitgame = true;
+                MenuManager.ChangeMenu(MenuManager.Menu.Exit);
             }
 
             if (KC.KeyPress(Keys.M) && Globals.Control)

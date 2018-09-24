@@ -38,7 +38,8 @@ namespace PSol.Server
                 {(int) CRegister, HandleRegister},
                 {(int) CPlayerData, RecvPlayer},
                 {(int) CChat, ParseChat},
-                {(int) CCombat, HandleCombat }
+                {(int) CCombat, HandleCombat },
+                {(int)CPlayerItem, HandleInventory }
             };
         }
 
@@ -290,6 +291,15 @@ namespace PSol.Server
             if (targetPlayer.Shield >= 0) return;
             targetPlayer.Health += targetPlayer.Shield;
             targetPlayer.Shield = 0;
+        }
+
+        public void HandleInventory(int index, byte[] data)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            Types.Player[index].Inventory = buffer.GetList<Inventory>().ToList();
+
         }
 
         public void SendGalaxy(int index)

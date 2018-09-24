@@ -2,6 +2,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using Bindings;
@@ -133,7 +134,15 @@ namespace PSol.Client
             buffer.AddFloat(Types.Player[GameLogic.PlayerIndex].Rotation);
             SendData(buffer.ToArray());
             buffer.Dispose();
+        }
 
+        public void UpdateInventory()
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int) CPlayerItem);
+            buffer.AddArray(Types.Player[GameLogic.PlayerIndex].Inventory.ToArray());
+            SendData(buffer.ToArray());
+            buffer.Dispose();
         }
 
         public void SendChat(string message)

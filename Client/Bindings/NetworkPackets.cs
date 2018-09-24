@@ -17,7 +17,8 @@
         CRegister = 2,
         CPlayerData = 3,
         CChat = 4,
-        CCombat = 5
+        CCombat = 5,
+        CPlayerItem = 6
     }
 
     public enum MessageColors
