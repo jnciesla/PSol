@@ -621,15 +621,15 @@ namespace PSol.Client
 
                 for (var i = 0; i < 7; i++)
                     invPanel.AddChild(img[i]);
-                if (P.Inventory.FirstOrDefault(I => I.Slot == 3)?.Id != null) { img[2].FillColor = Color.DarkGreen; }
-                if (P.Inventory.FirstOrDefault(I => I.Slot == 5)?.Id != null) { img[3].FillColor = Color.DarkGreen; }
-                if (P.Inventory.FirstOrDefault(I => I.Slot == 6)?.Id != null) { img[4].FillColor = Color.DarkGreen; }
-                if (P.Inventory.FirstOrDefault(I => I.Slot == 2)?.Id != null) { img[5].FillColor = Color.DarkGreen; }
-                if (P.Inventory.FirstOrDefault(I => I.Slot == 4)?.Id != null) { img[6].FillColor = Color.DarkGreen; }
+                if (P.Inventory?.FirstOrDefault(I => I.Slot == 3)?.Id != null) { img[2].FillColor = Color.DarkGreen; }
+                if (P.Inventory?.FirstOrDefault(I => I.Slot == 5)?.Id != null) { img[3].FillColor = Color.DarkGreen; }
+                if (P.Inventory?.FirstOrDefault(I => I.Slot == 6)?.Id != null) { img[4].FillColor = Color.DarkGreen; }
+                if (P.Inventory?.FirstOrDefault(I => I.Slot == 2)?.Id != null) { img[5].FillColor = Color.DarkGreen; }
+                if (P.Inventory?.FirstOrDefault(I => I.Slot == 4)?.Id != null) { img[6].FillColor = Color.DarkGreen; }
 
-                par[12].Text = P.Inventory.FirstOrDefault(I => I.Slot == 12)?.Quantity.ToString() ?? "000";
-                par[13].Text = P.Inventory.FirstOrDefault(I => I.Slot == 13)?.Quantity.ToString() ?? "000";
-                par[14].Text = P.Inventory.FirstOrDefault(I => I.Slot == 14)?.Quantity.ToString() ?? "000";
+                par[12].Text = P.Inventory?.FirstOrDefault(I => I.Slot == 12)?.Quantity.ToString() ?? "000";
+                par[13].Text = P.Inventory?.FirstOrDefault(I => I.Slot == 13)?.Quantity.ToString() ?? "000";
+                par[14].Text = P.Inventory?.FirstOrDefault(I => I.Slot == 14)?.Quantity.ToString() ?? "000";
 
                 for (var i = 0; i < 15; i++)
                 {
@@ -684,7 +684,6 @@ namespace PSol.Client
                     }
                 };
             }
-
             ArrangeInventory();
         }
 
@@ -723,7 +722,7 @@ namespace PSol.Client
 
                                 if (Types.Player != null)
                                 {
-                                    Inventory first = Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(unknown => unknown.Id == invItem.Id);
+                                    var first = Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(unknown => unknown.Id == invItem.Id);
 
                                     if (first != null) first.Slot = 101 + n;
                                 }

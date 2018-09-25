@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace PSol.Data.Models
+﻿namespace PSol.Data.Models
 {
     public class Inventory
     {
@@ -28,6 +26,7 @@ namespace PSol.Data.Models
         //Ammo1     12
         //Ammo2     13
         //Ammo3     14
+        //General   101-160
 
     }
 }

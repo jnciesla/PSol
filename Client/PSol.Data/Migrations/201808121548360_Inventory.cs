@@ -17,14 +17,14 @@ namespace PSol.Data.Migrations
                         Quantity = c.Int(nullable: false),
                     })
                 .PrimaryKey(t => t.Id)
-                .ForeignKey("dbo.Users", t => t.UserId)
+                //.ForeignKey("dbo.Users", t => t.UserId)
                 .Index(t => t.UserId);
             
         }
         
         public override void Down()
         {
-            DropForeignKey("dbo.Inventories", "UserId", "dbo.Users");
+            //DropForeignKey("dbo.Inventories", "UserId", "dbo.Users");
             DropIndex("dbo.Inventories", new[] { "UserId" });
             DropTable("dbo.Inventories");
         }

@@ -39,7 +39,7 @@ namespace PSol.Server
                 {(int) CPlayerData, RecvPlayer},
                 {(int) CChat, ParseChat},
                 {(int) CCombat, HandleCombat },
-                {(int)CPlayerItem, HandleInventory }
+                {(int) CPlayerItem, HandleInventory }
             };
         }
 
@@ -298,8 +298,7 @@ namespace PSol.Server
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
-            Types.Player[index].Inventory = buffer.GetList<Inventory>().ToList();
-
+            Types.Player[index].Inventory = buffer.GetList<Inventory>();
         }
 
         public void SendGalaxy(int index)
