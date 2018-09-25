@@ -22,6 +22,7 @@ namespace PSol.Data.Repositories
             return _context.Users.FirstOrDefault(u => u.Id == id);
         }
 
+        // TODO: Remove this method?
         public Inventory GetInventoryById(string id)
         {
             return _context.Inventory.FirstOrDefault(i => i.Id == id);
@@ -38,20 +39,38 @@ namespace PSol.Data.Repositories
         public User LoadPlayer(string username)
         {
             //return _context.Users.Include(i => i.Inventory).ToList().FirstOrDefault(u => u.Name == username);
-            return _context.Users.FirstOrDefault(u => u.Name == username);
+            return _context.Users.AsNoTracking().FirstOrDefault(u => u.Name == username);
         }
 
         public void SavePlayer(User user)
         {
-            var temp = user.Inventory;
             var dbUser = GetUserById(user.Id);
-            user.Inventory = new List<Inventory>();
+            user.Inventory.ToList().ForEach(inv =>
+            {
+                if (inv.Id == null)
+                {
+                    inv.Id = new Guid().ToString();
+                    _context.Inventory.Add(inv);
+                }
+                else
+                {
+                    var dbInv = _context.Inventory.FirstOrDefault(i => i.Id == inv.Id);
+                    _context.Entry(dbInv).CurrentValues.SetValues(inv);
+                }
+            });
+            dbUser.Inventory.ToList().ForEach(inv =>
+            {
+                // If the new user's inventory doesnt contain an inventory that was on the db user, remove it
+                if (!user.Inventory.ToList().Exists(i => i.Id == inv.Id))
+                {
+                    _context.Inventory.Remove(inv);
+                }
+            });
             _context.Entry(dbUser).CurrentValues.SetValues(user);
             _context.SaveChanges();
-            user.Inventory = temp;
-            SaveInventory(user);
         }
 
+        // TODO: Remove these 2 methods
         public void SaveInventory(User user)
         {
             user.Inventory.ToList().ForEach(inv =>
