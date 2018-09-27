@@ -21,7 +21,7 @@ namespace PSol.Client
         private static void Settings()
         {
             ClientData.LoadXml();
-            Globals.Fullscreen = Boolean.Parse(ClientData.ReadFromXml("Application", "Fullscreen", "true"));
+            Globals.Fullscreen = Boolean.Parse(ClientData.ReadFromXml("Application", "Fullscreen", "false"));
             ClientData.CloseXml(true);
         }
     }

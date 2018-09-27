@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PSol.Data.Models
 {
@@ -17,5 +18,11 @@ namespace PSol.Data.Models
         public bool Alive { get; set; } = true;
         public string Name { get; set; }
         public bool Special { get; set; }
+        [NotMapped]
+        public string TargettingId { get; set; }
+        [NotMapped]
+        public float? NavToX { get; set; }
+        [NotMapped]
+        public float? NavToY { get; set; }
     }
 }

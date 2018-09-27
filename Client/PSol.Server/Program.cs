@@ -47,6 +47,16 @@ namespace PSol.Server
                 TimeSpan.Zero,
                 TimeSpan.FromMinutes(5));
 
+            var mobLogicTimer = new Timer(e =>
+            {
+                _mobService.WanderMobs();
+                _mobService.CheckAggro();
+                _mobService.DoCombat();
+            },
+            null,
+            TimeSpan.Zero,
+            TimeSpan.FromMilliseconds(50));
+
             var pulseTimer = new Timer(e =>
                 {
                     shd.PreparePulseBroadcast();
@@ -58,7 +68,7 @@ namespace PSol.Server
 
             var repopTimer = new Timer(e => _mobService.RepopGalaxy(),
                 null,
-                TimeSpan.Zero, 
+                TimeSpan.Zero,
                 TimeSpan.FromSeconds(30));
 
             var debrisTimer = new Timer(e => Transactions.ClearDebris(),
@@ -73,7 +83,7 @@ namespace PSol.Server
 
                 if (command == "save")
                 {
-                    Console.SetCursorPosition(0,Console.CursorTop -1);
+                    Console.SetCursorPosition(0, Console.CursorTop - 1);
                     _gameService.SaveGame(Types.Player.ToList());
                 }
                 else if (command != "end" && command != "e" && command != "exit" && command != "q" && command != "quit")

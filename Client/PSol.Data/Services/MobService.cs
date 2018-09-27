@@ -1,4 +1,5 @@
 ﻿using Bindings;
+using Microsoft.Xna.Framework;
 using PSol.Data.Models;
 using PSol.Data.Repositories.Interfaces;
 using PSol.Data.Services.Interfaces;
@@ -12,21 +13,17 @@ namespace PSol.Data.Services
     {
         private static readonly Random rnd = new Random();
         private readonly IMobRepository _mobRepo;
-        private ICollection<Mob> _mobs;
+        private ICollection<Mob> _mobs = new List<Mob>();
 
         public MobService(IMobRepository mobRepo)
         {
             _mobRepo = mobRepo;
+            _mobs = _mobRepo.GetAllMobs();
         }
 
         public ICollection<Mob> GetMobs(int minX = 0, int maxX = Constants.PLAY_AREA_WIDTH, int minY = 0, int maxY = Constants.PLAY_AREA_HEIGHT, bool getDead = false)
         {
-            if (_mobs == null)
-            {
-                _mobs = _mobRepo.GetAllMobs();
-            }
-
-            return getDead ? _mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY).ToList() 
+            return getDead ? _mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY).ToList()
                 : _mobs.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY && m.Alive).ToList();
         }
 
@@ -119,6 +116,67 @@ namespace PSol.Data.Services
             {
                 _mobRepo.SaveMob(mob);
             }
+        }
+
+        public void WanderMobs()
+        {
+            // Go through mobs that aren't in combat or already wandering and wander them a little within their spawn radius
+            GetMobs().Where(m => m.TargettingId == null && m.NavToX == null).ToList().ForEach(m =>
+            {
+                // 0.2% chance to wander
+                if (rnd.Next(0, 999) > 1) return;
+                var negX = rnd.Next(0, 2);
+                var negY = rnd.Next(0, 2);
+                var newX = m.X + rnd.Next(200, 500) * (negX == 0 ? 1f : -1f);
+                var newY = m.Y + rnd.Next(200, 500) * (negY == 0 ? 1f : -1f);
+
+                // Make sure they don't wander out of their zone
+                if (newX > m.MobType.Star.X + 2 * m.MobType.SpawnRadius)
+                {
+                    newX = m.MobType.Star.X + 2 * m.MobType.SpawnRadius;
+                }
+                else if (newX < m.MobType.Star.X - 2 * m.MobType.SpawnRadius)
+                {
+                    newX = m.MobType.Star.X - 2 * m.MobType.SpawnRadius;
+                }
+                if (newY > m.MobType.Star.Y + 2 * m.MobType.SpawnRadius)
+                {
+                    newY = m.MobType.Star.Y + 2 * m.MobType.SpawnRadius;
+                }
+                else if (newY < m.MobType.Star.Y - 2 * m.MobType.SpawnRadius)
+                {
+                    newY = m.MobType.Star.Y - 2 * m.MobType.SpawnRadius;
+                }
+
+                m.NavToX = newX;
+                m.NavToY = newY;
+            });
+
+            // Actually wander them
+            GetMobs().Where(m => m.TargettingId == null && m.NavToX != null).ToList().ForEach(m =>
+            {
+                var start = new Vector2(m.X, m.Y);
+                var destination = new Vector2(m.NavToX ?? m.X, m.NavToY ?? m.Y);
+                var direction = Vector2.Normalize(destination - start);
+                var distance = Vector2.Distance(start, destination);
+                m.Rotation = (float)Math.Atan2(direction.Y, direction.X) + MathHelper.ToRadians(90);
+
+                m.X += direction.X * 4f;
+                m.Y += direction.Y * 4f;
+                if (!(distance <= 50)) return;
+                m.NavToX = null;
+                m.NavToY = null;
+            });
+        }
+
+        public void CheckAggro()
+        {
+
+        }
+
+        public void DoCombat()
+        {
+
         }
 
         public string GenerateName(bool special)
