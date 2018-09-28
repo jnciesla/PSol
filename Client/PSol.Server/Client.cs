@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Net.Sockets;
 using Bindings;
 using Ninject;
+using Ninject.Syntax;
 using PSol.Data.Models;
 using PSol.Data.Services.Interfaces;
 using static Bindings.MessageColors;
@@ -16,10 +17,10 @@ namespace PSol.Server
         public string IP;
         public TcpClient Socket;
         public NetworkStream Stream;
-        private readonly HandleData _shd;
+        private readonly ServerData _shd;
         private readonly IGameService _gameService;
 
-        public Client(HandleData shd, IKernel kernel)
+        public Client(ServerData shd, IResolutionRoot kernel)
         {
             _shd = shd;
             _gameService = kernel.Get<IGameService>();
@@ -45,9 +46,10 @@ namespace PSol.Server
                     Stream.Read(data, 0, bytesInMessage);
                     OnReceiveData(data);
                 }
-                catch (Exception e)
+                catch
                 {
-                    Console.WriteLine(e);
+                    Console.WriteLine(@"Remote connection forcibly closed...");
+                    CloseSocket(Index);
                 }
             }
         }
@@ -66,7 +68,7 @@ namespace PSol.Server
         private void CloseSocket(int index)
         {
             Console.WriteLine(@"Connection from " + IP + @" has been terminated.");
-            _shd.SendMessage(-1, Types.Player[index].Name + " has disconnected.", Notification);
+            _shd.SendMessage(-1, Types.Player[index].Name + @" has disconnected.", Notification);
             _gameService.SaveGame(new List<User> { Types.Player[index] });
             ServerTCP.tempPlayer[index].inGame = false;
             ServerTCP.tempPlayer[index].receiving = false;

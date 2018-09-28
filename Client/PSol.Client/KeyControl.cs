@@ -1,4 +1,5 @@
-﻿using Microsoft.Xna.Framework.Input;
+﻿using System;
+using Microsoft.Xna.Framework.Input;
 
 namespace PSol.Client
 {
@@ -6,6 +7,7 @@ namespace PSol.Client
     {
         private Keys current;
         private static bool previousMouse;
+        private static DateTime previousClick;
 
         public bool KeyPress(Keys key)
         {
@@ -22,46 +24,34 @@ namespace PSol.Client
             return false;
         }
 
-        public static bool Click()
+        public bool Click()
         {
             if (Mouse.GetState().LeftButton == ButtonState.Pressed)
-            {
                 previousMouse = true;
-            }
+            if (Mouse.GetState().LeftButton != ButtonState.Released || !previousMouse) return false;
+            previousMouse = false;
+            previousClick = DateTime.Now;
+            return true;
+        }
 
-            if (Mouse.GetState().LeftButton == ButtonState.Released && previousMouse)
-            {
-                previousMouse = false;
-                return true;
-            }
-
-            return false;
+        public bool DoubleClick()
+        {
+            var interval = (DateTime.Now - previousClick).TotalSeconds;
+            return Click() && interval < 0.3F && interval > 0.1F;
         }
 
         public bool CheckAlt()
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.LeftAlt) || Keyboard.GetState().IsKeyDown(Keys.RightAlt))
-            {
-                return true;
-            }
-            return false;
+            return Keyboard.GetState().IsKeyDown(Keys.LeftAlt) || Keyboard.GetState().IsKeyDown(Keys.RightAlt);
         }
 
         public bool CheckCtrl()
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.LeftControl) || Keyboard.GetState().IsKeyDown(Keys.RightControl))
-            {
-                return true;
-            }
-            return false;
+            return Keyboard.GetState().IsKeyDown(Keys.LeftControl) || Keyboard.GetState().IsKeyDown(Keys.RightControl);
         }
         public bool CheckShift()
         {
-            if (Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift))
-            {
-                return true;
-            }
-            return false;
+            return Keyboard.GetState().IsKeyDown(Keys.LeftShift) || Keyboard.GetState().IsKeyDown(Keys.RightShift);
         }
     }
 }

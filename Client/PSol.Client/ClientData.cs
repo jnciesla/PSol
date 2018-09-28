@@ -5,14 +5,13 @@ using System.Collections.Generic;
 using System.Xml;
 using System.Text;
 using System.IO;
-using System.Linq;
 using Microsoft.Xna.Framework;
 using PSol.Data.Models;
 using static Bindings.ServerPackets;
 
 namespace PSol.Client
 {
-    internal class HandleData
+    internal class ClientData
     {
         private ClientTCP ctcp;
         private delegate void Packet_(byte[] data);
@@ -30,7 +29,8 @@ namespace PSol.Client
                 {(int) SPulse, HandleServerPulse},
                 {(int) SFullData, GetStaticPulse},
                 {(int) SGalaxy, HandleGalaxy },
-                {(int) SItems, HandleItems }
+                {(int) SItems, HandleItems },
+                {(int) SInventory, HandleInventory }
             };
         }
 
@@ -48,14 +48,27 @@ namespace PSol.Client
 
         private void HandleMessage(byte[] data)
         {
-            Color color = Color.DarkGray;
+            Color color;
             PacketBuffer buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
-            int colorCode = buffer.GetInteger();
-            if (colorCode == 2) { color = Color.DarkRed; }
-            if (colorCode == 3) { color = Color.DarkGoldenrod; }
-            if (colorCode == 4) { color = Color.DarkOliveGreen; }
+            var colorCode = buffer.GetInteger();
+            switch (colorCode)
+            {
+                case (int)MessageColors.Warning:
+                    color = Color.DarkRed;
+                    break;
+                case (int)MessageColors.Notification:
+                    color = Color.DarkGoldenrod;
+                    break;
+                case (int)MessageColors.Minor:
+                    color = Color.DarkOliveGreen;
+                    break;
+                default:
+                    color = Color.DarkGray;
+                    break;
+            }
+
             InterfaceGUI.AddChats(buffer.GetString(), color);
         }
 
@@ -142,7 +155,18 @@ namespace PSol.Client
 
             GameLogic.LocalMobs = buffer.GetList<Mob>();
             GameLogic.LocalCombat = buffer.GetList<Combat>();
+            GameLogic.LocalLoot = buffer.GetList<Inventory>();
             GameLogic.WatchCombat();
+            buffer.Dispose();
+        }
+
+        private void HandleInventory(byte[] data)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].Inventory = buffer.GetList<Inventory>();
+            Globals.newInventory = true;
             buffer.Dispose();
         }
 
@@ -196,20 +220,21 @@ namespace PSol.Client
             var check = XML.SelectSingleNode(Root + "/" + selection);
             if (check == null)
             {
-                XML.DocumentElement.AppendChild(XML.CreateElement(selection));
+                XML.DocumentElement?.AppendChild(XML.CreateElement(selection));
             }
 
-            XmlNode xmlNode = XML.SelectSingleNode(Root + "/" + selection + "/Element[@Name='" + name + "']");
+            var xmlNode = XML.SelectSingleNode(Root + "/" + selection + "/Element[@Name='" + name + "']");
             if (xmlNode == null)
             {
-                XmlElement element = XML.CreateElement("Element");
+                var element = XML.CreateElement("Element");
                 element.SetAttribute("Value", value);
                 element.SetAttribute("Name", name);
-                XML.DocumentElement[selection].AppendChild(element);
+                XML.DocumentElement?[selection]?.AppendChild(element);
             }
             else
             {
                 //Update node
+                if (xmlNode.Attributes == null) return;
                 xmlNode.Attributes["Value"].Value = value;
                 xmlNode.Attributes["Name"].Value = name;
             }
@@ -227,23 +252,17 @@ namespace PSol.Client
         public static string ReadFromXml(string selection, string name, string defaultValue = "")
         {
             var xmlNode = XML.SelectSingleNode(Root + "/" + selection + "/Element[@Name='" + name + "']");
-            if (xmlNode == null)
-            {
-                WriteToXml(selection, name, defaultValue);
-                return defaultValue;
-            }
-            return xmlNode.Attributes["Value"].Value;
+            if (xmlNode?.Attributes != null)
+                return xmlNode.Attributes["Value"].Value;
+            WriteToXml(selection, name, defaultValue);
+            return defaultValue;
         }
 
         public static void CloseXml(bool save)
         {
             if (save)
-            {
                 XML.Save(Filename);
-            }
-
             XML = null;
         }
-
     }
 }

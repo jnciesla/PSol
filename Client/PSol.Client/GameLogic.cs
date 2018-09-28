@@ -24,6 +24,7 @@ namespace PSol.Client
         public static List<Item> Items;
         public static List<Mob> LocalMobs;
         public static List<Combat> LocalCombat;
+        public static List<Inventory> LocalLoot;
         private static Random random;
 
         public static bool IsMoving()
@@ -60,10 +61,10 @@ namespace PSol.Client
         public static void Navigate()
         {
             if (!Navigating) { return; }
-            Vector2 start = new Vector2(Types.Player[PlayerIndex].X, Types.Player[PlayerIndex].Y);
-            Vector2 direction = Vector2.Normalize(start - Destination);
+            var start = new Vector2(Types.Player[PlayerIndex].X, Types.Player[PlayerIndex].Y);
+            var direction = Vector2.Normalize(start - Destination);
             distance = Vector2.Distance(start, Destination);
-            float angle = (float)Math.Atan2(direction.Y, direction.X) - MathHelper.ToRadians(90);
+            var angle = (float)Math.Atan2(direction.Y, direction.X) - MathHelper.ToRadians(90);
             if (angle <= 0) { angle += (float)Math.PI * 2; } else if (angle >= (float)Math.PI * 2) { angle -= (float)Math.PI * 2; }
             if (Types.Player[PlayerIndex].Rotation != angle && Types.Player[PlayerIndex].Rotation <= angle)
                 Rotate(1);

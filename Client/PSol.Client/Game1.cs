@@ -22,8 +22,8 @@ namespace PSol.Client
         private RenderTarget2D renderTarget;
 
         private ClientTCP ctcp;
-        private HandleData chd;
-        Camera camera;
+        private ClientData chd;
+        private Camera camera;
 
         private readonly InterfaceGUI IGUI = new InterfaceGUI();
         private static readonly KeyControl KC = new KeyControl();
@@ -32,6 +32,7 @@ namespace PSol.Client
         public new static int Tick;
         public static int ElapsedTime;
         public static int FrameTime;
+        public static double i = 0.0;
 
         private bool _laserCharged = true;
         private int _laserTimer;
@@ -64,12 +65,12 @@ namespace PSol.Client
             Globals.Font10 = Content.Load<SpriteFont>("GeonBit.UI/themes/classic/fonts/Size10");
             Globals.Font8 = Content.Load<SpriteFont>("GeonBit.UI/themes/classic/fonts/Size8");
 
-            for (var i = 1; i < Constants.MAX_PLAYERS; i++)
+            for (var n = 1; n < Constants.MAX_PLAYERS; n++)
             {
-                Types.Player[i] = new User();
+                Types.Player[n] = new User();
             }
             ctcp = new ClientTCP();
-            chd = new HandleData();
+            chd = new ClientData();
             renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
             camera = new Camera(GraphicsDevice.Viewport);
             chd.InitializeMessages();
@@ -199,14 +200,12 @@ namespace PSol.Client
             {
                 Graphics.DrawSystems();
             }
-
             Graphics.DrawWeapons(spriteBatch);
-
             particleEngine.Draw(spriteBatch);
+            Graphics.RenderObjects();
             Graphics.RenderPlayers();
             smallExplosion.Draw(spriteBatch);
             spriteBatch.End();
-
             Graphics.DrawHud(Content);
             Graphics.DrawInfo(Content);
             UserInterface.Active.DrawMainRenderTarget(spriteBatch);
@@ -234,7 +233,7 @@ namespace PSol.Client
 
             if (KC.KeyPress(Keys.I) && Globals.Control)
             {
-                IGUI.PopulateInventory(0);
+                IGUI.PopulateInventory();
                 MenuManager.ChangeMenu(MenuManager.Menu.Inventory);
             }
 

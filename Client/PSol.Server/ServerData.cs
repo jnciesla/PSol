@@ -14,7 +14,7 @@ using static Bindings.ServerPackets;
 
 namespace PSol.Server
 {
-    internal class HandleData
+    internal class ServerData
     {
         private delegate void Packet_(int index, byte[] data);
         private static Dictionary<int, Packet_> packets;
@@ -22,7 +22,7 @@ namespace PSol.Server
         private readonly IMobService _mobService;
         private readonly ICombatService _combatService;
 
-        public HandleData(IKernel kernel)
+        public ServerData(IKernel kernel)
         {
             _userService = kernel.Get<IUserService>();
             _mobService = kernel.Get<IMobService>();
@@ -39,7 +39,9 @@ namespace PSol.Server
                 {(int) CPlayerData, RecvPlayer},
                 {(int) CChat, ParseChat},
                 {(int) CCombat, HandleCombat },
-                {(int) CPlayerItem, HandleInventory }
+                {(int) CPlayerItem, HandleInventory },
+                {(int) CItemTransaction, HandleItemTransaction },
+                {(int) CEquipItem, HandleEquip }
             };
         }
 
@@ -221,19 +223,13 @@ namespace PSol.Server
                         buffer.AddInteger(Types.Player[j].MaxShield);
                         buffer.AddBytes(BitConverter.GetBytes(ServerTCP.tempPlayer[j].inGame));
                     }
-
-                    if (ServerTCP.tempPlayer[i].inGame)
-                    {
-                        buffer.AddArray(_mobService.GetMobs((int)Types.Player[i].X - mobRange,
-                            (int)Types.Player[i].X + mobRange,
-                            (int)Types.Player[i].Y - mobRange, (int)Types.Player[i].Y + mobRange).ToArray());
-                        buffer.AddArray(_combatService.GetCombats((int)Types.Player[i].X, (int)Types.Player[i].Y).ToArray());
-                    }
-                    else
-                    {
-                        buffer.AddArray(new Mob[] { });
-                    }
-
+                    var minX = (int)Types.Player[i].X - mobRange;
+                    var minY = (int)Types.Player[i].Y - mobRange;
+                    var maxX = (int)Types.Player[i].X + mobRange;
+                    var maxY = (int)Types.Player[i].Y + mobRange;
+                    buffer.AddArray(_mobService.GetMobs(minX, maxX, minY, maxY).ToArray());
+                    buffer.AddArray(_combatService.GetCombats((int)Types.Player[i].X, (int)Types.Player[i].Y).ToArray());
+                    buffer.AddArray(Globals.Inventory.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY).ToArray());
                     SendData(i, buffer.ToArray());
                     buffer.Dispose();
                 }
@@ -250,6 +246,15 @@ namespace PSol.Server
                 buffer.AddString(Types.Player[i].Name ?? ""); // Don't send null
             }
             BroadcastData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void SendInventory(int index)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int)SInventory);
+            buffer.AddArray(Types.Player[index].Inventory.ToArray());
+            SendData(index, buffer.ToArray());
             buffer.Dispose();
         }
 
@@ -299,6 +304,50 @@ namespace PSol.Server
             buffer.AddBytes(data);
             buffer.GetInteger();
             Types.Player[index].Inventory = buffer.GetList<Inventory>();
+            buffer.Dispose();
+        }
+
+        public void HandleItemTransaction(int index, byte[] data)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            var id = buffer.GetString();
+            var recipient = buffer.GetString();
+            buffer.Dispose();
+            if (recipient == Types.Player[index].Id)
+            {
+                if (Transactions.ReceiveFromGlobal(id, index))
+                    SendInventory(index);
+                else
+                    SendMessage(index, "The object no longer exists", Minor);
+            }
+            else
+            {
+                if (!Transactions.TransferItem(id, index, recipient)) return;
+                SendInventory(index);
+                if (recipient == "X") return;
+                var recipientIndex = Array.FindIndex(Types.Player, row => row.Id == recipient);
+                SendInventory(recipientIndex);
+            }
+        }
+
+        public void HandleEquip(int index, byte[] data)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            var id = buffer.GetString();
+            buffer.Dispose();
+            var result = Transactions.EquipItem(id, index);
+            if (result == 3)
+            {
+                SendMessage(index, "No room in the cargo hold to unequip that item", Minor);
+            }
+            else
+            {
+                SendInventory(index);
+            }
         }
 
         public void SendGalaxy(int index)

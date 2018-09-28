@@ -8,16 +8,16 @@ namespace PSol.Server
     internal class General
 	{
 		private ServerTCP _stcp;
-		private readonly HandleData _shd;
+		private readonly ServerData _shd;
 	    private readonly IKernel _kernel;
 
 	    public General(IKernel kernel)
 	    {
 	        _kernel = kernel;
-	        _shd = new HandleData(_kernel);
+	        _shd = new ServerData(_kernel);
 	    }
 
-		public HandleData InitializeServer()
+		public ServerData InitializeServer()
 		{
 		    _stcp = new ServerTCP();
             _shd.InitializeMessages();

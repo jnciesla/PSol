@@ -91,6 +91,10 @@
     <Compile Include="Migrations\201809180834520_slot.Designer.cs">
       <DependentUpon>201809180834520_slot.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201809261211244_mre inventory.cs" />
+    <Compile Include="Migrations\201809261211244_mre inventory.Designer.cs">
+      <DependentUpon>201809261211244_mre inventory.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Combat.cs" />
     <Compile Include="Models\Inventory.cs" />
@@ -157,6 +161,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201809180834520_slot.resx">
       <DependentUpon>201809180834520_slot.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809261211244_mre inventory.resx">
+      <DependentUpon>201809261211244_mre inventory.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Bindings\Bindings.projitems" Label="Shared" />

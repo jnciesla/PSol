@@ -110,10 +110,8 @@ namespace Bindings
                 }
                 return ret;
             }
-            else
-            {
-                throw new Exception("Packet buffer is past its limit");
-            }
+
+            throw new Exception("Packet buffer is past its limit");
 
         }
 
@@ -134,10 +132,8 @@ namespace Bindings
                 }
                 return ret;
             }
-            else
-            {
-                throw new Exception("Packet buffer is past its limit");
-            }
+
+            throw new Exception("Packet buffer is past its limit");
         }
 
         public string GetString(bool Peek = true)
@@ -197,10 +193,8 @@ namespace Bindings
                 }
                 return ret;
             }
-            else
-            {
-                throw new Exception("Packet buffer is past its limit");
-            }
+
+            throw new Exception("Packet buffer is past its limit");
         }
 
         public byte[] GetBytes(int Length, bool Peek = true)
@@ -236,10 +230,8 @@ namespace Bindings
                 }
                 return ret;
             }
-            else
-            {
-                throw new Exception("Packet buffer is past its limit");
-            }
+
+            throw new Exception("Packet buffer is past its limit");
 
         }
 

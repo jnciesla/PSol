@@ -12,5 +12,6 @@ namespace PSol.Server
 
         public static ICollection<Star> Galaxy;
         public static ICollection<Item> Items;
+        public static ICollection<Inventory> Inventory = new List<Inventory>();
     }
 }

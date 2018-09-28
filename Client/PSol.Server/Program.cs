@@ -1,8 +1,10 @@
 ﻿using Bindings;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Ninject;
+using PSol.Data.Models;
 using PSol.Data.Services.Interfaces;
 
 namespace PSol.Server
@@ -12,7 +14,7 @@ namespace PSol.Server
         private static Thread consoleThread;
         private static DataLoader dataLoader;
         private static General general;
-        private static HandleData shd;
+        private static ServerData shd;
         private static IGameService _gameService;
         private static IMobService _mobService;
 
@@ -22,9 +24,14 @@ namespace PSol.Server
             IKernel kernel = new StandardKernel(new ServerModule());
             _gameService = kernel.Get<IGameService>();
             _mobService = kernel.Get<IMobService>();
+            for (var i = 0; i < Constants.MAX_PLAYERS; i++)
+            {
+                Types.Player[i] = new User();
+                Types.Player[i].Inventory = new List<Inventory>();
+            }
             dataLoader = new DataLoader();
             general = new General(kernel);
-            
+
             shd = general.InitializeServer();
             dataLoader.Initialize();
             dataLoader.DownloadGalaxy();
@@ -54,6 +61,11 @@ namespace PSol.Server
                 TimeSpan.Zero, 
                 TimeSpan.FromSeconds(30));
 
+            var debrisTimer = new Timer(e => Transactions.ClearDebris(),
+                null,
+                TimeSpan.Zero,
+                TimeSpan.FromSeconds(15));
+
             string command = "";
             while (command != "end" && command != "e" && command != "exit" && command != "q" && command != "quit")
             {
@@ -71,6 +83,7 @@ namespace PSol.Server
             }
             saveTimer.Dispose();
             pulseTimer.Dispose();
+            debrisTimer.Dispose();
             repopTimer.Dispose();
             _gameService.SaveGame(Types.Player.ToList());
         }

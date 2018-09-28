@@ -24,6 +24,7 @@ namespace PSol.Client
         public static bool cursorOverride = true;
         public static bool scanner = true;
         public static bool details = true;
+        public static bool newInventory = false;
 
         public static Color Luminosity = Color.White;
         public static bool Control = false;

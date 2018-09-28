@@ -7,11 +7,15 @@ using Bindings;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using GeonBit.UI;
+using PSol.Data.Models;
 
 namespace PSol.Client
 {
     internal class Graphics
     {
+        private static readonly ClientTCP ctcp = new ClientTCP();
+        private static readonly KeyControl KC = new KeyControl();
+
         public static Texture2D[] Characters = new Texture2D[3];
         public static Texture2D[] Planets = new Texture2D[5];
         public static Texture2D[] Objects = new Texture2D[2];
@@ -24,7 +28,6 @@ namespace PSol.Client
         public static Texture2D circle;
         public static Texture2D diamond;
         public static Texture2D star;
-
         public static Texture2D laserMid;
 
         public static Texture2D[] Cursors = new Texture2D[3];
@@ -51,10 +54,46 @@ namespace PSol.Client
 
         public static void RenderPlayers()
         {
-            DrawPlayers();
             if (GameLogic.LocalMobs != null && GameLogic.LocalMobs.Count > 0)
             {
                 DrawMobs();
+            }
+            DrawPlayers();
+        }
+
+        public static void RenderObjects()
+        {
+            if (GameLogic.LocalLoot != null && GameLogic.LocalLoot.Count > 0)
+            {
+                DrawLoot();
+            }
+        }
+
+        private static void DrawLoot()
+        {
+            if (GameLogic.PlayerIndex <= -1) return;
+            var ms = Mouse.GetState();
+            var x = ms.X + -Camera.transform.M41;
+            var y = ms.Y + -Camera.transform.M42;
+            var position = new Vector2(x, y);
+            if (Globals.cursorOverride) position = Vector2.Zero;
+
+            foreach (var loot in GameLogic.LocalLoot)
+            {
+                var item = GameLogic.Items.FirstOrDefault(i => i.Id == loot.ItemId) ?? new Item();
+                Game1.spriteBatch.Draw(Objects[item.Image], new Vector2(loot.X, loot.Y), null, Color.White, Globals.PlanetaryRotation * 10, new Vector2(32, 32), .5F, SpriteEffects.None, 0);
+
+                // Mouse behaviors
+                var Bound = new Rectangle((int)loot.X - 32 / 2, (int)loot.Y - 32 / 2, 32, 32);
+                if (KC.CheckAlt() && !Bound.Contains(position)) { DrawString(Globals.Font8, item.Name, loot.X, loot.Y - 20, true, Color.Gray); }
+                if (!Bound.Contains(position) || Globals.windowOpen) continue;
+                UserInterface.Active.SetCursor(Cursors[1]);
+                if (KC.DoubleClick())
+                {
+                    ctcp.TransactItem(loot.Id, Types.Player[GameLogic.PlayerIndex].Id);
+                }
+                DrawString(Globals.Font8, item.Name, loot.X, loot.Y - 20, true, Color.Gray);
+
             }
         }
 
@@ -97,7 +136,7 @@ namespace PSol.Client
                 if (Bound.Contains(position) && !Globals.windowOpen)
                 {
                     UserInterface.Active.SetCursor(Cursors[1]);
-                    if (ms.LeftButton == ButtonState.Pressed && GameLogic.selectedPlanet != GameLogic.Galaxy[i].Id)
+                    if (KC.Click())
                     {
                         GameLogic.selectedPlanet = GameLogic.Galaxy[i].Id;
                         GameLogic.Selected = "";
@@ -127,7 +166,7 @@ namespace PSol.Client
                     if (_Bound.Contains(position) && !Globals.windowOpen)
                     {
                         UserInterface.Active.SetCursor(Cursors[1]);
-                        if (ms.LeftButton == ButtonState.Pressed && GameLogic.selectedPlanet != planet.Id)
+                        if (KC.Click())
                         {
                             GameLogic.selectedPlanet = planet.Id;
                             GameLogic.Selected = "";

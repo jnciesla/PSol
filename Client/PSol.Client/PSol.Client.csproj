@@ -54,7 +54,7 @@
     <Compile Include="Graphics\Particle.cs" />
     <Compile Include="Graphics\ParticleEngine.cs" />
     <Compile Include="Graphics\SmallExplosion.cs" />
-    <Compile Include="HandleData.cs" />
+    <Compile Include="ClientData.cs" />
     <Compile Include="InterfaceGUI.cs" />
     <Compile Include="KeyControl.cs" />
     <Compile Include="MenuManager.cs" />

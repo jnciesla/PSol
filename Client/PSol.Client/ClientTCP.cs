@@ -15,7 +15,7 @@ namespace PSol.Client
     {
         public TcpClient PlayerSocket;
         public static NetworkStream myStream;
-        private HandleData chd;
+        private ClientData chd;
         private bool connected;
         public bool isOnline;
 
@@ -32,7 +32,7 @@ namespace PSol.Client
             }
 
             PlayerSocket = new TcpClient();
-            chd = new HandleData();
+            chd = new ClientData();
             PlayerSocket.NoDelay = false;
             PlayerSocket.BeginConnect("127.0.0.1", 8000, ConnectCallback, PlayerSocket);
         }
@@ -141,6 +141,25 @@ namespace PSol.Client
             var buffer = new PacketBuffer();
             buffer.AddInteger((int) CPlayerItem);
             buffer.AddArray(Types.Player[GameLogic.PlayerIndex].Inventory.ToArray());
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void EquipItem(string id)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int) CEquipItem);
+            buffer.AddString(id);
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void TransactItem(string inventoryId, string recipientId)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int) CItemTransaction);
+            buffer.AddString(inventoryId);
+            buffer.AddString(recipientId);
             SendData(buffer.ToArray());
             buffer.Dispose();
         }

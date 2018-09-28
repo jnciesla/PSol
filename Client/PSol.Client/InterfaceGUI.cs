@@ -37,10 +37,16 @@ namespace PSol.Client
         private static Texture2D equipImage;
         private static Panel hoverPanel;
         private static Paragraph detailsHeader;
+        private static Paragraph detailsSubHeader;
         private static Paragraph detailsBody;
         private static Image detailsImage;
+        private static Image equipButton;
+        private static Paragraph equipLabel;
+        private static Image jettButton;
         private static readonly Image[] slot = new Image[60];
         private static readonly Rectangle[] slotBounds = new Rectangle[60];
+
+        public static SelectList LootList;
 
         // IGUI textures
         private static Texture2D closeIcon;
@@ -57,6 +63,8 @@ namespace PSol.Client
 
 
         private const string mask = "*";
+        private Item selectedItem = new Item();
+        private int selectedSlot = -1;
 
         public void InitializeGUI(ContentManager content)
         {
@@ -547,28 +555,69 @@ namespace PSol.Client
             detailsImage = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopLeft, new Vector2(79, 35)) { Visible = false };
             detailsHeader = new Paragraph("", Anchor.TopLeft, Color.DarkGray, null, new Vector2(200, 10), new Vector2(10, 99))
             { FontOverride = Globals.Font12, OutlineOpacity = 0, AlignToCenter = true, WrapWords = false };
-            detailsBody = new MulticolorParagraph("", Anchor.TopLeft, Color.DarkGray, null, new Vector2(200, 10), new Vector2(10, 114))
-            { FontOverride = Globals.Font10, OutlineOpacity = 0, AlignToCenter = true };
+            detailsSubHeader = new Paragraph("", Anchor.TopLeft, Color.DarkGray * .6F, null, new Vector2(200, 10), new Vector2(10, 116))
+            { FontOverride = Globals.Font8, OutlineOpacity = 0, AlignToCenter = true };
+            detailsBody = new MulticolorParagraph("", Anchor.TopLeft, Color.DarkGray, null, new Vector2(200, 10), new Vector2(10, 129))
+            { FontOverride = Globals.Font10, OutlineOpacity = 0, AlignToCenter = true, WrapWords = true };
             var closeBtn = new Image(closeIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.TopRight);
-
-            var itemName = new Label("", Anchor.TopRight);
-
-            detailsBody.WrapWords = true;
+            equipButton = new Image(button, new Vector2(100, 40), ImageDrawMode.Stretch, Anchor.BottomRight, new Vector2(30, 10)) { Disabled = true, FillColor = Color.DarkGray };
+            equipLabel = new Paragraph("Install", Anchor.BottomRight, null, new Vector2(35, 15)) { FillColor = Color.DarkGray, ClickThrough = true };
+            jettButton = new Image(button, new Vector2(110, 40), ImageDrawMode.Stretch, Anchor.BottomRight, new Vector2(140, 10)) { Disabled = true, FillColor = Color.DarkGray };
+            var jettLabel = new Paragraph("Jettison", Anchor.BottomRight, null, new Vector2(142, 15)) { FillColor = Color.DarkGray, ClickThrough = true };
 
             UserInterface.Active.AddEntity(invPanel);
             invPanel.AddChild(image);
-
             invPanel.AddChild(closeBtn);
-            invPanel.AddChild(itemName);
             invPanel.AddChild(detailsHeader);
+            invPanel.AddChild(detailsSubHeader);
             invPanel.AddChild(detailsBody);
             invPanel.AddChild(detailsImage);
+            invPanel.AddChild(equipButton);
+            invPanel.AddChild(equipLabel);
+            invPanel.AddChild(jettButton);
+            invPanel.AddChild(jettLabel);
             invPanel.AddChild(hoverPanel);
 
             invPanel.OnMouseLeave += (panelLeave) => { hoverPanel.Visible = false; };
             closeBtn.OnMouseEnter += (closeEnter) => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
             closeBtn.OnMouseLeave += (closeLeave) => { UserInterface.Active.SetCursor(CursorType.Default); };
             closeBtn.OnClick += (closeClick) => { MenuManager.Clear(5); };
+
+            jettButton.OnMouseEnter += entity => { jettButton.Texture = button_hover; UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            jettButton.OnMouseLeave += entity => { jettButton.Texture = button; UserInterface.Active.SetCursor(CursorType.Default); };
+            jettButton.OnMouseDown += entity => { jettButton.Texture = button_down; };
+            jettButton.OnMouseReleased += entity => { jettButton.Texture = button; };
+            jettButton.OnClick += entity =>
+            {
+                if (Globals.Control && Globals.Alt)
+                {
+                    if (Types.Player != null)
+                    {
+                        var first = Types.Player[GameLogic.PlayerIndex].Inventory
+                            .FirstOrDefault(unknown => unknown.ItemId == selectedItem.Id);
+                        if (first != null)
+                        {
+                            ctcp.TransactItem(first.Id, "X");
+                        }
+                    }
+                }
+                else
+                {
+                    AddChats(@"Press and hold [ctrl] and [alt] when jettisoning items", Color.DarkGoldenrod);
+                }
+            };
+
+            equipButton.OnMouseEnter += entity => { equipButton.Texture = button_hover; UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            equipButton.OnMouseLeave += entity => { equipButton.Texture = button; UserInterface.Active.SetCursor(CursorType.Default); };
+            equipButton.OnMouseDown += entity => { equipButton.Texture = button_down; };
+            equipButton.OnMouseReleased += entity => { equipButton.Texture = button; };
+            equipButton.OnClick += entity =>
+            {
+                if (Types.Player == null) return;
+                var first = Types.Player[GameLogic.PlayerIndex].Inventory
+                    .FirstOrDefault(unknown => unknown.ItemId == selectedItem.Id);
+                if (first != null) ctcp.EquipItem(first.Id);
+            };
 
             CreateWindow(invPanel);
             var initial = new Vector2(230, 129);
@@ -585,110 +634,131 @@ namespace PSol.Client
             }
         }
 
-        public void PopulateInventory(int type)
+        public void PopulateInventory()
         {
-            //detailsBody.Text = "";
-            //detailsImage.Visible = false;
-            //detailsHeader.Text = "";
+            Globals.newInventory = false;
+            detailsBody.Text = "";
+            detailsImage.Visible = false;
+            detailsHeader.Text = "";
+            detailsSubHeader.Text = "";
+            equipButton.Disabled = true;
+            jettButton.Disabled = true;
+            equipButton.FillColor = Color.DarkGray;
+            jettButton.FillColor = Color.DarkGray;
+            selectedItem = new Item();
+            selectedSlot = -1;
+            equipLabel.Text = "Install";
 
             var P = Types.Player[GameLogic.PlayerIndex];
-            if (type == 0)
+            var par = new Paragraph[15];
+            var img = new Image[7];
+            img[0] = new Image(equipImage, new Vector2(340, 80), ImageDrawMode.Panel, Anchor.TopRight, new Vector2(27, 35));                                    // Equipment background
+            img[1] = new Image(Graphics.Characters[1], new Vector2(64, 64), ImageDrawMode.Panel, Anchor.TopRight, new Vector2(195, 38));                        // Hull
+            par[3] = new Paragraph("Flight Computer", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(50, 35));                                        // FCA
+            par[5] = new Paragraph("Shield Generator", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(50, 52));                                       // SGA
+            par[6] = new Paragraph("Hull Plating", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(50, 69));                                           // SPA
+            par[2] = new Paragraph("Propulsion Drive", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(50, 86));                                       // PDS
+            par[4] = new Paragraph("Auxiliary Payload", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(50, 103));                                     // APy
+            par[0] = new Paragraph("Weapons:", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(308, 35));                                              // Wps
+            par[1] = new Paragraph("Ammunition:", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(288, 66));                                           // AMO
+            par[7] = new Paragraph("1", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(352, 52));                                                     // Mn1
+            par[8] = new Paragraph("2", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(334, 52));                                                     // Mn2
+            par[9] = new Paragraph("3", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(318, 52));                                                     // Mn3
+            par[10] = new Paragraph("4", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(301, 52));                                                    // Mn4
+            par[11] = new Paragraph("5", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(284, 52));                                                    // Mn5
+            par[12] = new Paragraph("", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(283, 98));                                                     // Ss1
+            par[13] = new Paragraph("", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(311, 98));                                                     // Ss2
+            par[14] = new Paragraph("", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(339, 98));                                                     // Ss3
+            img[2] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(30, 35)) { FillColor = Color.Red };   // FCA stat
+            img[3] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(30, 52)) { FillColor = Color.Red };   // SGA stat
+            img[4] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(30, 69)) { FillColor = Color.Red };   // SPA stat
+            img[5] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(30, 86)) { FillColor = Color.Red };   // PDS stat
+            img[6] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(30, 103)) { FillColor = Color.Red };  // APy stat
+
+            for (var i = 0; i < 7; i++)
+                invPanel.AddChild(img[i]);
+            if (P.Inventory?.FirstOrDefault(I => I.Slot == 3)?.Id != null) { img[2].FillColor = Color.DarkGreen; }
+            if (P.Inventory?.FirstOrDefault(I => I.Slot == 5)?.Id != null) { img[3].FillColor = Color.DarkGreen; }
+            if (P.Inventory?.FirstOrDefault(I => I.Slot == 6)?.Id != null) { img[4].FillColor = Color.DarkGreen; }
+            if (P.Inventory?.FirstOrDefault(I => I.Slot == 2)?.Id != null) { img[5].FillColor = Color.DarkGreen; }
+            if (P.Inventory?.FirstOrDefault(I => I.Slot == 4)?.Id != null) { img[6].FillColor = Color.DarkGreen; }
+
+            par[12].Text = P.Inventory?.FirstOrDefault(I => I.Slot == 12)?.Quantity.ToString() ?? "000";
+            par[13].Text = P.Inventory?.FirstOrDefault(I => I.Slot == 13)?.Quantity.ToString() ?? "000";
+            par[14].Text = P.Inventory?.FirstOrDefault(I => I.Slot == 14)?.Quantity.ToString() ?? "000";
+
+            for (var i = 0; i < 15; i++)
             {
-                var par = new Paragraph[15];
-                var img = new Image[7];
-                img[0] = new Image(equipImage, new Vector2(340, 80), ImageDrawMode.Panel, Anchor.TopRight, new Vector2(27, 35));                                    // Equipment background
-                img[1] = new Image(Graphics.Characters[1], new Vector2(64, 64), ImageDrawMode.Panel, Anchor.TopRight, new Vector2(195, 38));                        // Hull
-                par[3] = new Paragraph("Flight Computer", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(50, 35));                                        // FCA
-                par[5] = new Paragraph("Shield Generator", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(50, 52));                                       // SGA
-                par[6] = new Paragraph("Hull Plating", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(50, 69));                                           // SPA
-                par[2] = new Paragraph("Propulsion Drive", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(50, 86));                                       // PDS
-                par[4] = new Paragraph("Auxiliary Payload", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(50, 103));                                     // APy
-                par[0] = new Paragraph("Weapons:", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(308, 35));                                              // Wps
-                par[1] = new Paragraph("Ammunition:", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(288, 66));                                           // AMO
-                par[7] = new Paragraph("1", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(352, 52));                                                     // Mn1
-                par[8] = new Paragraph("2", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(334, 52));                                                     // Mn2
-                par[9] = new Paragraph("3", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(318, 52));                                                     // Mn3
-                par[10] = new Paragraph("4", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(301, 52));                                                    // Mn4
-                par[11] = new Paragraph("5", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(284, 52));                                                    // Mn5
-                par[12] = new Paragraph("", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(283, 98));                                                     // Ss1
-                par[13] = new Paragraph("", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(311, 98));                                                     // Ss2
-                par[14] = new Paragraph("", Anchor.TopRight, Color.DarkGray, null, null, new Vector2(339, 98));                                                     // Ss3
-                img[2] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(30, 35)) { FillColor = Color.Red };   // FCA stat
-                img[3] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(30, 52)) { FillColor = Color.Red };   // SGA stat
-                img[4] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(30, 69)) { FillColor = Color.Red };   // SPA stat
-                img[5] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(30, 86)) { FillColor = Color.Red };   // PDS stat
-                img[6] = new Image(Graphics.diamond, new Vector2(12, 12), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(30, 103)) { FillColor = Color.Red };  // APy stat
-
-                for (var i = 0; i < 7; i++)
-                    invPanel.AddChild(img[i]);
-                if (P.Inventory?.FirstOrDefault(I => I.Slot == 3)?.Id != null) { img[2].FillColor = Color.DarkGreen; }
-                if (P.Inventory?.FirstOrDefault(I => I.Slot == 5)?.Id != null) { img[3].FillColor = Color.DarkGreen; }
-                if (P.Inventory?.FirstOrDefault(I => I.Slot == 6)?.Id != null) { img[4].FillColor = Color.DarkGreen; }
-                if (P.Inventory?.FirstOrDefault(I => I.Slot == 2)?.Id != null) { img[5].FillColor = Color.DarkGreen; }
-                if (P.Inventory?.FirstOrDefault(I => I.Slot == 4)?.Id != null) { img[6].FillColor = Color.DarkGreen; }
-
-                par[12].Text = P.Inventory?.FirstOrDefault(I => I.Slot == 12)?.Quantity.ToString() ?? "000";
-                par[13].Text = P.Inventory?.FirstOrDefault(I => I.Slot == 13)?.Quantity.ToString() ?? "000";
-                par[14].Text = P.Inventory?.FirstOrDefault(I => I.Slot == 14)?.Quantity.ToString() ?? "000";
-
-                for (var i = 0; i < 15; i++)
-                {
-                    var n = i; // Access to modified closure
-                    par[i].FontOverride = Globals.Font8;
-                    par[i].OutlineOpacity = 0;
-                    invPanel.AddChild(par[i]);
-                    if (n < 2) continue;
-                    par[n].OnMouseEnter += (parEnter) =>
-                    {
-                        UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0));
-                        par[n].FillColor = Color.WhiteSmoke;
-                    };
-                    par[n].OnMouseLeave += (parLeave) =>
-                    {
-                        UserInterface.Active.SetCursor(CursorType.Default);
-                        par[n].FillColor = Color.DarkGray;
-                    };
-                    par[n].OnClick += (parClick) =>
-                    {
-                        var temp = GameLogic.Items.FirstOrDefault(pI => pI.Id == P.Inventory.FirstOrDefault(I => I.Slot == n)?.ItemId);
-                        if (temp != null)
-                        {
-                            DisplayDetails(temp);
-                        }
-                        else
-                        {
-                            detailsHeader.Text = "";
-                            detailsBody.Text = "{{RED}}No equipment installed";
-                        }
-                    };
-                }
-                img[1].OnMouseEnter += (parEnter) =>
+                var n = i; // Access to modified closure
+                par[i].FontOverride = Globals.Font8;
+                par[i].OutlineOpacity = 0;
+                invPanel.AddChild(par[i]);
+                if (n < 2) continue;
+                par[n].OnMouseEnter += (parEnter) =>
                 {
                     UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0));
+                    par[n].FillColor = Color.WhiteSmoke;
                 };
-                img[1].OnMouseLeave += (parLeave) =>
+                par[n].OnMouseLeave += (parLeave) =>
                 {
                     UserInterface.Active.SetCursor(CursorType.Default);
+                    par[n].FillColor = Color.DarkGray;
                 };
-                img[1].OnClick += (parClick) =>
+                par[n].OnClick += (parClick) =>
                 {
-                    var temp = GameLogic.Items.FirstOrDefault(pI => pI.Id == P.Inventory.FirstOrDefault(I => I.Slot == 1)?.ItemId);
+                    var temp = GameLogic.Items.FirstOrDefault(pI => pI.Id == P.Inventory.FirstOrDefault(I => I.Slot == n)?.ItemId);
                     if (temp != null)
                     {
                         DisplayDetails(temp);
+                        equipLabel.Text = "Remove ";
+                        equipButton.Disabled = false;
+                        equipButton.FillColor = Color.White;
+                        selectedItem = temp;
+                        selectedSlot = n;
                     }
                     else
                     {
+                        detailsImage.Visible = false;
                         detailsHeader.Text = "";
+                        detailsSubHeader.Text = "";
                         detailsBody.Text = "{{RED}}No equipment installed";
                     }
                 };
             }
+            img[1].OnMouseEnter += (parEnter) =>
+            {
+                UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0));
+            };
+            img[1].OnMouseLeave += (parLeave) =>
+            {
+                UserInterface.Active.SetCursor(CursorType.Default);
+            };
+            img[1].OnClick += (parClick) =>
+            {
+                var temp = GameLogic.Items.FirstOrDefault(pI => pI.Id == P.Inventory.FirstOrDefault(I => I.Slot == 1)?.ItemId);
+                if (temp != null)
+                {
+                    DisplayDetails(temp);
+                }
+                else
+                {
+                    detailsImage.Visible = false;
+                    detailsHeader.Text = "";
+                    detailsSubHeader.Text = "";
+                    detailsBody.Text = "{{RED}}No equipment installed";
+                }
+            };
+
             ArrangeInventory();
         }
 
         public void ArrangeInventory()
         {
+            for (var x = 0; x < 60; x++)
+            {
+                if (invPanel.GetChildren().Contains(slot[x]))
+                    invPanel.RemoveChild(slot[x]);
+            }
             foreach (var invItem in Types.Player[GameLogic.PlayerIndex].Inventory)
             {
                 if (invItem.Slot < 101) continue;
@@ -696,8 +766,6 @@ namespace PSol.Client
                 var SLOT = invItem.Slot - 101;
                 var ITEM = GameLogic.Items.FirstOrDefault(i => i.Id == invItem.ItemId);
 
-                if (invPanel.GetChildren().Contains(slot[SLOT]))
-                    invPanel.RemoveChild(slot[SLOT]);
                 slot[SLOT] = new Image(Graphics.Objects[ITEM?.Image ?? 0], new Vector2(32, 32), ImageDrawMode.Stretch, Anchor.TopLeft,
                     new Vector2(slotBounds[SLOT].X, slotBounds[SLOT].Y))
                 { Draggable = true };
@@ -740,6 +808,15 @@ namespace PSol.Client
                     slot[i].OnClick += (entity) =>
                     {
                         DisplayDetails(ITEM);
+                        if (ITEM?.Slot != 0)
+                        {
+                            equipButton.Disabled = false;
+                            equipButton.FillColor = Color.White;
+                        }
+                        jettButton.Disabled = false;
+                        jettButton.FillColor = Color.White;
+                        selectedItem = ITEM;
+                        selectedSlot = SLOT + 101;
                     };
                 }
             }
@@ -958,15 +1035,21 @@ namespace PSol.Client
                 const float scale = (float)500 / Constants.PLAY_AREA_WIDTH;
                 mapPlayer.SetOffset(new Vector2(Types.Player[GameLogic.PlayerIndex].X * scale, Types.Player[GameLogic.PlayerIndex].Y * scale));
             }
+
+            if (Globals.newInventory)
+            {
+                PopulateInventory();
+                Globals.newInventory = false;
+            }
         }
 
         public void DisplayDetails(Item item)
         {
+            ColorInstruction.AddCustomColor("DARKGRAY", Color.DarkGray);
             detailsImage.Texture = Graphics.Objects[item?.Image ?? 0];
             detailsImage.Visible = true;
             detailsHeader.Text = item?.Name + "\n";
-            detailsHeader.Text += item?.Type + "\n";
-            detailsHeader.Text += "Level: " + item?.Level;
+            detailsSubHeader.Text = "Level " + item?.Level + " " + item?.Type;
             detailsBody.Text = item?.Description + "\n";
             if (item?.Armor != 0) { detailsBody.Text += "Armor: " + item?.Armor + "\n"; }
             if (item?.Damage != 0) { detailsBody.Text += "Damage: " + item?.Damage + "\n"; }
