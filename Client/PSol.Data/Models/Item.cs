@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace PSol.Data.Models
+﻿namespace PSol.Data.Models
 {
     public class Item
     {

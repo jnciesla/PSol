@@ -301,10 +301,10 @@ namespace PSol.Data.Services
                 "wolf"
             };
 
-            int length = rnd.Next(2, 5);
+            var length = rnd.Next(2, 5);
 
             // Given name
-            string name = "";
+            var name = "";
             for (var i = 0; i < length; i++)
             {
                 if (i == 0)
@@ -326,8 +326,8 @@ namespace PSol.Data.Services
             }
 
             // Surname
-            string p = prefix[rnd.Next(prefix.Length)];
-            string s = suffix[rnd.Next(suffix.Length)];
+            var p = prefix[rnd.Next(prefix.Length)];
+            var s = suffix[rnd.Next(suffix.Length)];
 
             while (string.Equals(s, p, StringComparison.CurrentCultureIgnoreCase))
             {

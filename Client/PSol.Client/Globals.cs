@@ -1,12 +1,14 @@
 ﻿using Bindings;
-using Microsoft.Xna.Framework;
 using GeonBit.UI.Entities;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
 namespace PSol.Client
 {
     internal class Globals
     {
+        public static int status1 = 50;
+
         public static bool Fullscreen = false;
         public static bool exitgame = false;
         public static bool windowOpen;
@@ -17,6 +19,7 @@ namespace PSol.Client
 
         public static float PlanetaryRotation = 0;
         public static long serverTime = 0;
+        public static bool strobe = true;
 
         // GUI Stuff
         public static Panel chatPanel;
@@ -25,6 +28,10 @@ namespace PSol.Client
         public static bool scanner = true;
         public static bool details = true;
         public static bool newInventory = false;
+        public static int inventoryMode = 1;
+        public static bool weaponsBar = true;
+        public static bool equipWeapon = false;
+        public static bool equipAmmo = false;
 
         public static Color Luminosity = Color.White;
         public static bool Control = false;
@@ -43,6 +50,9 @@ namespace PSol.Client
         public static bool DirDn;
         public static bool DirLt;
         public static bool DirRt;
+
+        public static bool Attacking = false;
+        public static bool HoveringMob = false;
 
         public static bool Details1;
         public static bool Details2;

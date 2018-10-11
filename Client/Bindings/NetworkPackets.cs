@@ -9,7 +9,8 @@
 		SPulse = 5,
         SGalaxy = 6,
         SItems = 7,
-        SInventory = 8
+        SInventory = 8,
+        SPlayerUpdate = 9
     }
 
     public enum ClientPackets
@@ -19,9 +20,10 @@
         CPlayerData = 3,
         CChat = 4,
         CCombat = 5,
-        CPlayerItem = 6,
+        CItemStack = 6,
         CItemTransaction = 7,
-        CEquipItem = 8
+        CEquipItem = 8,
+        CItemSale = 9
     }
 
     public enum MessageColors

@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Linq;
+using Bindings;
+using GeonBit.UI;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
-using Bindings;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
-using GeonBit.UI;
 using PSol.Data.Models;
 
 namespace PSol.Client
@@ -29,6 +29,7 @@ namespace PSol.Client
         public static Texture2D diamond;
         public static Texture2D star;
         public static Texture2D laserMid;
+        public static Texture2D splash;
 
         public static Texture2D[] Cursors = new Texture2D[3];
         private static Laser _beam;
@@ -48,6 +49,7 @@ namespace PSol.Client
             diamond = manager.Load<Texture2D>("Panels/diamondIco");
             star = manager.Load<Texture2D>("Panels/starIco");
             details = manager.Load<Texture2D>("Panels/info");
+            splash = manager.Load<Texture2D>("Panels/Splash");
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
         }
@@ -85,7 +87,14 @@ namespace PSol.Client
 
                 // Mouse behaviors
                 var Bound = new Rectangle((int)loot.X - 32 / 2, (int)loot.Y - 32 / 2, 32, 32);
-                if (KC.CheckAlt() && !Bound.Contains(position)) { DrawString(Globals.Font8, item.Name, loot.X, loot.Y - 20, true, Color.Gray); }
+                if (KC.CheckAlt() && !Bound.Contains(position))
+                {
+                    DrawString(Globals.Font8, item.Name, loot.X, loot.Y - 20, true, Color.Gray);
+                    if (loot.Quantity > 1)
+                    {
+                        DrawString(Globals.Font8, loot.Quantity.ToString(), loot.X, loot.Y + 20, true, Color.Gray);
+                    }
+                }
                 if (!Bound.Contains(position) || Globals.windowOpen) continue;
                 UserInterface.Active.SetCursor(Cursors[1]);
                 if (KC.DoubleClick())
@@ -93,6 +102,10 @@ namespace PSol.Client
                     ctcp.TransactItem(loot.Id, Types.Player[GameLogic.PlayerIndex].Id);
                 }
                 DrawString(Globals.Font8, item.Name, loot.X, loot.Y - 20, true, Color.Gray);
+                if (loot.Quantity > 1)
+                {
+                    DrawString(Globals.Font8, loot.Quantity.ToString(), loot.X, loot.Y + 20, true, Color.Gray);
+                }
 
             }
         }
@@ -118,13 +131,13 @@ namespace PSol.Client
         public static void DrawSystems()
         {
             var ms = Mouse.GetState();
-            float x = ms.X + -Camera.transform.M41;
-            float y = ms.Y + -Camera.transform.M42;
-            Vector2 position = new Vector2(x, y);
+            var x = ms.X + -Camera.transform.M41;
+            var y = ms.Y + -Camera.transform.M42;
+            var position = new Vector2(x, y);
             if (Globals.cursorOverride) position = Vector2.Zero;
 
-            int SpriteNum = 4;
-            float scale = .3F;
+            var SpriteNum = 4;
+            var scale = .3F;
             for (var i = 0; i != GameLogic.Galaxy.Count; i++)
             {
                 var origin = new Vector2(Planets[SpriteNum].Width / 2f, Planets[SpriteNum].Height / 2f);
@@ -133,7 +146,7 @@ namespace PSol.Client
                 var Bound = new Rectangle((int)GameLogic.Galaxy[i].X - (int)(Planets[SpriteNum].Width * scale) / 2,
                     (int)GameLogic.Galaxy[i].Y - (int)(Planets[SpriteNum].Height * scale) / 2, (int)(Planets[SpriteNum].Width * scale),
                     (int)(Planets[SpriteNum].Height * scale));
-                if (Bound.Contains(position) && !Globals.windowOpen)
+                if (Bound.Contains(position) && !Globals.windowOpen && !Globals.HoveringMob)
                 {
                     UserInterface.Active.SetCursor(Cursors[1]);
                     if (KC.Click())
@@ -163,23 +176,22 @@ namespace PSol.Client
                     var _Bound = new Rectangle((int)planet.X - (int)(Planets[planet.Sprite].Width * scale) / 2,
                         (int)planet.Y - (int)(Planets[planet.Sprite].Height * scale) / 2, (int)(Planets[planet.Sprite].Width * scale),
                         (int)(Planets[planet.Sprite].Height * scale));
-                    if (_Bound.Contains(position) && !Globals.windowOpen)
+                    if (_Bound.Contains(position) && !Globals.windowOpen && !Globals.HoveringMob)
                     {
                         UserInterface.Active.SetCursor(Cursors[1]);
-                        if (KC.Click())
+                        if (new KeyControl().Click())
                         {
                             GameLogic.selectedPlanet = planet.Id;
                             GameLogic.Selected = "";
                             GameLogic.SelectedType = "";
                         }
                     }
-                    if (GameLogic.selectedPlanet == planet.Id)
-                    {
-                        DrawBorder(_Bound, 1, Color.DarkGray * .25F);
-                        Game1.spriteBatch.DrawString(Globals.Font10, planet.Name,
-                            new Vector2(planet.X - Globals.Font10.MeasureString(planet.Name).X / 2,
-                                planet.Y - (int)(Planets[planet.Sprite].Height * scale) / 2.0F - 20), Color.AntiqueWhite);
-                    }
+
+                    if (GameLogic.selectedPlanet != planet.Id) continue;
+                    DrawBorder(_Bound, 1, Color.DarkGray * .25F);
+                    Game1.spriteBatch.DrawString(Globals.Font10, planet.Name,
+                        new Vector2(planet.X - Globals.Font10.MeasureString(planet.Name).X / 2,
+                            planet.Y - (int)(Planets[planet.Sprite].Height * scale) / 2.0F - 20), Color.AntiqueWhite);
                 }
 
             }
@@ -189,7 +201,7 @@ namespace PSol.Client
         {
             if (GameLogic.PlayerIndex <= -1) return;
 
-            int SpriteNum = 1;
+            var SpriteNum = 1;
 
             for (var i = 1; i != Constants.MAX_PLAYERS; i++)
             {
@@ -210,13 +222,13 @@ namespace PSol.Client
                             new Vector2(Shield.Width / 2f, Shield.Height / 2f), 1, SpriteEffects.None, 0);
                     }
 
-                    int h = Characters[SpriteNum].Height / 2;
+                    var h = Characters[SpriteNum].Height / 2;
                     Game1.spriteBatch.DrawString(Globals.Font10, Types.Player[i].Name, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(Types.Player[i].Name).X / 2, Types.Player[i].Y - h - 10), Color.AntiqueWhite);
 
                     // Health
-                    Color HealthColor1 = Color.Green;
-                    Color HealthColor2 = Color.DarkGreen;
-                    float percentHealth = (Types.Player[i].MaxHealth - Types.Player[i].Health) / (float)Types.Player[i].MaxHealth;
+                    var HealthColor1 = Color.Green;
+                    var HealthColor2 = Color.DarkGreen;
+                    var percentHealth = (Types.Player[i].MaxHealth - Types.Player[i].Health) / (float)Types.Player[i].MaxHealth;
                     // Percent Health is percentage missing, so colors are inverted:
                     if (percentHealth > 0.75)
                     {
@@ -233,7 +245,7 @@ namespace PSol.Client
                         HealthColor1 = Color.Green;
                         HealthColor2 = Color.DarkGreen;
                     }
-                    RectangleF healthRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2.0F,
+                    var healthRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2.0F,
                         Types.Player[i].Y + Characters[SpriteNum].Height / 2.0F, Characters[SpriteNum].Width, 6);
                     Game1.spriteBatch.DrawLine(healthRect.Left + 2, healthRect.Bottom - 2, healthRect.Right - (Characters[SpriteNum].Width * percentHealth), healthRect.Bottom - 2, HealthColor1, 4F);
                     Game1.spriteBatch.DrawRectangle(healthRect, HealthColor2, 2F);
@@ -250,11 +262,11 @@ namespace PSol.Client
                     Game1.spriteBatch.DrawString(Globals.Font10, HealthDisplay, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(HealthDisplay).X / 2, healthRect.Bottom + 8), HealthColor2);
 
                     // Shield
-                    RectangleF shieldRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2.0F,
+                    var shieldRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2.0F,
                         (Types.Player[i].Y + Characters[SpriteNum].Height / 2.0F) + 7, Characters[SpriteNum].Width, 6);
                     if (Types.Player[i].Shield > 0 && Types.Player[i].MaxShield > 0)
                     {
-                        float percentShield = (Types.Player[i].MaxShield - Types.Player[i].Shield) /
+                        var percentShield = (Types.Player[i].MaxShield - Types.Player[i].Shield) /
                                               (float)Types.Player[i].MaxShield;
                         Game1.spriteBatch.DrawLine(shieldRect.Left + 2, shieldRect.Bottom - 2,
                             shieldRect.Right - (Characters[SpriteNum].Width * percentShield), shieldRect.Bottom - 2,
@@ -282,11 +294,11 @@ namespace PSol.Client
                 }
 
                 // OnClick
-                Rectangle Bound = new Rectangle((int)Types.Player[i].X - Characters[SpriteNum].Width / 2, (int)Types.Player[i].Y - Characters[SpriteNum].Height / 2, Characters[SpriteNum].Width, Characters[SpriteNum].Height);
-                MouseState ms = Mouse.GetState();
-                float x = ms.X + -Camera.transform.M41;
-                float y = ms.Y + -Camera.transform.M42;
-                Vector2 position = new Vector2(x, y);
+                var Bound = new Rectangle((int)Types.Player[i].X - Characters[SpriteNum].Width / 2, (int)Types.Player[i].Y - Characters[SpriteNum].Height / 2, Characters[SpriteNum].Width, Characters[SpriteNum].Height);
+                var ms = Mouse.GetState();
+                var x = ms.X + -Camera.transform.M41;
+                var y = ms.Y + -Camera.transform.M42;
+                var position = new Vector2(x, y);
                 if (Globals.cursorOverride) position = Vector2.Zero;
                 if (Bound.Contains(position) && !Globals.windowOpen)
                 {
@@ -315,7 +327,7 @@ namespace PSol.Client
         private static void DrawMobs()
         {
             if (GameLogic.PlayerIndex <= -1) return;
-
+            Globals.HoveringMob = false;
             foreach (var mob in GameLogic.LocalMobs)
             {
                 var spriteNum = mob.MobType.Sprite;
@@ -407,7 +419,6 @@ namespace PSol.Client
                             shieldRect.Bottom + 13), Color.DarkGoldenrod);
                     }
                 }
-
                 // OnClick
                 var bound = new Rectangle((int)mob.X - Characters[spriteNum].Width / 2, (int)mob.Y - Characters[spriteNum].Height / 2,
                     Characters[spriteNum].Width, Characters[spriteNum].Height);
@@ -418,6 +429,7 @@ namespace PSol.Client
                 if (Globals.cursorOverride) position = Vector2.Zero;
                 if (bound.Contains(position))
                 {
+                    Globals.HoveringMob = true;
                     UserInterface.Active.SetCursor(CursorType.Pointer);
                     if (ms.LeftButton == ButtonState.Pressed && GameLogic.Selected != mob.Id)
                     {
@@ -425,8 +437,11 @@ namespace PSol.Client
                         GameLogic.SelectedType = "MOB";
                         GameLogic.selectedPlanet = "";
                     }
+                    if (ms.RightButton == ButtonState.Pressed && GameLogic.Selected == mob.Id)
+                    {
+                        Actions.Attack(1, mob.Id);
+                    }
                 }
-
                 if (GameLogic.Selected == mob.Id)
                 {
                     DrawBorder(bound, 1, Color.DarkGray * .25F);
@@ -436,7 +451,7 @@ namespace PSol.Client
 
         private static void LoadCharacters(ContentManager manager)
         {
-            for (int i = 1; i < Characters.Length; i++)
+            for (var i = 1; i < Characters.Length; i++)
             {
                 Characters[i] = manager.Load<Texture2D>("Characters/" + i);
             }
@@ -446,7 +461,7 @@ namespace PSol.Client
 
         private static void LoadPlanets(ContentManager manager)
         {
-            for (int i = 0; i < Planets.Length; i++)
+            for (var i = 0; i < Planets.Length; i++)
             {
                 Planets[i] = manager.Load<Texture2D>("Planets/" + i);
             }
@@ -454,7 +469,7 @@ namespace PSol.Client
 
         private static void LoadCursors(ContentManager manager)
         {
-            for (int i = 1; i < Cursors.Length; i++)
+            for (var i = 1; i < Cursors.Length; i++)
             {
                 Cursors[i] = manager.Load<Texture2D>("Cursors/" + i);
             }
@@ -462,7 +477,7 @@ namespace PSol.Client
 
         private static void LoadObjects(ContentManager manager)
         {
-            for (int i = 0; i < Objects.Length; i++)
+            for (var i = 0; i < Objects.Length; i++)
             {
                 Objects[i] = manager.Load<Texture2D>("Objects/" + i);
             }
@@ -471,15 +486,15 @@ namespace PSol.Client
         public static void DrawInfo(ContentManager manager)
         {
             if (GameLogic.PlayerIndex <= -1) return;
-            int offsetX = 0;
+            var offsetX = 0;
             Game1.spriteBatch.Begin();
             if (Globals.scanner) { offsetX = 200; }
 
             // Draw details panel
             if (Globals.details)
             {
-                MouseState ms = Mouse.GetState();
-                Vector2 position = new Vector2(ms.X, ms.Y);
+                var ms = Mouse.GetState();
+                var position = new Vector2(ms.X, ms.Y);
                 if (Globals.cursorOverride) position = Vector2.Zero;
                 Game1.spriteBatch.Draw(details, new Vector2(0 + offsetX, Globals.PreferredBackBufferHeight - 200), null, Color.White, 0, Vector2.Zero, 1, SpriteEffects.None, 0);
 
@@ -491,7 +506,7 @@ namespace PSol.Client
 
                     if (STAR != null)
                     {
-                        float scale = (float)150 / Planets[4].Width;
+                        var scale = (float)150 / Planets[4].Width;
                         Game1.spriteBatch.Draw(Planets[4], new Vector2(20 + offsetX, Globals.PreferredBackBufferHeight - 178), null, Color.White * .5F, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
                         DrawString(Globals.Font12, "Name: " + STAR.Name, 150 + offsetX, Globals.PreferredBackBufferHeight - 175, false, Color.DarkGray);
                         DrawString(Globals.Font10, "Classification: " + STAR.Class, 160 + offsetX, Globals.PreferredBackBufferHeight - 155, false, Color.DarkGray);
@@ -502,12 +517,45 @@ namespace PSol.Client
 
                     if (PLANET != null)
                     {
-                        float scale = (float)150 / Planets[PLANET.Sprite].Width;
+                        var scale = (float)150 / Planets[PLANET.Sprite].Width;
                         Game1.spriteBatch.Draw(Planets[PLANET.Sprite], new Vector2(20 + offsetX, Globals.PreferredBackBufferHeight - 178), null, Color.White * .5F, 0, Vector2.Zero, scale, SpriteEffects.None, 0);
                         DrawString(Globals.Font12, "Name: " + PLANET.Name, 150 + offsetX, Globals.PreferredBackBufferHeight - 175, false, Color.DarkGray);
                         DrawString(Globals.Font10, "Classification: " + PLANET.Class, 160 + offsetX, Globals.PreferredBackBufferHeight - 155, false, Color.DarkGray);
                         DrawString(Globals.Font10, " Coordinates: " + Math.Round(PLANET.X / 100, 2) + ":" + Math.Round(PLANET.Y / 100, 2), 160 + offsetX, Globals.PreferredBackBufferHeight - 140, false, Color.DarkGray);
                         DrawString(Globals.Font10, "  Belligerence: " + PLANET.Belligerence, 160 + offsetX, Globals.PreferredBackBufferHeight - 125, false, Color.DarkGray);
+                        var tradeRect = new Rectangle(178 + offsetX, Globals.PreferredBackBufferHeight - 38, 44, 17);
+                        var mineRect = new Rectangle(233 + offsetX, Globals.PreferredBackBufferHeight - 38, 35, 17);
+                        var aerRect = new Rectangle(278 + offsetX, Globals.PreferredBackBufferHeight - 38, 69, 17);
+                        DrawString(Globals.Font10, "Trade", 180 + offsetX, Globals.PreferredBackBufferHeight - 37, false, tradeRect.Contains(position) ? Color.White : Color.DarkGray);
+                        DrawString(Globals.Font10, "Mine", 235 + offsetX, Globals.PreferredBackBufferHeight - 37, false, mineRect.Contains(position) ? Color.White : Color.DarkGray);
+                        DrawString(Globals.Font10, "Aerology", 280 + offsetX, Globals.PreferredBackBufferHeight - 37, false, aerRect.Contains(position) ? Color.White : Color.DarkGray);
+                        DrawBorder(tradeRect, 1, Color.DarkGray);
+                        DrawBorder(mineRect, 1, Color.DarkGray);
+                        DrawBorder(aerRect, 1, Color.DarkGray);
+                        if (tradeRect.Contains(position))
+                        {
+                            UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
+                            if (KC.Click())
+                            {
+                                Actions.Trade();
+                            }
+                        }
+                        if (mineRect.Contains(position))
+                        {
+                            UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
+                            if (KC.Click())
+                            {
+                                Actions.Mine();
+                            }
+                        }
+                        if (aerRect.Contains(position))
+                        {
+                            UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
+                            if (KC.Click())
+                            {
+                                Actions.Aerology();
+                            }
+                        }
                     }
                 }
 
@@ -535,9 +583,25 @@ namespace PSol.Client
                         DrawString(Globals.Font8, "Something else: ", 173 + offsetX, Globals.PreferredBackBufferHeight - 74, false, Color.DarkGray);
                     }
                 }
+                // Player info
+                if (GameLogic.SelectedType == "PLAYER")
+                {
+                    var PLAYER = Types.Player.FirstOrDefault(p => p.Id == GameLogic.Selected);
+                    if (PLAYER != null)
+                    {
+                        //if (PLAYER.Id != Types.Player[GameLogic.PlayerIndex].Id)
+                        {
+                            DrawString(Globals.Font12, PLAYER.Rank + " " + PLAYER.Name, 200 + offsetX, Globals.PreferredBackBufferHeight - 175, true, Color.DarkGray);
+                            DrawString(Globals.Font12, PLAYER.Rank + " " + PLAYER.Name, 201 + offsetX, Globals.PreferredBackBufferHeight - 175, true, Color.DarkGray);
+                            DrawString(Globals.Font10, "Level: " + PLAYER.Level, 20 + offsetX, Globals.PreferredBackBufferHeight - 160, false, Color.DarkGray);
+                            DrawString(Globals.Font10, "Credits: " + PLAYER.Credits, 20 + offsetX, Globals.PreferredBackBufferHeight - 145, false, Color.DarkGray);
+                            DrawString(Globals.Font10, "Exp: " + PLAYER.Exp, 20 + offsetX, Globals.PreferredBackBufferHeight - 130, false, Color.DarkGray);
+                        }
+                    }
+                }
 
                 // Click to close
-                Rectangle Bound = new Rectangle(386 + offsetX, Globals.PreferredBackBufferHeight - 196, 12, 12);
+                var Bound = new Rectangle(386 + offsetX, Globals.PreferredBackBufferHeight - 196, 12, 12);
                 if (Bound.Contains(position))
                 {
                     UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
@@ -554,13 +618,13 @@ namespace PSol.Client
         {
             if (GameLogic.PlayerIndex <= -1) return;
             const float scale = (float)200 / 2250;
-            Vector2 offset = new Vector2(100, Globals.PreferredBackBufferHeight - 100);
+            var offset = new Vector2(100, Globals.PreferredBackBufferHeight - 100);
             Game1.spriteBatch.Begin();
             // Draw scanner
             if (Globals.scanner)
             {
-                MouseState ms = Mouse.GetState();
-                Vector2 position = new Vector2(ms.X, ms.Y);
+                var ms = Mouse.GetState();
+                var position = new Vector2(ms.X, ms.Y);
                 if (Globals.cursorOverride) position = Vector2.Zero;
                 var _player = Types.Player[GameLogic.PlayerIndex];
 
@@ -573,11 +637,11 @@ namespace PSol.Client
                 {
                     foreach (var m in GameLogic.LocalMobs)
                     {
-                        Vector2 mobPosition = offset + new Vector2(((m.X + -Camera.transform.M41) - (_player.X + -Camera.transform.M41)) * scale, ((m.Y + -Camera.transform.M42) - (_player.Y - Camera.transform.M42)) * scale);
+                        var mobPosition = offset + new Vector2(((m.X + -Camera.transform.M41) - (_player.X + -Camera.transform.M41)) * scale, ((m.Y + -Camera.transform.M42) - (_player.Y - Camera.transform.M42)) * scale);
                         if (mobPosition.X > 17 && mobPosition.X < 185 && mobPosition.Y > Globals.PreferredBackBufferHeight - 183 && mobPosition.Y < Globals.PreferredBackBufferHeight - 16)
                         {
                             Game1.spriteBatch.Draw(diamond, mobPosition, null, new Color(88, 170, 76), m.Rotation, new Vector2(6, 6), 1, SpriteEffects.None, 0);
-                            Rectangle bound = new Rectangle(mobPosition.ToPoint() - new Point(6), new Point(12));
+                            var bound = new Rectangle(mobPosition.ToPoint() - new Point(6), new Point(12));
                             if (bound.Contains(position))
                             {
                                 UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
@@ -605,7 +669,7 @@ namespace PSol.Client
                         p.Y + -Camera.transform.M42 >= _player.Y + -Camera.transform.M42 - 2000 &&
                         p.Y + -Camera.transform.M42 <= _player.Y + -Camera.transform.M42 + 2000))
                     {
-                        Vector2 starPosition =
+                        var starPosition =
                             offset + new Vector2(
                                 ((obj.X + -Camera.transform.M41) - (_player.X + -Camera.transform.M41)) * scale,
                                 ((obj.Y + -Camera.transform.M42) - (_player.Y - Camera.transform.M42)) * scale);
@@ -614,7 +678,7 @@ namespace PSol.Client
                             starPosition.Y < Globals.PreferredBackBufferHeight - 16)
                         {
                             Game1.spriteBatch.Draw(star, starPosition, null, Color.White, 0, new Vector2(6, 6), 1, SpriteEffects.None, 0);
-                            Rectangle bound = new Rectangle(starPosition.ToPoint() - new Point(6), new Point(12));
+                            var bound = new Rectangle(starPosition.ToPoint() - new Point(6), new Point(12));
                             if (bound.Contains(position))
                             {
                                 UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
@@ -633,7 +697,7 @@ namespace PSol.Client
 
                         foreach (var sat in obj.Planets)
                         {
-                            Vector2 satPosition =
+                            var satPosition =
                                 offset + new Vector2(
                                     ((sat.X + -Camera.transform.M41) - (_player.X + -Camera.transform.M41)) * scale,
                                     ((sat.Y + -Camera.transform.M42) - (_player.Y - Camera.transform.M42)) * scale);
@@ -642,7 +706,7 @@ namespace PSol.Client
                                 satPosition.Y < Globals.PreferredBackBufferHeight - 16)
                             {
                                 Game1.spriteBatch.Draw(circle, satPosition, null, Color.White, 0, new Vector2(6, 6), 1, SpriteEffects.None, 0);
-                                Rectangle bound = new Rectangle(satPosition.ToPoint() - new Point(6), new Point(12));
+                                var bound = new Rectangle(satPosition.ToPoint() - new Point(6), new Point(12));
                                 if (bound.Contains(position))
                                 {
                                     UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
@@ -663,7 +727,7 @@ namespace PSol.Client
                 }
 
                 // Click to close
-                Rectangle Bound = new Rectangle(186, Globals.PreferredBackBufferHeight - 196, 12, 12);
+                var Bound = new Rectangle(186, Globals.PreferredBackBufferHeight - 196, 12, 12);
                 if (Bound.Contains(position))
                 {
                     UserInterface.Active.SetCursor(Cursors[2], 32, new Point(-4, 0));
@@ -683,7 +747,101 @@ namespace PSol.Client
             {
                 DrawString(Globals.Font8, GameLogic.PlayerIndex.ToString(), -1, 30, true, Color.Green);
             }
+            Game1.spriteBatch.End();
+        }
 
+        public static void DrawWeaponsBar(ContentManager manager)
+        {
+            if (GameLogic.PlayerIndex <= -1 || GameLogic.Items == null) return;
+            if (Types.Player[GameLogic.PlayerIndex].Inventory == null) return;
+            var P = Types.Player[GameLogic.PlayerIndex];
+            var OL1 = P.Weap1Charge < 100 ? Color.DarkRed : Color.White;
+            var OL2 = P.Weap2Charge < 100 ? Color.DarkRed : Color.White;
+            var OL3 = P.Weap3Charge < 100 ? Color.DarkRed : Color.White;
+            var OL4 = P.Weap4Charge < 100 ? Color.DarkRed : Color.White;
+            var OL5 = P.Weap5Charge < 100 ? Color.DarkRed : Color.White;
+            var stat1 = P.Weap1Charge < 100 ? P.Weap1Charge + "%" : "";
+            var stat2 = P.Weap2Charge < 100 ? P.Weap2Charge + "%" : "";
+            var stat3 = P.Weap3Charge < 100 ? P.Weap3Charge + "%" : "";
+            var stat4 = P.Weap4Charge < 100 ? P.Weap4Charge + "%" : "";
+            var stat5 = P.Weap5Charge < 100 ? P.Weap5Charge + "%" : "";
+            var weap1 = GameLogic.Items.FirstOrDefault(i => i.Id == Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(w => w.Slot == 7)?.ItemId);
+            var weap2 = GameLogic.Items.FirstOrDefault(i => i.Id == Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(w => w.Slot == 8)?.ItemId);
+            var weap3 = GameLogic.Items.FirstOrDefault(i => i.Id == Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(w => w.Slot == 9)?.ItemId);
+            var weap4 = GameLogic.Items.FirstOrDefault(i => i.Id == Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(w => w.Slot == 10)?.ItemId);
+            var weap5 = GameLogic.Items.FirstOrDefault(i => i.Id == Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(w => w.Slot == 11)?.ItemId);
+            Game1.spriteBatch.Begin();
+            if (Globals.weaponsBar)
+            {
+                if (weap1 != null)
+                {
+                    Game1.spriteBatch.Draw(Objects[weap1.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 14), null, OL1, 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
+                    DrawString(Globals.Font10, stat1, Globals.PreferredBackBufferWidth - 24, 25, true, Color.White);
+                    DrawString(Globals.Font10, stat1, Globals.PreferredBackBufferWidth - 23, 25, true, Color.White);
+                }
+                if (weap2 != null)
+                {
+                    Game1.spriteBatch.Draw(Objects[weap2.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 49), null, OL2, 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
+                    DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 24, 60, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 23, 60, true, Color.DarkGray);
+                }
+                if (weap3 != null)
+                {
+                    Game1.spriteBatch.Draw(Objects[weap3.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 84), null, OL3, 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
+                    DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 24, 95, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 23, 95, true, Color.DarkGray);
+                }
+                if (weap4 != null)
+                {
+                    Game1.spriteBatch.Draw(Objects[weap4.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 119), null, OL4, 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
+                    DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 24, 130, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 23, 130, true, Color.DarkGray);
+                }
+                if (weap5 != null)
+                {
+                    Game1.spriteBatch.Draw(Objects[weap5.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 154), null, OL5, 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
+                    DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 24, 165, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 23, 165, true, Color.DarkGray);
+                }
+            }
+            else
+            {
+                if (weap1 != null)
+                {
+                    stat1 = Globals.status1 < 100 ? Globals.status1 + "%" : "1";
+                    DrawBorder(new Rectangle(Globals.PreferredBackBufferWidth - 40, 14, 32, 32), 1, OL1);
+                    DrawString(Globals.Font10, stat1, Globals.PreferredBackBufferWidth - 24, 25, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat1, Globals.PreferredBackBufferWidth - 23, 25, true, Color.DarkGray);
+                }
+                if (weap2 != null)
+                {
+                    stat2 = Globals.status1 < 100 ? Globals.status1 + "%" : "2";
+                    DrawBorder(new Rectangle(Globals.PreferredBackBufferWidth - 40, 49, 32, 32), 1, OL2);
+                    DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 24, 60, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 23, 60, true, Color.DarkGray);
+                }
+                if (weap3 != null)
+                {
+                    stat3 = Globals.status1 < 100 ? Globals.status1 + "%" : "3";
+                    DrawBorder(new Rectangle(Globals.PreferredBackBufferWidth - 40, 84, 32, 32), 1, OL3);
+                    DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 24, 95, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 23, 95, true, Color.DarkGray);
+                }
+                if (weap4 != null)
+                {
+                    stat4 = Globals.status1 < 100 ? Globals.status1 + "%" : "4";
+                    DrawBorder(new Rectangle(Globals.PreferredBackBufferWidth - 40, 119, 32, 32), 1, OL4);
+                    DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 24, 130, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 23, 130, true, Color.DarkGray);
+                }
+                if (weap5 != null)
+                {
+                    stat5 = Globals.status1 < 100 ? Globals.status1 + "%" : "5";
+                    DrawBorder(new Rectangle(Globals.PreferredBackBufferWidth - 40, 154, 32, 32), 1, OL5);
+                    DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 24, 165, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 23, 165, true, Color.DarkGray);
+                }
+            }
             Game1.spriteBatch.End();
         }
 
@@ -710,8 +868,8 @@ namespace PSol.Client
         public static void DrawString(SpriteFont font, string text, float X, float Y, bool align, Color color)
         {
             if ((int)X == -1) { X = Globals.PreferredBackBufferWidth / 2.0F; }
-            Vector2 size = font.MeasureString(text);
-            Vector2 pos = new Vector2(X, Y);
+            var size = font.MeasureString(text);
+            var pos = new Vector2(X, Y);
             if (align)
             {
                 pos.X -= size.X / 2;

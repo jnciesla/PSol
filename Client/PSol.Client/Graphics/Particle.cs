@@ -1,5 +1,5 @@
-﻿using Microsoft.Xna.Framework.Graphics;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace PSol.Client
 {
@@ -16,7 +16,7 @@ namespace PSol.Client
         public float Opacity { get; set; }
 
         public Particle(Texture2D texture, Vector2 position, Vector2 velocity,
-            float angle, float angularVelocity, float size, int ttl)
+            float angle, float angularVelocity, float size, int ttl, Color color)
         {
             Texture = texture;
             Position = position;
@@ -26,13 +26,7 @@ namespace PSol.Client
             Size = size;
             TTL = ttl;
             Opacity = 1f;
-
-            Color = new Color
-            {
-                R = 255,
-                G = 255,
-                B = 0
-            };
+            Color = color;
         }
 
         public void Update()
@@ -40,13 +34,14 @@ namespace PSol.Client
             Position += Velocity;
             Angle += AngularVelocity;
             Opacity -= (float)10 / TTL;
-            if (Color.G >= 1) { Color.G -= 15; } else { Color.R -= 15; }
+            if (Color.R <= 0) return;
+            if (Color.G >= 1) { Color.G -= 15; } else { Color.R -= 5; }
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            Rectangle sourceRectangle = new Rectangle(0, 0, Texture.Width, Texture.Height);
-            Vector2 origin = new Vector2(Texture.Width / 2, Texture.Height / 2);
+            var sourceRectangle = new Rectangle(0, 0, Texture.Width, Texture.Height);
+            var origin = new Vector2(Texture.Width / 2.0F, Texture.Height / 2.0F);
 
             spriteBatch.Draw(Texture, Position, sourceRectangle, Color * Opacity,
                 Angle, origin, Size, SpriteEffects.None, 0f);

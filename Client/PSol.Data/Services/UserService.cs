@@ -34,11 +34,12 @@ namespace PSol.Data.Services
                 Name = username,
                 X = 10,
                 Y = 10,
-                Rotation = 0,
+                Rotation = 135,
                 Health = 100,
                 MaxHealth = 100,
                 Shield = 100,
-                MaxShield = 100
+                MaxShield = 100,
+                Rank = "2LT"
             };
             _userRepo.Add(newUser);
             return newUser;

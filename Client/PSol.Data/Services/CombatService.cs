@@ -21,17 +21,15 @@ namespace PSol.Data.Services
             _mobService = mobService;
         }
 
-        public Combat DoAttack(string targetId, string attackerId, string weaponId, List<User> allPlayers)
+        public Combat DoAttack(string targetId, string attackerId, Item weapon, List<User> allPlayers)
         {
             var mobs = _mobService.GetMobs().ToList();
-            var combat = new Combat { SourceId = attackerId, TargetId = targetId, WeaponId = weaponId };
+            var combat = new Combat { SourceId = attackerId, TargetId = targetId, Weapon = weapon };
             var locale = new Vector2(0, 0);
             var sourcePlayer = allPlayers.Find(p => p?.Id == combat.SourceId);
             var sourceMob = mobs.Find(m => m.Id == combat.SourceId);
             var targetMob = mobs.Find(m => m.Id == combat.TargetId);
-
-            // TODO: Get Weapon damage from weapon when implemented
-            combat.WeaponDamage = new Random().Next(4, 8);
+            combat.WeaponDamage = new Random().Next(weapon.Damage - (int)Math.Ceiling(weapon.Damage * .2), weapon.Damage + (int)Math.Ceiling(weapon.Damage * .2));
             // If target was a mob, do combat here. Otherwise do it in calling method cause players are annoying
             if (targetMob != null)
             {

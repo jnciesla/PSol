@@ -1,10 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using PSol.Data.Models;
 using PSol.Data.Repositories.Interfaces;
-using System.Data.Entity;
-using System.Data.Entity.Migrations;
 
 namespace PSol.Data.Repositories
 {
@@ -48,7 +45,11 @@ namespace PSol.Data.Repositories
                 else
                 {
                     var dbInv = _context.Inventory.FirstOrDefault(i => i.Id == inv.Id);
-                    _context.Entry(dbInv).CurrentValues.SetValues(inv);
+                    if (dbInv == null) { _context.Inventory.Add(inv); }
+                    else
+                    {
+                        _context.Entry(dbInv).CurrentValues.SetValues(inv);
+                    }
                 }
             });
 

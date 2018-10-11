@@ -22,21 +22,19 @@ namespace PSol.Client
 
         public void Update()
         {
-            for (int particle = 0; particle < particles.Count; particle++)
+            for (var particle = 0; particle < particles.Count; particle++)
             {
                 particles[particle].Update();
-                if (particles[particle].Opacity <= 0)
-                {
-                    particles.RemoveAt(particle);
-                    particle--;
-                }
+                if (!(particles[particle].Opacity <= 0)) continue;
+                particles.RemoveAt(particle);
+                particle--;
             }
         }
 
         public void Create(Vector2 position)
         {
-            int total = 100 + random.Next(50); ;
-            for (int i = 0; i < total; i++)
+            var total = 100 + random.Next(50); ;
+            for (var i = 0; i < total; i++)
             {
                 particles.Add(GenerateNewParticle(position));
             }
@@ -44,17 +42,21 @@ namespace PSol.Client
 
         private Particle GenerateNewParticle(Vector2 position)
         {
-            Texture2D texture = textures[random.Next(textures.Count)];
-            Vector2 velocity = new Vector2(
+            var textureInt = random.Next(textures.Count);
+            var texture = textures[textureInt];
+            var velocity = new Vector2(
                 2f * (float)(random.NextDouble() * 2 - 1),
                 2f * (float)(random.NextDouble() * 2 - 1));
-            float angle = 0;
-            float angularVelocity = 1f * (float)(random.NextDouble() * 2 - 1);
+            var angularVelocity = 1f * (float)(random.NextDouble() * 2 - 1);
 
-            float size = (float)random.NextDouble();
-            int ttl = 750 + random.Next(500);
-
-            return new Particle(texture, position, velocity, angle, angularVelocity, size, ttl);
+            var size = (float)random.NextDouble();
+            var ttl = 750 + random.Next(500);
+            var Color = new Color { R = 255, G = 255, B = 0 };
+            if (textureInt == 0 && random.Next(2) == 1)
+            {
+                Color = Color.Black;
+            }
+            return new Particle(texture, position, velocity, 0, angularVelocity, size, ttl, Color);
         }
 
         public void Draw(SpriteBatch spriteBatch)

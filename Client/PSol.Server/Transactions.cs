@@ -1,8 +1,10 @@
 ﻿#pragma warning disable CS0436 // Type conflicts with imported type
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bindings;
 using PSol.Data.Models;
+using Inventory = PSol.Data.Models.Inventory;
 
 namespace PSol.Server
 {
@@ -12,16 +14,19 @@ namespace PSol.Server
         {
 
             User newOwner = null;
-            var newSlot = -1;
             var temp = Types.Player[index].Inventory.ToList().FirstOrDefault(i => i.Id == item);
             if (recipient != "X")
             {
                 newOwner = Types.Player.FirstOrDefault(p => p.Id == recipient);
-                newSlot = FindOpenSlot(recipient);
             }
 
-            if (recipient != "X" && newOwner != null && newSlot != -1)
+            if (recipient != "X" && newOwner != null)
             {
+                var stacked = FindAvailableStack(newOwner.Id, temp);
+                if (stacked == 0) return true;
+                if (stacked == -1) return false;
+                temp.Quantity = stacked;
+                var newSlot = FindOpenSlot(recipient);
                 var newInv = new Inventory()
                 {
                     Id = Guid.NewGuid().ToString(),
@@ -62,12 +67,16 @@ namespace PSol.Server
             if (temp != null)
             {
                 Globals.Inventory.Remove(temp);
+                var stacked = FindAvailableStack(Types.Player[index].Id, temp);
+                if (stacked == 0) return true;
+                if (stacked == -1) return false;
+                temp.Quantity = stacked;
                 var newSlot = FindOpenSlot(Types.Player[index].Id);
                 if (newSlot != -1)
                 {
                     var newInv = new Inventory()
                     {
-                        Id = null,
+                        Id = Guid.NewGuid().ToString(),
                         Dropped = DateTime.UtcNow,
                         ItemId = temp.ItemId,
                         Quantity = temp.Quantity,
@@ -105,7 +114,7 @@ namespace PSol.Server
         {
             for (var n = 0; n < 60; n++)
             {
-                if (Types.Player.FirstOrDefault(p => p.Id == ID)?.Inventory.FirstOrDefault(inv => inv.Slot == n)?.ItemId == null)
+                if (Types.Player.FirstOrDefault(p => p.Id == ID)?.Inventory.FirstOrDefault(inv => inv.Slot == n + 101)?.ItemId == null)
                 {
                     return n + 101;
                 };
@@ -113,35 +122,212 @@ namespace PSol.Server
             return -1;
         }
 
-        public static int EquipItem(string id, int index)
+        public static int FindAvailableStack(string player, Inventory itm)
         {
-            var inv = Types.Player[index].Inventory.FirstOrDefault(i => i.Id == id);
-            var itm = Globals.Items.FirstOrDefault(I => I.Id == inv?.ItemId);
-            if (inv?.Slot > 100)
+            var inv = Types.Player.FirstOrDefault(p => p.Id == player)?.Inventory;
+            if (inv == null) return -1;
+            foreach (var stack in inv.Where(i => i.ItemId == itm.ItemId))
             {
-                var existing = Types.Player[index].Inventory.FirstOrDefault(i => i.Id == id);
-                if (existing == null)
+                if (itm.Quantity <= 0) continue;
+                var capacity = 999 - stack.Quantity;
+                if (itm.Quantity <= capacity)
                 {
-                    inv.Slot = itm.Slot;
+                    stack.Quantity += itm.Quantity;
+                    itm.Quantity = 0;
+                    inv.Remove(itm);
                 }
                 else
                 {
-                    var tmp = itm.Slot;
-                    Types.Player[index].Inventory.FirstOrDefault(i => i.Slot == inv.Slot).Slot = inv.Slot;
-                    inv.Slot = tmp;
+                    stack.Quantity += capacity;
+                    itm.Quantity -= capacity;
                 }
+            }
+            return itm.Quantity > 0 ? itm.Quantity : 0;
+        }
+
+        public static int EquipItem(string id, int index, int destSlot)
+        {
+            string OUT = null;
+            string IN = null;
+            var inv = Types.Player[index].Inventory.FirstOrDefault(i => i.Id == id);
+            if (inv == null) return 2;
+            var itm = Globals.Items.FirstOrDefault(i => i.Id == inv?.ItemId);
+            if (itm == null) return 2;
+            switch (destSlot)
+            {
+                case 0: // Equip
+                    var installed = Types.Player[index].Inventory.FirstOrDefault(s => s.Slot == itm.Slot); // Check if something is already installed
+                    if (installed != null)
+                    {
+                        installed.Slot = inv.Slot;
+                        OUT = installed.ItemId;
+                    }
+                    Types.Player[index].Inventory.FirstOrDefault(i => i.Id == id).Slot = itm.Slot;
+                    IN = inv.ItemId;
+                    break;
+                case -1: // Unequip
+                    // TODO: Make it so unequipping an item tries to stack it first
+                    var newSlot = FindOpenSlot(Types.Player[index].Id);
+                    if (newSlot == -1)
+                    {
+                        return 3;
+                    }
+                    OUT = inv.ItemId;
+                    Types.Player[index].Inventory.FirstOrDefault(i => i.Id == id).Slot = newSlot;
+                    break;
+                default: // Move or install specific slot
+                    if (destSlot > 100)
+                    {
+                        Types.Player[index].Inventory.FirstOrDefault(i => i.Slot == inv.Slot).Slot = destSlot;
+                    }
+                    else
+                    {
+                        var _installed = Types.Player[index].Inventory.FirstOrDefault(s => s.Slot == destSlot); // Check if something is already installed
+                        if (_installed != null)
+                        {
+                            _installed.Slot = inv.Slot;
+                            OUT = _installed.ItemId;
+                        }
+                        Types.Player[index].Inventory.FirstOrDefault(i => i.Id == id).Slot = destSlot;
+                        IN = inv.ItemId;
+                    }
+                    break;
+            }
+            ModifyAttributes(OUT, IN, index);
+            return 1;
+        }
+
+        public static int BuyItem(string id, int qty, int index)
+        {
+            var item = Globals.Items.FirstOrDefault(i => i.Id == id);
+            if (item == null) return 2; // Invalid item
+
+            if (item.Cost * qty <= Types.Player[index].Credits)
+            {
+                Types.Player[index].Credits -= item.Cost * qty;
+                var newInv = new Inventory()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Dropped = DateTime.UtcNow,
+                    ItemId = item.Id,
+                    Quantity = qty,
+                    Slot = 61,
+                    UserId = Types.Player[index].Id,
+                    X = 0,
+                    Y = 0
+                };
+                var stacked = FindAvailableStack(Types.Player[index].Id, newInv);
+                if (stacked == 0) return -1;
+                if (stacked == -1) return 2;
+                newInv.Quantity = stacked;
+                var newSlot = FindOpenSlot(Types.Player[index].Id);
+                if (newSlot == -1) return 3; // Not enough room
+                newInv.Slot = newSlot;
+                Types.Player[index].Inventory.Add(newInv);
             }
             else
             {
-                var newSlot = FindOpenSlot(Types.Player[index].Id);
-                if (newSlot == -1)
-                {
-                    return 3;
-                }
-
-                inv.Slot = newSlot;
+                return 1; // Too expensive
             }
+            return -1;
+        }
+
+        public static int SellItem(string id, int qty, int index)
+        {
+            var inv = Types.Player[index].Inventory.FirstOrDefault(i => i.Id == id);
+            if (inv == null) return 2; // Invalid item
+            var item = Globals.Items.FirstOrDefault(n => n.Id == inv.ItemId);
+            if (item == null) return 2; // Invalid item again
+            if (inv.Quantity > qty)
+            {
+                Types.Player[index].Inventory.FirstOrDefault(i => i.Id == id).Quantity -= qty;
+            }
+            else
+            {
+                Types.Player[index].Inventory.Remove(inv);
+            }
+            Types.Player[index].Credits += item.Cost * qty;
+            return -1;
+        }
+
+        public static int StackItems(string from, string to, int index)
+        {
+            var invF = Types.Player[index].Inventory.FirstOrDefault(i => i.Id == from);
+            var invT = Types.Player[index].Inventory.FirstOrDefault(i => i.Id == to);
+            if (invF == null || invT == null) return -1;
+            var stackable = Globals.Items.FirstOrDefault(i => i.Id == invT.ItemId).Stack;
+            if (invT.ItemId != invF.ItemId || !stackable || invT.Quantity >= 999) return -1;
+            {
+                var allowable = 999 - invT.Quantity;
+                if (invF.Quantity - allowable > 0)
+                {
+                    Types.Player[index].Inventory.FirstOrDefault(i => i.Id == to).Quantity += allowable;
+                    Types.Player[index].Inventory.FirstOrDefault(i => i.Id == @from).Quantity -= allowable;
+                }
+                else
+                {
+                    Types.Player[index].Inventory.FirstOrDefault(i => i.Id == to).Quantity += invF.Quantity;
+                    Types.Player[index].Inventory.Remove(invF);
+                }
+            }
+
             return 1;
+        }
+
+        public static void ModifyAttributes(string OUT, string IN, int index)
+        {
+            if (OUT == null && IN == null) return;
+            if (IN != null)
+            {
+                var _IN = Globals.Items.FirstOrDefault(n => n.Id == IN);
+                Types.Player[index].Armor += _IN?.Armor ?? 0;
+                Types.Player[index].Defense += _IN?.Defense ?? 0;
+                Types.Player[index].Health += _IN?.Hull ?? 0;
+                Types.Player[index].MaxHealth += _IN?.Hull ?? 0;
+                Types.Player[index].Offense += _IN?.Offense ?? 0;
+                Types.Player[index].Power += _IN?.Power ?? 0;
+                Types.Player[index].Repair += _IN?.Repair ?? 0;
+                Types.Player[index].Shield += _IN?.Shield ?? 0;
+                Types.Player[index].MaxShield += _IN?.Shield ?? 0;
+                Types.Player[index].Thrust += _IN?.Thrust ?? 0;
+                switch (_IN?.Slot)
+                {
+                    case 7:
+                        Types.Player[index].Weap1Charge = 0;
+                        Types.Player[index].Weap1ChargeRate = _IN.Recharge;
+                        break;
+                    case 8:
+                        Types.Player[index].Weap2Charge = 0;
+                        Types.Player[index].Weap2ChargeRate = _IN.Recharge;
+                        break;
+                    case 9:
+                        Types.Player[index].Weap3Charge = 0;
+                        Types.Player[index].Weap3ChargeRate = _IN.Recharge;
+                        break;
+                    case 10:
+                        Types.Player[index].Weap4Charge = 0;
+                        Types.Player[index].Weap4ChargeRate = _IN.Recharge;
+                        break;
+                    case 11:
+                        Types.Player[index].Weap5Charge = 0;
+                        Types.Player[index].Weap5ChargeRate = _IN.Recharge;
+                        break;
+                }
+            }
+            if (OUT == null) return;
+            var _OUT = Globals.Items.FirstOrDefault(n => n.Id == OUT);
+            Types.Player[index].Armor -= _OUT?.Armor ?? 0;
+            Types.Player[index].Defense -= _OUT?.Defense ?? 0;
+            Types.Player[index].Health -= _OUT?.Hull ?? 0;
+            Types.Player[index].MaxHealth -= _OUT?.Hull ?? 0;
+            Types.Player[index].Offense -= _OUT?.Offense ?? 0;
+            Types.Player[index].Power -= _OUT?.Power ?? 0;
+            Types.Player[index].Repair -= _OUT?.Repair ?? 0;
+            Types.Player[index].Shield -= _OUT?.Shield ?? 0;
+            Types.Player[index].MaxShield -= _OUT?.Shield ?? 0;
+            Types.Player[index].Thrust -= _OUT?.Thrust ?? 0;
+            if (Types.Player[index].Shield < 0) Types.Player[index].Shield = 0;
+            if (Types.Player[index].Health <= 1) Types.Player[index].Shield = 1;
         }
 
         public static void ClearDebris()
@@ -153,6 +339,47 @@ namespace PSol.Server
                     Globals.Inventory.Remove(itm);
                 }
             }
+        }
+
+        public static void Charge(List<User> users)
+        {
+            var up = false;
+            users.Where(u => u?.Id != null).ToList().ForEach(user =>
+            {
+                if (user.Weap1Charge < 100 && user.Weap1ChargeRate > 0)
+                {
+                    up = true;
+                    user.Weap1Charge += user.Weap1ChargeRate;
+                    if (user.Weap1Charge > 100) user.Weap1Charge = 100;
+                }
+                if (user.Weap2Charge < 100 && user.Weap2ChargeRate > 0)
+                {
+                    up = true;
+                    user.Weap2Charge += user.Weap2ChargeRate / 2;
+                    if (user.Weap2Charge > 100) user.Weap2Charge = 0;
+                }
+                if (user.Weap3Charge < 100 && user.Weap3ChargeRate > 0)
+                {
+                    up = true;
+                    user.Weap3Charge += user.Weap3ChargeRate / 2;
+                    if (user.Weap3Charge > 100) user.Weap3Charge = 0;
+                }
+                if (user.Weap4Charge < 100 && user.Weap4ChargeRate > 0)
+                {
+                    up = true;
+                    user.Weap4Charge += user.Weap4ChargeRate / 2;
+                    if (user.Weap4Charge > 100) user.Weap4Charge = 0;
+                }
+                if (user.Weap5Charge < 100 && user.Weap5ChargeRate > 0)
+                {
+                    up = true;
+                    user.Weap5Charge += user.Weap5ChargeRate / 2;
+                    if (user.Weap5Charge > 100) user.Weap5Charge = 0;
+                }
+                if (up)
+                    
+                    Program.shd.UpdatePlayer(Array.FindIndex(Types.Player, u => u.Id == user.Id));
+            });
         }
     }
 }

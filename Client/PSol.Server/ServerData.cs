@@ -6,6 +6,7 @@ using System.IO;
 using System.IO.Compression;
 using System.Linq;
 using Ninject;
+using Ninject.Syntax;
 using PSol.Data.Models;
 using PSol.Data.Services.Interfaces;
 using static Bindings.ClientPackets;
@@ -22,7 +23,7 @@ namespace PSol.Server
         private readonly IMobService _mobService;
         private readonly ICombatService _combatService;
 
-        public ServerData(IKernel kernel)
+        public ServerData(IResolutionRoot kernel)
         {
             _userService = kernel.Get<IUserService>();
             _mobService = kernel.Get<IMobService>();
@@ -39,9 +40,10 @@ namespace PSol.Server
                 {(int) CPlayerData, RecvPlayer},
                 {(int) CChat, ParseChat},
                 {(int) CCombat, HandleCombat },
-                {(int) CPlayerItem, HandleInventory },
                 {(int) CItemTransaction, HandleItemTransaction },
-                {(int) CEquipItem, HandleEquip }
+                {(int) CEquipItem, HandleEquip },
+                {(int) CItemSale, HandleSale },
+                {(int) CItemStack, HandleStack }
             };
         }
 
@@ -53,7 +55,7 @@ namespace PSol.Server
             var packetNum = buffer.GetInteger();
             buffer.Dispose();
 
-            if (packets.TryGetValue(packetNum, out Packet_ Packet))
+            if (packets.TryGetValue(packetNum, out var Packet))
                 Packet.Invoke(index, data);
 
         }
@@ -64,8 +66,8 @@ namespace PSol.Server
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
-            string username = buffer.GetString();
-            string password = buffer.GetString();
+            var username = buffer.GetString();
+            var password = buffer.GetString();
 
             if (!_userService.AccountExists(username))
             {
@@ -84,6 +86,8 @@ namespace PSol.Server
             XFerLoad(index);
             SendGalaxy(index);
             SendItems(index);
+            SendMessage(-1, Types.Player[index].Name + " has connected.", Notification);
+            Globals.FullData = true;
             Console.WriteLine(username + @" logged in successfully.");
             ServerTCP.tempPlayer[index].receiving = true;
         }
@@ -91,12 +95,12 @@ namespace PSol.Server
         private void HandleRegister(int index, byte[] data)
         {
             Console.WriteLine(@"Received register packet");
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
-            string username = buffer.GetString();
-            string password = buffer.GetString();
-            bool exists = _userService.AccountExists(username);
+            var username = buffer.GetString();
+            var password = buffer.GetString();
+            var exists = _userService.AccountExists(username);
             if (!exists)
             {
                 Types.Player[index] = new User();
@@ -114,9 +118,9 @@ namespace PSol.Server
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
-            float posX = buffer.GetFloat();
-            float posY = buffer.GetFloat();
-            float rot = buffer.GetFloat();
+            var posX = buffer.GetFloat();
+            var posY = buffer.GetFloat();
+            var rot = buffer.GetFloat();
             Types.Player[index].Rotation = rot;
             Types.Player[index].X = posX;
             Types.Player[index].Y = posY;
@@ -182,22 +186,48 @@ namespace PSol.Server
         public void XFerLoad(int index)
         {
             var buffer = new PacketBuffer();
+            var player = Types.Player[index];
             buffer.AddInteger((int)SPlayerData);
             buffer.AddInteger(index);
-            buffer.AddString(Types.Player[index].Id);
-            buffer.AddString(Types.Player[index].Name);
-            buffer.AddFloat(Types.Player[index].X);
-            buffer.AddFloat(Types.Player[index].Y);
-            buffer.AddFloat(Types.Player[index].Rotation);
-            buffer.AddInteger(Types.Player[index].Health);
-            buffer.AddInteger(Types.Player[index].MaxHealth);
-            buffer.AddInteger(Types.Player[index].Shield);
-            buffer.AddInteger(Types.Player[index].MaxShield);
-            buffer.AddArray(Types.Player[index].Inventory.ToArray());
+            buffer.AddString(player.Id);
+            buffer.AddString(player.Name);
+            buffer.AddFloat(player.X);
+            buffer.AddFloat(player.Y);
+            buffer.AddFloat(player.Rotation);
+            buffer.AddInteger(player.Health);
+            buffer.AddInteger(player.MaxHealth);
+            buffer.AddInteger(player.Shield);
+            buffer.AddInteger(player.MaxShield);
+            buffer.AddString(player.Rank);
+            buffer.AddInteger(player.Credits);
+            buffer.AddInteger(player.Exp);
+            buffer.AddInteger(player.Weap1Charge);
+            buffer.AddInteger(player.Weap2Charge);
+            buffer.AddInteger(player.Weap3Charge);
+            buffer.AddInteger(player.Weap4Charge);
+            buffer.AddInteger(player.Weap5Charge);
+            buffer.AddArray(player.Inventory.ToArray());
             SendData(index, buffer.ToArray());
             buffer.Dispose();
-            SendMessage(-1, Types.Player[index].Name + " has connected.", Notification);
-            Globals.FullData = true;
+        }
+
+        public void UpdatePlayer(int index)
+        {
+            var buffer = new PacketBuffer();
+            var player = Types.Player[index];
+            buffer.AddInteger((int)SPlayerUpdate);
+            buffer.AddInteger(player.Health);
+            buffer.AddInteger(player.MaxHealth);
+            buffer.AddInteger(player.Shield);
+            buffer.AddInteger(player.MaxShield);
+            buffer.AddInteger(player.Exp);
+            buffer.AddInteger(player.Weap1Charge);
+            buffer.AddInteger(player.Weap2Charge);
+            buffer.AddInteger(player.Weap3Charge);
+            buffer.AddInteger(player.Weap4Charge);
+            buffer.AddInteger(player.Weap5Charge);
+            SendData(index, buffer.ToArray());
+            buffer.Dispose();
         }
 
         public void PreparePulseBroadcast()
@@ -243,7 +273,7 @@ namespace PSol.Server
             buffer.AddInteger((int)SFullData);
             for (var i = 1; i < Constants.MAX_PLAYERS; i++)
             {
-                buffer.AddString(Types.Player[i].Name ?? ""); // Don't send null
+                buffer.AddString(Types.Player[i].Name ?? "");
             }
             BroadcastData(buffer.ToArray());
             buffer.Dispose();
@@ -254,6 +284,7 @@ namespace PSol.Server
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)SInventory);
             buffer.AddArray(Types.Player[index].Inventory.ToArray());
+            buffer.AddInteger(Types.Player[index].Credits);
             SendData(index, buffer.ToArray());
             buffer.Dispose();
         }
@@ -287,8 +318,31 @@ namespace PSol.Server
             buffer.AddBytes(data);
             buffer.GetInteger();
             var targetId = buffer.GetString();
-            var weaponId = buffer.GetString();
-            var combat = _combatService.DoAttack(targetId, Types.Player[index].Id, weaponId, Types.Player.ToList());
+            var weapon = buffer.GetString();
+            var weaponId = Types.Player[index].Inventory.FirstOrDefault(i => i.ItemId == weapon);
+            if (weaponId == null) return;
+            var WEAPON = Globals.Items.FirstOrDefault(w => w.Id == weaponId?.ItemId);
+            if (WEAPON == null) return;
+            switch (weaponId.Slot)
+            {
+                case 7:
+                    Types.Player[index].Weap1Charge = 0;
+                    break;
+                case 8:
+                    Types.Player[index].Weap2Charge = 0;
+                    break;
+                case 9:
+                    Types.Player[index].Weap3Charge = 0;
+                    break;
+                case 10:
+                    Types.Player[index].Weap4Charge = 0;
+                    break;
+                case 11:
+                    Types.Player[index].Weap5Charge = 0;
+                    break;
+
+            }
+            var combat = _combatService.DoAttack(targetId, Types.Player[index].Id, WEAPON, Types.Player.ToList());
             var targetPlayer = Types.Player.ToList().FirstOrDefault(p => p?.Id == combat.TargetId);
 
             if (targetPlayer == null) return;
@@ -296,15 +350,6 @@ namespace PSol.Server
             if (targetPlayer.Shield >= 0) return;
             targetPlayer.Health += targetPlayer.Shield;
             targetPlayer.Shield = 0;
-        }
-
-        public void HandleInventory(int index, byte[] data)
-        {
-            var buffer = new PacketBuffer();
-            buffer.AddBytes(data);
-            buffer.GetInteger();
-            Types.Player[index].Inventory = buffer.GetList<Inventory>();
-            buffer.Dispose();
         }
 
         public void HandleItemTransaction(int index, byte[] data)
@@ -338,16 +383,65 @@ namespace PSol.Server
             buffer.AddBytes(data);
             buffer.GetInteger();
             var id = buffer.GetString();
+            var destSlot = buffer.GetInteger();
             buffer.Dispose();
-            var result = Transactions.EquipItem(id, index);
-            if (result == 3)
+            var result = Transactions.EquipItem(id, index, destSlot);
+            switch (result)
             {
-                SendMessage(index, "No room in the cargo hold to unequip that item", Minor);
+                case 1:
+                    UpdatePlayer(index);
+                    SendInventory(index);
+                    break;
+                case 2:
+                    SendMessage(index, "Invalid item.", Warning);
+                    break;
+                case 3:
+                    SendMessage(index, "No room in the cargo hold to unequip that item", Minor);
+                    break;
             }
-            else
+        }
+
+        public void HandleSale(int index, byte[] data)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            var mode = buffer.GetInteger();
+            var id = buffer.GetString();
+            var qty = buffer.GetInteger();
+            buffer.Dispose();
+            var result = mode == 1 ? Transactions.BuyItem(id, qty, index) : Transactions.SellItem(id, qty, index);
+
+            switch (result)
             {
-                SendInventory(index);
+                case 1:
+                    SendMessage(index, "Not enough credits to buy that item.", Minor);
+                    break;
+                case 2:
+                    SendMessage(index, "Invalid item.", Warning);
+                    break;
+                case 3:
+                    SendMessage(index, "No room in the cargo hold to buy that item.", Minor);
+                    break;
+                default:
+                    SendInventory(index);
+                    break;
             }
+        }
+
+        public void HandleStack(int index, byte[] data)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            var from = buffer.GetString();
+            var to = buffer.GetString();
+            buffer.Dispose();
+            if (Transactions.StackItems(from, to, index) == -1)
+            {
+                SendMessage(index, "Invalid item, item cannot stack, or stack is full.", Warning);
+            };
+            SendInventory(index);
         }
 
         public void SendGalaxy(int index)

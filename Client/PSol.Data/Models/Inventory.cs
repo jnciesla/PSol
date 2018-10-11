@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace PSol.Data.Models
 {
@@ -33,7 +34,7 @@ namespace PSol.Data.Models
         // Ammo1     12
         // Ammo2     13
         // Ammo3     14
+        // Fuel      15
         // General   101-160
-
     }
 }

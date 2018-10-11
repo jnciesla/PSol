@@ -2,7 +2,6 @@
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using Bindings;
@@ -11,7 +10,7 @@ using static Bindings.ClientPackets;
 
 namespace PSol.Client
 {
-    internal class ClientTCP
+    public class ClientTCP
     {
         public TcpClient PlayerSocket;
         public static NetworkStream myStream;
@@ -136,20 +135,12 @@ namespace PSol.Client
             buffer.Dispose();
         }
 
-        public void UpdateInventory()
-        {
-            var buffer = new PacketBuffer();
-            buffer.AddInteger((int) CPlayerItem);
-            buffer.AddArray(Types.Player[GameLogic.PlayerIndex].Inventory.ToArray());
-            SendData(buffer.ToArray());
-            buffer.Dispose();
-        }
-
-        public void EquipItem(string id)
+        public void EquipItem(string id, int destSlot)
         {
             var buffer = new PacketBuffer();
             buffer.AddInteger((int) CEquipItem);
             buffer.AddString(id);
+            buffer.AddInteger(destSlot);
             SendData(buffer.ToArray());
             buffer.Dispose();
         }
@@ -160,6 +151,27 @@ namespace PSol.Client
             buffer.AddInteger((int) CItemTransaction);
             buffer.AddString(inventoryId);
             buffer.AddString(recipientId);
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void BuyOrSell(int mode, string id, int qty)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int)CItemSale);
+            buffer.AddInteger(mode);
+            buffer.AddString(id);
+            buffer.AddInteger(qty);
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void StackItems(string from, string to)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int)CItemStack);
+            buffer.AddString(from);
+            buffer.AddString(to);
             SendData(buffer.ToArray());
             buffer.Dispose();
         }

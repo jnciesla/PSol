@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Bindings;
 using Ninject;
 using PSol.Data.Models;
@@ -22,11 +23,11 @@ namespace PSol.Server
 		    _stcp = new ServerTCP();
             _shd.InitializeMessages();
 
-			for (var i = 1; i < Constants.MAX_PLAYERS; i++)
+			for (var i = 0; i < Constants.MAX_PLAYERS; i++)
 			{
 				ServerTCP.Clients[i] = new Client(_shd, _kernel);
 				ServerTCP.tempPlayer[i] = new TempPlayer();
-				Types.Player[i] = new User();
+			    Types.Player[i] = new User {Inventory = new List<Inventory>()};
 			}
 			_stcp.InitializeNetwork();
 		    Console.WriteLine(@"*********************************************");

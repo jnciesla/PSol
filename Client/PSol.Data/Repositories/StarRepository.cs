@@ -18,7 +18,6 @@ namespace PSol.Data.Repositories
 
         public ICollection<Star> LoadStars()
         {
-            // return _context.Stars.ToArray();
             return _context.Stars.Include(s => s.Planets).ToList();
         }
 

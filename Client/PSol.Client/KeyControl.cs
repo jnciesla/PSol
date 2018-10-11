@@ -3,7 +3,7 @@ using Microsoft.Xna.Framework.Input;
 
 namespace PSol.Client
 {
-    class KeyControl
+    internal class KeyControl
     {
         private Keys current;
         private static bool previousMouse;
@@ -15,13 +15,11 @@ namespace PSol.Client
             {
                 current = key;
             }
-            if (Keyboard.GetState().IsKeyUp(key) && current == key)
-            {
-                current = Keys.None;
-                return true;
-            }
 
-            return false;
+            if (!Keyboard.GetState().IsKeyUp(key) || current != key) return false;
+            current = Keys.None;
+            return true;
+
         }
 
         public bool Click()

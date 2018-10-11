@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Text;
 using Newtonsoft.Json;
-using PSol.Data.Models;
 
 namespace Bindings
 {
@@ -11,7 +10,7 @@ namespace Bindings
         private List<byte> buff;
         private byte[] readBuff;
         private int readPos;
-        private bool buffUpdate = false;
+        private bool buffUpdate;
 
         public PacketBuffer()
         {

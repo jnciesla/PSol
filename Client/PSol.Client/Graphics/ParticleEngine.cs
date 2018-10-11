@@ -22,49 +22,50 @@ namespace PSol.Client
 
         public void Update(bool moving)
         {
-            int total = 30;
+            var total = 30;
 
-            for (int i = 0; i < total; i++)
+            for (var i = 0; i < total; i++)
             {
                 particles.Add(GenerateNewParticle(moving));
             }
 
-            for (int particle = 0; particle < particles.Count; particle++)
+            for (var particle = 0; particle < particles.Count; particle++)
             {
                 particles[particle].Update();
-                if (particles[particle].Opacity <= 0)
-                {
-                    particles.RemoveAt(particle);
-                    particle--;
-                }
+                if (!(particles[particle].Opacity <= 0)) continue;
+                particles.RemoveAt(particle);
+                particle--;
             }
         }
 
         private Particle GenerateNewParticle(bool moving)
         {
-            Texture2D texture = textures[random.Next(textures.Count)];
-            Vector2 position = EmitterLocation;
-            Vector2 velocity = new Vector2(
-                                    1.25f * (float)(random.NextDouble() * 2 - 1),
-                                    1.25f * (float)(random.NextDouble() * 2 - 1));
-            float angle = 0;
-            float angularVelocity = 0.1f * (float)(random.NextDouble() * 2 - 1);
+            var texture = textures[random.Next(textures.Count)];
+            var position = EmitterLocation;
+            var velocity = new Vector2(1.25f * (float)(random.NextDouble() * 2 - 1), 1.25f * (float)(random.NextDouble() * 2 - 1));
+            var angularVelocity = 0.1f * (float)(random.NextDouble() * 2 - 1);
 
-            float size = (float)random.NextDouble();
-            int ttl = 1;
+            var size = (float)random.NextDouble();
+            var ttl = 1;
             if (moving)
             {
                 ttl = 200 + random.Next(100);
             }
+            var Color = new Color
+            {
+                R = 255,
+                G = 255,
+                B = 0
+            };
 
-            return new Particle(texture, position, velocity, angle, angularVelocity, size, ttl);
+            return new Particle(texture, position, velocity, 0, angularVelocity, size, ttl, Color);
         }
 
         public void Draw(SpriteBatch spriteBatch)
         {
-            for (int index = 0; index < particles.Count; index++)
+            foreach (var t in particles)
             {
-                particles[index].Draw(spriteBatch);
+                t.Draw(spriteBatch);
             }
         }
     }

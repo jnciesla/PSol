@@ -1,10 +1,10 @@
 ﻿#pragma warning disable CS0436 // Type conflicts with imported type
 using System;
-using Bindings;
 using System.Collections.Generic;
-using System.Xml;
-using System.Text;
 using System.IO;
+using System.Text;
+using System.Xml;
+using Bindings;
 using Microsoft.Xna.Framework;
 using PSol.Data.Models;
 using static Bindings.ServerPackets;
@@ -16,7 +16,6 @@ namespace PSol.Client
         private ClientTCP ctcp;
         private delegate void Packet_(byte[] data);
         private static Dictionary<int, Packet_> packets;
-
 
         public void InitializeMessages()
         {
@@ -30,26 +29,27 @@ namespace PSol.Client
                 {(int) SFullData, GetStaticPulse},
                 {(int) SGalaxy, HandleGalaxy },
                 {(int) SItems, HandleItems },
-                {(int) SInventory, HandleInventory }
+                {(int) SInventory, HandleInventory },
+                {(int)SPlayerUpdate, UpdateData }
             };
         }
 
         public void HandleNetworkMessages(byte[] data)
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
 
             buffer.AddBytes(data);
             var packetNum = buffer.GetInteger();
             buffer.Dispose();
 
-            if (packets.TryGetValue(packetNum, out Packet_ Packet))
+            if (packets.TryGetValue(packetNum, out var Packet))
                 Packet.Invoke(data);
         }
 
-        private void HandleMessage(byte[] data)
+        private static void HandleMessage(byte[] data)
         {
             Color color;
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             var colorCode = buffer.GetInteger();
@@ -74,19 +74,19 @@ namespace PSol.Client
 
         private void GoodRegister(byte[] data)
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             GameLogic.PlayerIndex = buffer.GetInteger(); // Index on server side
             buffer.Dispose();
             ctcp.SendLogin();
             MenuManager.Clear(2);
-            InterfaceGUI.AddChats("Registration successful.", Color.DarkOliveGreen);
+            InterfaceGUI.AddChats(@"Registration successful.", Color.DarkOliveGreen);
         }
 
-        private void DownloadData(byte[] data)
+        private static void DownloadData(byte[] data)
         {
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             GameLogic.PlayerIndex = buffer.GetInteger(); // Index on server side
@@ -102,19 +102,45 @@ namespace PSol.Client
                 MaxHealth = buffer.GetInteger(),
                 Shield = buffer.GetInteger(),
                 MaxShield = buffer.GetInteger(),
+                Rank = buffer.GetString(),
+                Credits = buffer.GetInteger(),
+                Exp = buffer.GetInteger(),
+                Weap1Charge = buffer.GetInteger(),
+                Weap2Charge = buffer.GetInteger(),
+                Weap3Charge = buffer.GetInteger(),
+                Weap4Charge = buffer.GetInteger(),
+                Weap5Charge = buffer.GetInteger(),
                 Inventory = buffer.GetList<Inventory>()
             };
             buffer.Dispose();
             MenuManager.Clear(1);
-            InterfaceGUI.AddChats("User data downloaded.", Color.DarkOliveGreen);
-
+            InterfaceGUI.AddChats(@"User data downloaded.", Color.DarkOliveGreen);
         }
 
-        private void GetStaticPulse(byte[] data)
+        private static void UpdateData(byte[] data)
         {
-            InterfaceGUI.AddChats("Existing connections downloaded.", Color.DarkOliveGreen);
+            if (GameLogic.PlayerIndex < 0) return;
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].Health = buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].MaxHealth = buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].Shield = buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].MaxShield = buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].Exp = buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].Weap1Charge = buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].Weap2Charge = buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].Weap3Charge = buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].Weap4Charge = buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].Weap5Charge = buffer.GetInteger();
+            buffer.Dispose();
+        }
+
+        private static void GetStaticPulse(byte[] data)
+        {
+            InterfaceGUI.AddChats(@"Existing connections downloaded.", Color.DarkOliveGreen);
             // Someone new connected so this is all the data we don't need updating every 100ms
-            PacketBuffer buffer = new PacketBuffer();
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             for (var i = 1; i != Constants.MAX_PLAYERS; i++)
@@ -124,7 +150,7 @@ namespace PSol.Client
             buffer.Dispose();
         }
 
-        private void HandleServerPulse(byte[] data)
+        private static void HandleServerPulse(byte[] data)
         {
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
@@ -160,20 +186,21 @@ namespace PSol.Client
             buffer.Dispose();
         }
 
-        private void HandleInventory(byte[] data)
+        private static void HandleInventory(byte[] data)
         {
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             Types.Player[GameLogic.PlayerIndex].Inventory = buffer.GetList<Inventory>();
+            Types.Player[GameLogic.PlayerIndex].Credits = buffer.GetInteger();
             Globals.newInventory = true;
             buffer.Dispose();
         }
 
-        private void HandleGalaxy(byte[] data)
+        private static void HandleGalaxy(byte[] data)
         {
-            InterfaceGUI.AddChats("Galaxy downloaded.", Color.DarkOliveGreen);
-            PacketBuffer buffer = new PacketBuffer();
+            InterfaceGUI.AddChats(@"Galaxy downloaded.", Color.DarkOliveGreen);
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             GameLogic.Galaxy = buffer.GetList<Star>();
@@ -182,10 +209,10 @@ namespace PSol.Client
             buffer.Dispose();
         }
 
-        private void HandleItems(byte[] data)
+        private static void HandleItems(byte[] data)
         {
-            InterfaceGUI.AddChats("Item dictionary downloaded.", Color.DarkOliveGreen);
-            PacketBuffer buffer = new PacketBuffer();
+            InterfaceGUI.AddChats(@"Item dictionary downloaded.", Color.DarkOliveGreen);
+            var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
             GameLogic.Items = buffer.GetList<Item>();
@@ -201,7 +228,7 @@ namespace PSol.Client
 
         public static void NewXMLDoc()
         {
-            XmlTextWriter xmlTextWriter = new XmlTextWriter(Filename, Encoding.UTF8);
+            var xmlTextWriter = new XmlTextWriter(Filename, Encoding.UTF8);
             //Write a blank XML doc
 
             var xml = xmlTextWriter;

@@ -58,6 +58,16 @@ namespace PSol.Client
             }
         }
 
+        public static double GetAngleFromPlayer(Point point)
+        {
+            var mousePosition = new Vector2(point.X, point.Y);
+            var playerPosition = new Vector2(Globals.PreferredBackBufferWidth / 2F, Globals.PreferredBackBufferHeight / 2F);
+            var dPos = playerPosition - mousePosition;
+            var angle = (float)Math.Atan2(dPos.Y, dPos.X) * (180 / Math.PI) - 90;
+            var rad = MathHelper.ToRadians((float)angle);
+            return rad;
+        }
+
         public static void Navigate()
         {
             if (!Navigating) { return; }
@@ -140,16 +150,14 @@ namespace PSol.Client
 
         private static void EdgeWarning()
         {
-            if (messageTime + 1000 < Game1.Tick)
-            {
-                messageTime = Game1.Tick;
-                InterfaceGUI.AddChats("We shouldn't go beyond the edge of the mapped galaxy.", Color.DarkGoldenrod);
-            }
+            if (messageTime + 1000 >= Game1.Tick) return;
+            messageTime = Game1.Tick;
+            InterfaceGUI.AddChats("We shouldn't go beyond the edge of the mapped galaxy.", Color.DarkGoldenrod);
         }
 
         public static void collectPlanets()
         {
-            foreach (Star s in Galaxy)
+            foreach (var s in Galaxy)
             {
                 Planets.AddRange(s.Planets.ToList());
             }

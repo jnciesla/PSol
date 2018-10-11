@@ -95,6 +95,18 @@
     <Compile Include="Migrations\201809261211244_mre inventory.Designer.cs">
       <DependentUpon>201809261211244_mre inventory.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201809290639252_plane inventory.cs" />
+    <Compile Include="Migrations\201809290639252_plane inventory.Designer.cs">
+      <DependentUpon>201809290639252_plane inventory.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201810010432079_improved user stats.cs" />
+    <Compile Include="Migrations\201810010432079_improved user stats.Designer.cs">
+      <DependentUpon>201810010432079_improved user stats.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Migrations\201810091027443_fix.cs" />
+    <Compile Include="Migrations\201810091027443_fix.Designer.cs">
+      <DependentUpon>201810091027443_fix.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Combat.cs" />
     <Compile Include="Models\Inventory.cs" />
@@ -164,6 +176,15 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201809261211244_mre inventory.resx">
       <DependentUpon>201809261211244_mre inventory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201809290639252_plane inventory.resx">
+      <DependentUpon>201809290639252_plane inventory.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810010432079_improved user stats.resx">
+      <DependentUpon>201810010432079_improved user stats.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810091027443_fix.resx">
+      <DependentUpon>201810091027443_fix.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Bindings\Bindings.projitems" Label="Shared" />

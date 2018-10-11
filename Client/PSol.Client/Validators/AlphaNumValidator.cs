@@ -1,4 +1,5 @@
-﻿using GeonBit.UI.Entities.TextValidators;
+﻿using System.Text.RegularExpressions;
+using GeonBit.UI.Entities.TextValidators;
 
 namespace Validators
 {
@@ -8,13 +9,13 @@ namespace Validators
     internal class AlphaNumValidator : ITextValidator
     {
         // the regex to use
-        private System.Text.RegularExpressions.Regex _regex;
+        private Regex _regex;
 
         // regex for slug with spaces
-        private static System.Text.RegularExpressions.Regex _slugNoSpaces = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9]+$");
+        private static Regex _slugNoSpaces = new Regex(@"^[a-zA-Z0-9]+$");
 
         // regex for slug without spaces
-        private static System.Text.RegularExpressions.Regex _slugWithSpaces = new System.Text.RegularExpressions.Regex(@"^[a-zA-Z0-9\ ]+$");
+        private static Regex _slugWithSpaces = new Regex(@"^[a-zA-Z0-9\ ]+$");
 
         /// <summary>
         /// Create the slug validator.

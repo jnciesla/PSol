@@ -1,4 +1,6 @@
-﻿namespace PSol.Data.Models
+﻿using System.Collections.Generic;
+
+namespace PSol.Data.Models
 {
     public class Planet
     {
@@ -11,6 +13,10 @@
         public int Color { get; set; }
         public string Belligerence { get; set; }
         public string Class { get; set; }
+
+        // Inventory
+        public virtual ICollection<Inventory> Inventory { get; set; }
+
 
         // Position
         public float X { get; set; }
