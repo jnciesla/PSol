@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Bindings;
+using Microsoft.Xna.Framework;
 using PSol.Data.Models;
 using Inventory = PSol.Data.Models.Inventory;
 
@@ -332,11 +333,18 @@ namespace PSol.Server
 
         public static void ClearDebris()
         {
-            foreach (Inventory itm in Globals.Inventory.ToList())
+            foreach (var itm in Globals.Inventory.ToList())
             {
                 if ((DateTime.UtcNow - itm.Dropped).TotalMinutes > 1.0)
                 {
                     Globals.Inventory.Remove(itm);
+                }
+            }
+            foreach (var loot in Globals.Loot.ToList())
+            {
+                if ((DateTime.UtcNow - loot.Dropped).TotalMinutes > 3.0)
+                {
+                    Globals.Loot.Remove(loot);
                 }
             }
         }
@@ -377,9 +385,28 @@ namespace PSol.Server
                     if (user.Weap5Charge > 100) user.Weap5Charge = 0;
                 }
                 if (up)
-                    
+
                     Program.shd.UpdatePlayer(Array.FindIndex(Types.Player, u => u.Id == user.Id));
             });
+        }
+
+        public static void CreateLoot(int index, Vector2 location)
+        {
+            var loot = new Loot()
+            {
+                Owner = Types.Player[index].Id,
+                Dropped = DateTime.Now,
+                Id = Guid.NewGuid().ToString(),
+                Items = new string[9],
+                Quantities = new int[9],
+                X = location.X,
+                Y = location.Y
+            };
+            loot.Items[0] = "50521cfe-7d63-4495-a1cf-b900fb8d2251";
+            loot.Items[1] = "50521cfe-7d63-4495-a1cf-b900fb8d225f";
+            loot.Quantities[0] = 1;
+            loot.Quantities[1] = 10;
+            Globals.Loot.Add(loot);
         }
     }
 }

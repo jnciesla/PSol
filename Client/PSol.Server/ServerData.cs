@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
+using Microsoft.Xna.Framework;
 using Ninject;
 using Ninject.Syntax;
 using PSol.Data.Models;
@@ -260,6 +261,7 @@ namespace PSol.Server
                     buffer.AddArray(_mobService.GetMobs(minX, maxX, minY, maxY).ToArray());
                     buffer.AddArray(_combatService.GetCombats((int)Types.Player[i].X, (int)Types.Player[i].Y).ToArray());
                     buffer.AddArray(Globals.Inventory.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY).ToArray());
+                    buffer.AddArray(Globals.Loot.Where(L => L.X >= minX && L.X <= maxX && L.Y >= minY && L.Y <= maxY && L.Owner == Types.Player[i].Id).ToArray());
                     SendData(i, buffer.ToArray());
                     buffer.Dispose();
                 }
@@ -344,6 +346,8 @@ namespace PSol.Server
             }
             var combat = _combatService.DoAttack(targetId, Types.Player[index].Id, WEAPON, Types.Player.ToList());
             var targetPlayer = Types.Player.ToList().FirstOrDefault(p => p?.Id == combat.TargetId);
+
+            if (combat.TargetId == "dead") { Transactions.CreateLoot(index, new Vector2(combat.TargetX, combat.TargetY)); }
 
             if (targetPlayer == null) return;
             targetPlayer.Shield -= combat.WeaponDamage;

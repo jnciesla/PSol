@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Bindings;
 using PSol.Data.Models;
 
 namespace PSol.Server
@@ -13,5 +14,6 @@ namespace PSol.Server
         public static ICollection<Star> Galaxy;
         public static ICollection<Item> Items;
         public static ICollection<Inventory> Inventory = new List<Inventory>();
+        public static List<Loot> Loot = new List<Loot>();
     }
 }

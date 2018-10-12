@@ -111,6 +111,7 @@
     <Compile Include="Models\Combat.cs" />
     <Compile Include="Models\Inventory.cs" />
     <Compile Include="Models\Item.cs" />
+    <Compile Include="Models\Loot.cs" />
     <Compile Include="Models\MobType.cs" />
     <Compile Include="Models\Mob.cs" />
     <Compile Include="Models\Planet.cs" />

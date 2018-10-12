@@ -25,6 +25,7 @@ namespace PSol.Client
         public static List<Mob> LocalMobs;
         public static List<Combat> LocalCombat;
         public static List<Inventory> LocalLoot;
+        public static List<Loot> RealLoot;
         private static Random random;
 
         public static bool IsMoving()
@@ -78,8 +79,9 @@ namespace PSol.Client
             if (angle <= 0) { angle += (float)Math.PI * 2; } else if (angle >= (float)Math.PI * 2) { angle -= (float)Math.PI * 2; }
             if (Types.Player[PlayerIndex].Rotation != angle && Types.Player[PlayerIndex].Rotation <= angle)
                 Rotate(1);
-            if (Types.Player[PlayerIndex].Rotation != angle && Types.Player[PlayerIndex].Rotation >= angle)
+            else
                 Rotate(0);
+
             Globals.DirUp = true;
             if (distance <= 50)
             {
@@ -90,59 +92,57 @@ namespace PSol.Client
 
         public static void CheckMovement()
         {
-            if (IsMoving())
+            if (!IsMoving()) return;
+            var newPosX = Types.Player[PlayerIndex].X;
+            var newPosY = Types.Player[PlayerIndex].Y;
+            if (Globals.DirLt) { Rotate(0); }
+            if (Globals.DirRt) { Rotate(1); }
+            if (Globals.DirUp)
             {
-                var newPosX = Types.Player[PlayerIndex].X;
-                var newPosY = Types.Player[PlayerIndex].Y;
-                if (Globals.DirLt) { Rotate(0); }
-                if (Globals.DirRt) { Rotate(1); }
-                if (Globals.DirUp)
+                var direction = new Vector2((float)Math.Cos(MathHelper.ToRadians(90) - Types.Player[PlayerIndex].Rotation),
+                    -(float)Math.Sin(MathHelper.ToRadians(90) - Types.Player[PlayerIndex].Rotation));
+                newPosX += direction.X * 4f;
+                newPosY += direction.Y * 4f;
+                if (newPosX > Globals.playArea.Left && newPosX < Globals.playArea.Right)
                 {
-                    var direction = new Vector2((float)Math.Cos(MathHelper.ToRadians(90) - Types.Player[PlayerIndex].Rotation),
-                        -(float)Math.Sin(MathHelper.ToRadians(90) - Types.Player[PlayerIndex].Rotation));
-                    newPosX += direction.X * 4f;
-                    newPosY += direction.Y * 4f;
-                    if (newPosX > Globals.playArea.Left && newPosX < Globals.playArea.Right)
-                    {
-                        Types.Player[PlayerIndex].X = newPosX;
-                    }
-                    else
-                    {
-                        EdgeWarning();
-                    }
-
-                    if (newPosY > Globals.playArea.Top && newPosY < Globals.playArea.Bottom)
-                    {
-                        Types.Player[PlayerIndex].Y = newPosY;
-                    }
-                    else
-                    {
-                        EdgeWarning();
-                    }
+                    Types.Player[PlayerIndex].X = newPosX;
                 }
-                if (Globals.DirDn)
+                else
                 {
-                    var direction = new Vector2((float)Math.Cos(MathHelper.ToRadians(90) - Types.Player[PlayerIndex].Rotation),
-                        -(float)Math.Sin(MathHelper.ToRadians(90) - Types.Player[PlayerIndex].Rotation));
-                    newPosX -= direction.X * 2f;
-                    newPosY -= direction.Y * 2f;
-                    if (newPosX > Globals.playArea.Left && newPosX < Globals.playArea.Right)
-                    {
-                        Types.Player[PlayerIndex].X = newPosX;
-                    }
-                    else
-                    {
-                        EdgeWarning();
-                    }
+                    EdgeWarning();
+                }
 
-                    if (newPosY > Globals.playArea.Top && newPosY < Globals.playArea.Bottom)
-                    {
-                        Types.Player[PlayerIndex].Y = newPosY;
-                    }
-                    else
-                    {
-                        EdgeWarning();
-                    }
+                if (newPosY > Globals.playArea.Top && newPosY < Globals.playArea.Bottom)
+                {
+                    Types.Player[PlayerIndex].Y = newPosY;
+                }
+                else
+                {
+                    EdgeWarning();
+                }
+            }
+            if (Globals.DirDn)
+            {
+                var direction = new Vector2((float)Math.Cos(MathHelper.ToRadians(90) - Types.Player[PlayerIndex].Rotation),
+                    -(float)Math.Sin(MathHelper.ToRadians(90) - Types.Player[PlayerIndex].Rotation));
+                newPosX -= direction.X * 2f;
+                newPosY -= direction.Y * 2f;
+                if (newPosX > Globals.playArea.Left && newPosX < Globals.playArea.Right)
+                {
+                    Types.Player[PlayerIndex].X = newPosX;
+                }
+                else
+                {
+                    EdgeWarning();
+                }
+
+                if (newPosY > Globals.playArea.Top && newPosY < Globals.playArea.Bottom)
+                {
+                    Types.Player[PlayerIndex].Y = newPosY;
+                }
+                else
+                {
+                    EdgeWarning();
                 }
             }
 
@@ -155,7 +155,7 @@ namespace PSol.Client
             InterfaceGUI.AddChats("We shouldn't go beyond the edge of the mapped galaxy.", Color.DarkGoldenrod);
         }
 
-        public static void collectPlanets()
+        public static void CollectPlanets()
         {
             foreach (var s in Galaxy)
             {
@@ -168,21 +168,19 @@ namespace PSol.Client
             random = new Random();
             foreach (var combat in LocalCombat)
             {
-                var source = new Vector2(0, 0);
-                var target = new Vector2(0, 0);
-                var sourcePlayer = Types.Player.ToList().Find(p => p?.Id == combat.SourceId);
-                var sourceMob = LocalMobs.Find(m => m.Id == combat.SourceId);
-                var targetPlayer = Types.Player.ToList().Find(p => p?.Id == combat.TargetId);
-                var targetMob = LocalMobs.Find(m => m.Id == combat.TargetId);
-                source = sourcePlayer != null ? new Vector2(sourcePlayer.X, sourcePlayer.Y) : source;
-                source = sourceMob != null ? new Vector2(sourceMob.X, sourceMob.Y) : source;
-                target = targetPlayer != null ? new Vector2(targetPlayer.X, targetPlayer.Y) : target;
-                target = targetMob != null ? new Vector2(targetMob.X, targetMob.Y) : target;
-                if (source.X.CompareTo(0) > 0 && source.Y.CompareTo(0) > 0 && target.X.CompareTo(0) > 0 && target.Y.CompareTo(0) > 0)
+                var source = new Vector2(combat.SourceX, combat.SourceY);
+                var target = new Vector2(combat.TargetX, combat.TargetY);
+                if (source.X.CompareTo(0) <= 0 || source.Y.CompareTo(0) <= 0 || target.X.CompareTo(0) <= 0 || target.Y.CompareTo(0) <= 0) continue;
+                Graphics.DrawLaser(source, target);
+                if (combat.TargetId == "dead")
                 {
-                    Graphics.DrawLaser(source, target);
-                    Game1.smallExplosion.Create(new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
+                    var tempLarge = new SmallExplosion(Graphics.largeExplosionTextures, Vector2.Zero);
+                    Game1.Explosion.Add(tempLarge);
+                    tempLarge.Create(new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
                 }
+                var tempSmall = new SmallExplosion(Graphics.smallExplosionTextures, Vector2.Zero);
+                Game1.Explosion.Add(tempSmall);
+                tempSmall.Create(new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
             }
         }
 

@@ -67,6 +67,12 @@ namespace PSol.Client
         private static readonly Paragraph[] slotQty = new Paragraph[60];
         private static readonly Rectangle[] slotBounds = new Rectangle[60];
 
+        // Loot
+        readonly Image[] lootItem = new Image[9];
+        private static Paragraph detailsHeaderLoot;
+        private static Paragraph detailsSubHeaderLoot;
+        private static Paragraph detailsBodyLoot;
+
         // IGUI textures
         private static Texture2D closeIcon;
         private static Texture2D plusIcon;
@@ -74,6 +80,7 @@ namespace PSol.Client
         private Texture2D mapPanel;
         private Texture2D inventoryPanel;
         private Texture2D registerPanel;
+        private Texture2D lootPanel;
         private Texture2D loginPanel;
         private Texture2D exitPanel;
         private Texture2D button;
@@ -91,6 +98,7 @@ namespace PSol.Client
             registerPanel = content.Load<Texture2D>("Panels/Register");
             exitPanel = content.Load<Texture2D>("Panels/exit");
             inventoryPanel = content.Load<Texture2D>("Panels/Inventory");
+            lootPanel = content.Load<Texture2D>("Panels/Loot");
             button = content.Load<Texture2D>("Panels/button_default");
             button_hover = content.Load<Texture2D>("Panels/button_default_hover");
             button_down = content.Load<Texture2D>("Panels/button_default_down");
@@ -110,6 +118,7 @@ namespace PSol.Client
             CreateMap();
             CreateInventory();
             CreateWindow_Exit();
+            CreateLoot();
         }
 
         public void CreateWindow(Panel panel)
@@ -1246,6 +1255,60 @@ namespace PSol.Client
             }
         }
 
+        public void CreateLoot()
+        {
+            var panel = new Panel(new Vector2(451, 287), PanelSkin.None, Anchor.AutoCenter) { Draggable = true, Padding = Vector2.Zero };
+            var image = new Image(lootPanel, new Vector2(451, 287), ImageDrawMode.Stretch, Anchor.TopLeft);
+            var dPanel = new Panel(new Vector2(219, 218), PanelSkin.None, Anchor.TopLeft, new Vector2(10, 10))
+            { Padding = Vector2.Zero, PanelOverflowBehavior = PanelOverflowBehavior.VerticalScroll };
+            var closeButton = new Image(closeIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(-2, -2));
+            lootItem[0] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(156, 16)) { Visible = false };
+            lootItem[1] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(86, 16)) { Visible = false };
+            lootItem[2] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(16, 16)) { Visible = false };
+            lootItem[3] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(156, 86)) { Visible = false };
+            lootItem[4] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(86, 86)) { Visible = false };
+            lootItem[5] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(16, 86)) { Visible = false };
+            lootItem[6] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(156, 156)) { Visible = false };
+            lootItem[7] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(86, 156)) { Visible = false };
+            lootItem[8] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(16, 156)) { Visible = false };
+            detailsHeaderLoot = new Paragraph("", Anchor.TopLeft, Color.DarkGray, null, new Vector2(200, 10), new Vector2(0, 5))
+            { FontOverride = Globals.Font12, OutlineOpacity = 0, AlignToCenter = true, WrapWords = false };
+            detailsSubHeaderLoot = new Paragraph("", Anchor.TopLeft, Color.DarkGray * .6F, null, new Vector2(200, 10), new Vector2(0, 22))
+            { FontOverride = Globals.Font8, OutlineOpacity = 0, AlignToCenter = true };
+            detailsBodyLoot = new MulticolorParagraph("", Anchor.TopLeft, Color.DarkGray, null, new Vector2(200, 10), new Vector2(0, 50))
+            { FontOverride = Globals.Font10, OutlineOpacity = 0, AlignToCenter = true, WrapWords = true };
+            UserInterface.Active.AddEntity(panel);
+            panel.AddChild(image);
+            for (var i = 0; i < 9; i++)
+            {
+                panel.AddChild(lootItem[i]);
+                lootItem[i].OnMouseEnter = e => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+                lootItem[i].OnMouseLeave = e => { UserInterface.Active.SetCursor(CursorType.Default); };
+            }
+            panel.AddChild(closeButton);
+            panel.AddChild(dPanel);
+            dPanel.AddChild(detailsHeaderLoot);
+            dPanel.AddChild(detailsSubHeaderLoot);
+            dPanel.AddChild(detailsBodyLoot);
+            closeButton.OnMouseEnter = e => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            closeButton.OnMouseLeave = e => { UserInterface.Active.SetCursor(CursorType.Default); };
+            closeButton.OnClick = e => { MenuManager.Clear(7); };
+            CreateWindow(panel);
+        }
+
+        public void PopulateLoot(Loot loot)
+        {
+            DisplayLootDetails();
+            for (var i = 0; i < 9; i++)
+            {
+                if (loot.Items[i] == null) break;
+                var temp = GameLogic.Items.FirstOrDefault(itm => itm.Id == loot.Items[i]);
+                lootItem[i].Visible = true;
+                lootItem[i].Texture = Graphics.Objects[temp?.Image ?? 0];
+                lootItem[i].OnClick = e => { DisplayLootDetails(temp); };
+            }
+        }
+
         public void Update()
         {
             if (GameLogic.PlayerIndex < 0) return;
@@ -1339,6 +1402,32 @@ namespace PSol.Client
             if (item.Shield != 0) { detailsBody.Text += "Shield: " + item.Shield + "\n"; }
             if (item.Thrust != 0) { detailsBody.Text += "Thrust: " + item.Thrust + "\n"; }
             if (item.Weapons != 0) { detailsBody.Text += "Weapons slots: " + item.Weapons + "\n"; }
+        }
+
+        public void DisplayLootDetails(Item item = null)
+        {
+            if (item == null)
+            {
+                detailsHeaderLoot.Text = "";
+                detailsSubHeaderLoot.Text = "";
+                detailsBodyLoot.Text = "";
+                return;
+            }
+            ColorInstruction.AddCustomColor("DARKGRAY", Color.DarkGray);
+            detailsHeaderLoot.Text = item.Name + "\n";
+            detailsSubHeaderLoot.Text = "Level " + item.Level + " " + item.Type + "\n Cost: ¢" + item.Cost;
+            detailsBodyLoot.Text = item.Description + "\n";
+            if (item.Armor != 0) { detailsBodyLoot.Text += "Armor: " + item.Armor + "\n"; }
+            if (item.Damage != 0) { detailsBodyLoot.Text += "Damage: " + item.Damage + "\n"; }
+            if (item.Defense != 0) { detailsBodyLoot.Text += "Defense: " + item.Defense + "\n"; }
+            if (item.Hull != 0) { detailsBodyLoot.Text += "Hull strength: " + item.Hull + "\n"; }
+            if (item.Offense != 0) { detailsBodyLoot.Text += "Offense: " + item.Offense + "\n"; }
+            if (item.Power != 0) { detailsBodyLoot.Text += "Power: " + item.Power + "GW\n"; }
+            if (item.Recharge != 0) { detailsBodyLoot.Text += "Recharge capacity: " + item.Recharge + "GW\n"; }
+            if (item.Repair != 0) { detailsBodyLoot.Text += "Repair: " + item.Repair + "\n"; }
+            if (item.Shield != 0) { detailsBodyLoot.Text += "Shield: " + item.Shield + "\n"; }
+            if (item.Thrust != 0) { detailsBodyLoot.Text += "Thrust: " + item.Thrust + "\n"; }
+            if (item.Weapons != 0) { detailsBodyLoot.Text += "Weapons slots: " + item.Weapons + "\n"; }
         }
     }
 }

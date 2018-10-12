@@ -1,4 +1,6 @@
-﻿namespace PSol.Data.Models
+﻿using Microsoft.Xna.Framework;
+
+namespace PSol.Data.Models
 {
     public class Combat
     {
@@ -8,5 +10,9 @@
         public string TargetId { get; set; }
         public Item Weapon { get; set; }
         public int WeaponDamage { get; set; }
+        public float SourceX { get; set; }
+        public float TargetX { get; set; }
+        public float SourceY { get; set; }
+        public float TargetY { get; set; }
     }
 }

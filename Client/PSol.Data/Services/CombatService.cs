@@ -42,16 +42,22 @@ namespace PSol.Data.Services
 
                 if (targetMob.Health <= 0)
                 {
-                    // TODO: EXPLODE
                     targetMob.Alive = false;
                     targetMob.KilledDate = DateTime.UtcNow;
+                    combat.TargetId = "dead";
                 }
+
+                combat.TargetX = targetMob.X;
+                combat.TargetY = targetMob.Y;
             }
+
 
             locale = sourcePlayer != null ? new Vector2(sourcePlayer.X, sourcePlayer.Y) : locale;
             locale = sourceMob != null ? new Vector2(sourceMob.X, sourceMob.Y) : locale;
             combat.X = (int)locale.X;
             combat.Y = (int)locale.Y;
+            combat.SourceX = locale.X;
+            combat.SourceY = locale.Y;
 
             _pendingCombats.Add(combat);
             return combat;

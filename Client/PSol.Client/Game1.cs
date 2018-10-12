@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Sockets;
 using Bindings;
 using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
-using MonoGame.Extended;
 using PSol.Data.Models;
 
 namespace PSol.Client
@@ -17,9 +15,9 @@ namespace PSol.Client
         public static GraphicsDeviceManager graphics;
         public static SpriteBatch spriteBatch;
         public static ParticleEngine particleEngine;
-        public static SmallExplosion smallExplosion;
-        public static SmallExplosion largeExplosion;
+        public static List<SmallExplosion> Explosion = new List<SmallExplosion>();
         private Texture2D backGroundTexture;
+        private Texture2D splashScreen;
         private Vector2 backgroundPos;
         private RenderTarget2D renderTarget;
 
@@ -40,14 +38,23 @@ namespace PSol.Client
         {
             graphics = new GraphicsDeviceManager(this);
             Content.RootDirectory = "Content";
-            if (Globals.Fullscreen)
-            {
-                Globals.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
-                Globals.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
-            }
 
             graphics.PreferredBackBufferWidth = Globals.PreferredBackBufferWidth;
             graphics.PreferredBackBufferHeight = Globals.PreferredBackBufferHeight;
+        }
+
+        public void setFullScreen()
+        {
+            Globals.graphicsChange = false;
+            Globals.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
+            Globals.PreferredBackBufferWidth = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Width;
+            graphics.PreferredBackBufferWidth = Globals.PreferredBackBufferWidth;
+            graphics.PreferredBackBufferHeight = Globals.PreferredBackBufferHeight;
+            graphics.ApplyChanges();
+            renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
+            camera = new Camera(GraphicsDevice.Viewport);
+            Graphics.InitializeGraphics(Content);
+            graphics.ApplyChanges();
         }
 
         /// <summary>
@@ -79,7 +86,6 @@ namespace PSol.Client
             UserInterface.Active.UseRenderTarget = true;
             IGUI.InitializeGUI(Content);
             MenuManager.ChangeMenu(MenuManager.Menu.Login);
-
             base.Initialize();
         }
 
@@ -92,25 +98,12 @@ namespace PSol.Client
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             backGroundTexture = Content.Load<Texture2D>("stars3");
+            splashScreen = Content.Load<Texture2D>("Panels/Splash");
             backgroundPos = new Vector2(-Globals.PreferredBackBufferWidth / 2.0F, -Globals.PreferredBackBufferHeight / 2.0F);
-            var spark = Content.Load<Texture2D>("Particles/circle");
-            var fire = Content.Load<Texture2D>("Particles/expl1");
 
             // Particle engine textures
-            var engineTextures = new List<Texture2D> { spark };
+            var engineTextures = new List<Texture2D> { Graphics.spark };
             particleEngine = new ParticleEngine(engineTextures, Vector2.Zero);
-            // Particle small explosion textures
-            var smallExplosionTextures = new List<Texture2D>
-            {
-                fire, spark, spark, spark, spark, spark, spark
-            };
-            smallExplosion = new SmallExplosion(smallExplosionTextures, Vector2.Zero);
-            // Particle large explosion textures
-            var largeExplosionTextures = new List<Texture2D>
-            {
-                fire, spark, spark, spark
-            };
-            largeExplosion = new SmallExplosion(largeExplosionTextures, Vector2.Zero);
         }
 
         /// <summary>
@@ -142,14 +135,19 @@ namespace PSol.Client
 
             if (GameLogic.PlayerIndex > -1)
             {
+                if (Globals.graphicsChange)
+                {
+                    setFullScreen();
+                }
                 particleEngine.EmitterLocation = new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y);
                 particleEngine.Update(Globals.DirUp);
             }
             IGUI.lblStatus.Text = ctcp.isOnline ? "Server status:{{GREEN}} online" : "Server status:{{RED}} offline";
             CheckKeys();
-
-            smallExplosion.Update();
-            largeExplosion.Update();
+            for (var x = 0; x < Explosion.Count; x++)
+            {
+                Explosion[x].Update();
+            }
             camera.Update(gameTime, this);
 
             IGUI.Update();
@@ -207,8 +205,10 @@ namespace PSol.Client
             particleEngine.Draw(spriteBatch);
             Graphics.RenderObjects();
             Graphics.RenderPlayers();
-            smallExplosion.Draw(spriteBatch);
-            largeExplosion.Draw(spriteBatch);
+            foreach (var explosion in Explosion)
+            {
+                explosion.Draw(spriteBatch);
+            }
             spriteBatch.End();
             Graphics.DrawHud(Content);
             Graphics.DrawWeaponsBar(Content);
@@ -286,7 +286,7 @@ namespace PSol.Client
 
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed)
                 {
-                    if (Globals.HoveringMob) return;
+                    if (Globals.HoveringMob || Globals.HoveringItem) return;
                     Types.Player[GameLogic.PlayerIndex].Rotation = (float)GameLogic.GetAngleFromPlayer(Mouse.GetState().Position);
                     Globals.DirUp = true;
                 }

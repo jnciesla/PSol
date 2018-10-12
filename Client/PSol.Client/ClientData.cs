@@ -114,6 +114,7 @@ namespace PSol.Client
             };
             buffer.Dispose();
             MenuManager.Clear(1);
+            Globals.graphicsChange = Globals.Fullscreen;
             InterfaceGUI.AddChats(@"User data downloaded.", Color.DarkOliveGreen);
         }
 
@@ -178,10 +179,10 @@ namespace PSol.Client
                 Types.Player[i].Shield = Shield;
                 Types.Player[i].MaxShield = MaxShield;
             }
-
             GameLogic.LocalMobs = buffer.GetList<Mob>();
             GameLogic.LocalCombat = buffer.GetList<Combat>();
             GameLogic.LocalLoot = buffer.GetList<Inventory>();
+            GameLogic.RealLoot = buffer.GetList<Loot>();
             GameLogic.WatchCombat();
             buffer.Dispose();
         }
@@ -204,7 +205,7 @@ namespace PSol.Client
             buffer.AddBytes(data);
             buffer.GetInteger();
             GameLogic.Galaxy = buffer.GetList<Star>();
-            GameLogic.collectPlanets();
+            GameLogic.CollectPlanets();
             InterfaceGUI.PopulateMap();
             buffer.Dispose();
         }

@@ -14,7 +14,8 @@ namespace PSol.Client
             Message,
             Map,
             Inventory,
-            Exit
+            Exit,
+            Loot
         }
 
         public static void ChangeMenu(Menu menu)
@@ -22,7 +23,7 @@ namespace PSol.Client
             Clear();
             InterfaceGUI.Windows[(int)menu].Visible = true;
             Globals.windowOpen = true;
-            if (menu == Menu.Login || menu == Menu.Register || menu == Menu.Map || menu == Menu.Inventory || menu == Menu.Exit)
+            if (menu == Menu.Login || menu == Menu.Register || menu == Menu.Map || menu == Menu.Inventory || menu == Menu.Exit || menu == Menu.Loot)
             {
                 Globals.cursorOverride = true;
             }

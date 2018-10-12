@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Bindings;
 using GeonBit.UI;
@@ -19,6 +20,8 @@ namespace PSol.Client
         public static Texture2D[] Characters = new Texture2D[3];
         public static Texture2D[] Planets = new Texture2D[5];
         public static Texture2D[] Objects = new Texture2D[2];
+        public static List<Texture2D> smallExplosionTextures;
+        public static List<Texture2D> largeExplosionTextures;
         public static Texture2D detailsGfx;
         public static Texture2D details;
         public static Texture2D scanner;
@@ -30,6 +33,9 @@ namespace PSol.Client
         public static Texture2D star;
         public static Texture2D laserMid;
         public static Texture2D splash;
+        public static Texture2D spark;
+        public static Texture2D fire;
+        public static Texture2D lootContainer;
 
         public static Texture2D[] Cursors = new Texture2D[3];
         private static Laser _beam;
@@ -41,6 +47,8 @@ namespace PSol.Client
             LoadPlanets(manager);
             LoadCursors(manager);
             LoadObjects(manager);
+            spark = manager.Load<Texture2D>("Particles/circle");
+            fire = manager.Load<Texture2D>("Particles/expl1");
             laserMid = manager.Load<Texture2D>("Particles/laserMid");
             detailsGfx = manager.Load<Texture2D>("Panels/Equipment2");
             scanner = manager.Load<Texture2D>("Panels/scanner");
@@ -50,8 +58,20 @@ namespace PSol.Client
             star = manager.Load<Texture2D>("Panels/starIco");
             details = manager.Load<Texture2D>("Panels/info");
             splash = manager.Load<Texture2D>("Panels/Splash");
+            lootContainer = manager.Load<Texture2D>("Objects/loot");
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
+            // Particle small explosion textures
+            smallExplosionTextures = new List<Texture2D>
+            {
+                spark
+            };
+
+            // Particle large explosion textures
+            largeExplosionTextures = new List<Texture2D>
+            {
+                fire, spark, spark, spark
+            };
         }
 
         public static void RenderPlayers()
@@ -67,13 +87,19 @@ namespace PSol.Client
         {
             if (GameLogic.LocalLoot != null && GameLogic.LocalLoot.Count > 0)
             {
+                DrawTrash();
+            }
+
+            if (GameLogic.RealLoot != null && GameLogic.RealLoot.Count > 0)
+            {
                 DrawLoot();
             }
         }
 
-        private static void DrawLoot()
+        private static void DrawTrash()
         {
             if (GameLogic.PlayerIndex <= -1) return;
+            Globals.HoveringItem = false;
             var ms = Mouse.GetState();
             var x = ms.X + -Camera.transform.M41;
             var y = ms.Y + -Camera.transform.M42;
@@ -96,6 +122,7 @@ namespace PSol.Client
                     }
                 }
                 if (!Bound.Contains(position) || Globals.windowOpen) continue;
+                Globals.HoveringItem = true;
                 UserInterface.Active.SetCursor(Cursors[1]);
                 if (KC.DoubleClick())
                 {
@@ -106,7 +133,31 @@ namespace PSol.Client
                 {
                     DrawString(Globals.Font8, loot.Quantity.ToString(), loot.X, loot.Y + 20, true, Color.Gray);
                 }
+            }
+        }
 
+        private static void DrawLoot()
+        {
+            if (GameLogic.PlayerIndex <= -1) return;
+            Globals.HoveringItem = false;
+            var ms = Mouse.GetState();
+            var x = ms.X + -Camera.transform.M41;
+            var y = ms.Y + -Camera.transform.M42;
+            var position = new Vector2(x, y);
+            if (Globals.cursorOverride) position = Vector2.Zero;
+            foreach (var loot in GameLogic.RealLoot)
+            {
+                Game1.spriteBatch.Draw(lootContainer, new Vector2(loot.X, loot.Y), null, Color.White, Globals.PlanetaryRotation * 50, new Vector2(32, 32), .5F, SpriteEffects.None, 0);
+                // Mouse behaviors
+                var Bound = new Rectangle((int)loot.X - 32 / 2, (int)loot.Y - 32 / 2, 32, 32);
+                if (!Bound.Contains(position) || Globals.windowOpen) continue;
+                Globals.HoveringItem = true;
+                UserInterface.Active.SetCursor(Cursors[1]);
+                if (KC.DoubleClick())
+                {
+                    Game1.IGUI.PopulateLoot(loot);
+                    MenuManager.ChangeMenu(MenuManager.Menu.Loot);
+                }
             }
         }
 
@@ -136,17 +187,16 @@ namespace PSol.Client
             var position = new Vector2(x, y);
             if (Globals.cursorOverride) position = Vector2.Zero;
 
-            var SpriteNum = 4;
-            var scale = .3F;
+            const float scale = .3F;
             for (var i = 0; i != GameLogic.Galaxy.Count; i++)
             {
-                var origin = new Vector2(Planets[SpriteNum].Width / 2f, Planets[SpriteNum].Height / 2f);
-                DrawPlanet(SpriteNum, new Vector2(GameLogic.Galaxy[i].X, GameLogic.Galaxy[i].Y), origin, scale);
+                var origin = new Vector2(Planets[4].Width / 2f, Planets[4].Height / 2f);
+                DrawPlanet(4, new Vector2(GameLogic.Galaxy[i].X, GameLogic.Galaxy[i].Y), origin, scale);
                 // OnClick
-                var Bound = new Rectangle((int)GameLogic.Galaxy[i].X - (int)(Planets[SpriteNum].Width * scale) / 2,
-                    (int)GameLogic.Galaxy[i].Y - (int)(Planets[SpriteNum].Height * scale) / 2, (int)(Planets[SpriteNum].Width * scale),
-                    (int)(Planets[SpriteNum].Height * scale));
-                if (Bound.Contains(position) && !Globals.windowOpen && !Globals.HoveringMob)
+                var Bound = new Rectangle((int)GameLogic.Galaxy[i].X - (int)(Planets[4].Width * scale) / 2,
+                    (int)GameLogic.Galaxy[i].Y - (int)(Planets[4].Height * scale) / 2, (int)(Planets[4].Width * scale),
+                    (int)(Planets[4].Height * scale));
+                if (Bound.Contains(position) && !Globals.windowOpen && !Globals.HoveringMob && !Globals.HoveringItem)
                 {
                     UserInterface.Active.SetCursor(Cursors[1]);
                     if (KC.Click())
@@ -161,7 +211,7 @@ namespace PSol.Client
                     DrawBorder(Bound, 1, Color.DarkGray * .25F);
                     Game1.spriteBatch.DrawString(Globals.Font10, GameLogic.Galaxy[i].Name,
                         new Vector2(GameLogic.Galaxy[i].X - Globals.Font10.MeasureString(GameLogic.Galaxy[i].Name).X / 2,
-                            GameLogic.Galaxy[i].Y - (int)(Planets[SpriteNum].Height * scale) / 2.0F - 20), Color.AntiqueWhite);
+                            GameLogic.Galaxy[i].Y - (int)(Planets[4].Height * scale) / 2.0F - 20), Color.AntiqueWhite);
                 }
                 // Get orbiting planets
                 foreach (var planet in GameLogic.Galaxy[i].Planets)

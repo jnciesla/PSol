@@ -307,21 +307,18 @@ namespace PSol.Data.Services
             var name = "";
             for (var i = 0; i < length; i++)
             {
-                if (i == 0)
+                switch (i)
                 {
-                    if (rnd.Next(0, 1) == 1)
-                    {
+                    case 0 when rnd.Next(0, 1) == 1:
                         name += vowels[rnd.Next(6)].ToUpper();
-                    }
-                    else
-                    {
+                        break;
+                    case 0:
                         name += consonants[rnd.Next(19)].ToUpper();
-                    }
-                }
-                else
-                {
-                    name += vowels[rnd.Next(vowels.Length)];
-                    name += consonants[rnd.Next(consonants.Length)];
+                        break;
+                    default:
+                        name += vowels[rnd.Next(vowels.Length)];
+                        name += consonants[rnd.Next(consonants.Length)];
+                        break;
                 }
             }
 

@@ -28,6 +28,11 @@ namespace PSol.Client
                 if (!(particles[particle].Opacity <= 0)) continue;
                 particles.RemoveAt(particle);
                 particle--;
+                if (particles.Count == 0)
+                {
+                    // Remove from the list of explosions when it's over
+                    Game1.Explosion.Remove(this);
+                }
             }
         }
 
@@ -52,7 +57,7 @@ namespace PSol.Client
             var size = (float)random.NextDouble();
             var ttl = 750 + random.Next(500);
             var Color = new Color { R = 255, G = 255, B = 0 };
-            if (textureInt == 0 && random.Next(2) == 1)
+            if (textureInt == 0 && random.Next(2) == 1 && textures.Count > 1)
             {
                 Color = Color.Black;
             }

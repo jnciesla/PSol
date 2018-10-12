@@ -16,6 +16,7 @@ namespace PSol.Client
         public static Rectangle playArea = new Rectangle(0, 0, Constants.PLAY_AREA_WIDTH, Constants.PLAY_AREA_HEIGHT);
         public static int PreferredBackBufferWidth = 1024;
         public static int PreferredBackBufferHeight = 768;
+        public static bool graphicsChange = false;
 
         public static float PlanetaryRotation = 0;
         public static long serverTime = 0;
@@ -53,6 +54,7 @@ namespace PSol.Client
 
         public static bool Attacking = false;
         public static bool HoveringMob = false;
+        public static bool HoveringItem = false;
 
         public static bool Details1;
         public static bool Details2;

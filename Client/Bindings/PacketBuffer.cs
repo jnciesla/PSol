@@ -102,7 +102,7 @@ namespace Bindings
                     buffUpdate = false;
                 }
 
-                int ret = BitConverter.ToInt32(readBuff, readPos);
+                var ret = BitConverter.ToInt32(readBuff, readPos);
                 if (Peek & buff.Count > readPos)
                 {
                     readPos += 4;
@@ -124,7 +124,7 @@ namespace Bindings
                     buffUpdate = false;
                 }
 
-                float ret = BitConverter.ToSingle(readBuff, readPos);
+                var ret = BitConverter.ToSingle(readBuff, readPos);
                 if (Peek & buff.Count > readPos)
                 {
                     readPos += 4;
@@ -137,14 +137,14 @@ namespace Bindings
 
         public string GetString(bool Peek = true)
         {
-            int length = GetInteger(true);
+            var length = GetInteger(true);
             if (buffUpdate)
             {
                 readBuff = buff.ToArray();
                 buffUpdate = false;
             }
 
-            string ret = Encoding.ASCII.GetString(readBuff, readPos, length);
+            var ret = Encoding.ASCII.GetString(readBuff, readPos, length);
             if (Peek & buff.Count > readPos)
             {
                 if (ret.Length > 0)
@@ -157,14 +157,14 @@ namespace Bindings
 
         public List<T> GetList<T>(bool peek = true)
         {
-            int length = GetInteger(true);
+            var length = GetInteger(true);
             if (buffUpdate)
             {
                 readBuff = buff.ToArray();
                 buffUpdate = false;
             }
 
-            string JSON = Encoding.ASCII.GetString(readBuff, readPos, length);
+            var JSON = Encoding.ASCII.GetString(readBuff, readPos, length);
             if (peek & buff.Count > readPos)
             {
                 if (JSON.Length > 0)
@@ -185,7 +185,7 @@ namespace Bindings
                     buffUpdate = false;
                 }
 
-                byte ret = readBuff[readPos];
+                var ret = readBuff[readPos];
                 if (Peek & buff.Count > readPos)
                 {
                     readPos += 1;
@@ -204,7 +204,7 @@ namespace Bindings
                 buffUpdate = false;
             }
 
-            byte[] ret = buff.GetRange(readPos, Length).ToArray();
+            var ret = buff.GetRange(readPos, Length).ToArray();
             if (Peek)
             {
                 readPos += Length;
@@ -222,7 +222,7 @@ namespace Bindings
                     buffUpdate = false;
                 }
 
-                short ret = BitConverter.ToInt16(readBuff, readPos);
+                var ret = BitConverter.ToInt16(readBuff, readPos);
                 if (Peek & buff.Count > readPos)
                 {
                     readPos += 4;
