@@ -127,7 +127,7 @@ namespace PSol.Server
         {
             var inv = Types.Player.FirstOrDefault(p => p.Id == player)?.Inventory;
             if (inv == null) return -1;
-            foreach (var stack in inv.Where(i => i.ItemId == itm.ItemId))
+            foreach (var stack in inv.Where(i => i.ItemId == itm.ItemId && i.Slot > 100))
             {
                 if (itm.Quantity <= 0) continue;
                 var capacity = 999 - stack.Quantity;
@@ -384,9 +384,11 @@ namespace PSol.Server
                     user.Weap5Charge += user.Weap5ChargeRate / 2;
                     if (user.Weap5Charge > 100) user.Weap5Charge = 0;
                 }
-                if (up)
 
+                if (up)
+                {
                     Program.shd.UpdatePlayer(Array.FindIndex(Types.Player, u => u.Id == user.Id));
+                }
             });
         }
 
@@ -407,6 +409,51 @@ namespace PSol.Server
             loot.Quantities[0] = 1;
             loot.Quantities[1] = 10;
             Globals.Loot.Add(loot);
+        }
+
+        public static bool CollectLoot(string lootId, int lootIndex, int index)
+        {
+            var temp = Globals.Loot.FirstOrDefault(l => l.Id == lootId);
+            if (temp == null) return false;
+            var newInv = new Inventory()
+            {
+                Id = Guid.NewGuid().ToString(),
+                Dropped = DateTime.UtcNow,
+                ItemId = temp.Items[lootIndex],
+                Quantity = temp.Quantities[lootIndex],
+                Slot = 0,
+                UserId = Types.Player[index].Id,
+                X = 0,
+                Y = 0
+            };
+            var stacked = FindAvailableStack(Types.Player[index].Id, newInv);
+            if (stacked == 0)
+            {
+                Globals.Loot.FirstOrDefault(l => l.Id == lootId).Items[lootIndex] = null;
+                Globals.Loot.FirstOrDefault(l => l.Id == lootId).Quantities[lootIndex] = 0;
+            };
+            if (stacked > 0)
+            {
+                newInv.Quantity = stacked;
+                var newSlot = FindOpenSlot(Types.Player[index].Id);
+                if (newSlot != -1)
+                {
+                    newInv.Slot = newSlot;
+                    Types.Player[index].Inventory.Add(newInv);
+                    Globals.Loot.FirstOrDefault(l => l.Id == lootId).Items[lootIndex] = null;
+                    Globals.Loot.FirstOrDefault(l => l.Id == lootId).Quantities[lootIndex] = 0;
+                }
+                else
+                {
+                    Program.shd.SendMessage(index, "You have no room for that in your cargo hold.",
+                        MessageColors.Notification);
+                }
+            }
+            if (temp.Items.All(i => i == null) == true) // All item strings are null.  Destroy it
+            {
+                Globals.Loot.Remove(Globals.Loot.FirstOrDefault(l => l.Id == lootId));
+            }
+            return true;
         }
     }
 }

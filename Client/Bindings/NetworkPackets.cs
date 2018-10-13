@@ -23,7 +23,8 @@
         CItemStack = 6,
         CItemTransaction = 7,
         CEquipItem = 8,
-        CItemSale = 9
+        CItemSale = 9,
+        CLootTransaction
     }
 
     public enum MessageColors

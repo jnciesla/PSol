@@ -72,6 +72,7 @@ namespace PSol.Client
         private static Paragraph detailsHeaderLoot;
         private static Paragraph detailsSubHeaderLoot;
         private static Paragraph detailsBodyLoot;
+        private static Image destroyBtn;
 
         // IGUI textures
         private static Texture2D closeIcon;
@@ -1262,6 +1263,8 @@ namespace PSol.Client
             var dPanel = new Panel(new Vector2(219, 218), PanelSkin.None, Anchor.TopLeft, new Vector2(10, 10))
             { Padding = Vector2.Zero, PanelOverflowBehavior = PanelOverflowBehavior.VerticalScroll };
             var closeButton = new Image(closeIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(-2, -2));
+            destroyBtn = new Image(button, new Vector2(90, 30), ImageDrawMode.Stretch, Anchor.BottomRight, new Vector2(12, 12));
+            var destroyLbl = new Paragraph("Destroy", Anchor.BottomRight, null, new Vector2(17, 16)) { FillColor = Color.DarkGray, ClickThrough = true, FontOverride = Globals.Font12 };
             lootItem[0] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(156, 16)) { Visible = false };
             lootItem[1] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(86, 16)) { Visible = false };
             lootItem[2] = new Image(Graphics.Objects[0], new Vector2(64, 64), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(16, 16)) { Visible = false };
@@ -1285,6 +1288,8 @@ namespace PSol.Client
                 lootItem[i].OnMouseEnter = e => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
                 lootItem[i].OnMouseLeave = e => { UserInterface.Active.SetCursor(CursorType.Default); };
             }
+            panel.AddChild(destroyBtn);
+            panel.AddChild(destroyLbl);
             panel.AddChild(closeButton);
             panel.AddChild(dPanel);
             dPanel.AddChild(detailsHeaderLoot);
@@ -1293,20 +1298,56 @@ namespace PSol.Client
             closeButton.OnMouseEnter = e => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
             closeButton.OnMouseLeave = e => { UserInterface.Active.SetCursor(CursorType.Default); };
             closeButton.OnClick = e => { MenuManager.Clear(7); };
+            destroyBtn.OnMouseEnter = e => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
+            destroyBtn.OnMouseLeave = e => { UserInterface.Active.SetCursor(CursorType.Default); };
             CreateWindow(panel);
         }
 
-        public void PopulateLoot(Loot loot)
+        public void PopulateLoot(string lootId)
         {
+            for (var i = 0; i < 9; i++)
+                lootItem[i].Visible = false;
+
+            var loot = GameLogic.RealLoot.FirstOrDefault(L => L.Id == lootId);
+            if (loot == null)
+            {
+                MenuManager.Clear();
+                Globals.selectedLoot = null;
+                return;
+            }
             DisplayLootDetails();
             for (var i = 0; i < 9; i++)
             {
-                if (loot.Items[i] == null) break;
+                if (loot.Items[i] == null) continue;
                 var temp = GameLogic.Items.FirstOrDefault(itm => itm.Id == loot.Items[i]);
                 lootItem[i].Visible = true;
                 lootItem[i].Texture = Graphics.Objects[temp?.Image ?? 0];
-                lootItem[i].OnClick = e => { DisplayLootDetails(temp); };
+                var i1 = i;
+                lootItem[i].OnClick = e =>
+                {
+                    if (new KeyControl().CheckCtrl())
+                    {
+                        ctcp.ProcessLoot(2, loot.Id, i1);
+                    }
+                    else
+                    {
+                        DisplayLootDetails(temp);
+                    }
+                };
             }
+            destroyBtn.OnClick = e =>
+            {
+                if (Globals.Control && Globals.Alt)
+                {
+                    ctcp.ProcessLoot(1, loot.Id);
+                    MenuManager.Clear();
+                    Globals.selectedLoot = null;
+                }
+                else
+                {
+                    AddChats(@"Press and hold [ctrl] and [alt] to destroy loots", Color.DarkGoldenrod);
+                }
+            };
         }
 
         public void Update()
@@ -1322,6 +1363,11 @@ namespace PSol.Client
             {
                 PopulateInventory();
                 Globals.newInventory = false;
+            }
+
+            if (Windows[7].IsVisible())
+            {
+                PopulateLoot(Globals.selectedLoot);
             }
             if (Globals.equipWeapon)
             {

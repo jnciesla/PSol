@@ -44,7 +44,8 @@ namespace PSol.Server
                 {(int) CItemTransaction, HandleItemTransaction },
                 {(int) CEquipItem, HandleEquip },
                 {(int) CItemSale, HandleSale },
-                {(int) CItemStack, HandleStack }
+                {(int) CItemStack, HandleStack },
+                {(int)CLootTransaction, HandleLoot }
             };
         }
 
@@ -281,7 +282,7 @@ namespace PSol.Server
             buffer.Dispose();
         }
 
-        public void SendInventory(int index)
+        public void SendInventory(int index, bool newLoot = false)
         {
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)SInventory);
@@ -320,8 +321,8 @@ namespace PSol.Server
             buffer.AddBytes(data);
             buffer.GetInteger();
             var targetId = buffer.GetString();
-            var weapon = buffer.GetString();
-            var weaponId = Types.Player[index].Inventory.FirstOrDefault(i => i.ItemId == weapon);
+            var weapon = buffer.GetInteger();
+            var weaponId = Types.Player[index].Inventory.FirstOrDefault(i => i.Slot == weapon);
             if (weaponId == null) return;
             var WEAPON = Globals.Items.FirstOrDefault(w => w.Id == weaponId?.ItemId);
             if (WEAPON == null) return;
@@ -446,6 +447,25 @@ namespace PSol.Server
                 SendMessage(index, "Invalid item, item cannot stack, or stack is full.", Warning);
             };
             SendInventory(index);
+        }
+
+        public void HandleLoot(int index, byte[] data)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            var type = buffer.GetInteger();
+            var lootId = buffer.GetString();
+            var itemIndex = buffer.GetInteger();
+            if (type == 1)
+            {
+                Globals.Loot.Remove(Globals.Loot.FirstOrDefault(l => l.Id == lootId));
+            }
+            else
+            {
+                if (Transactions.CollectLoot(lootId, itemIndex, index))
+                    SendInventory(index, true);
+            }
         }
 
         public void SendGalaxy(int index)

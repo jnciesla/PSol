@@ -65,7 +65,7 @@ namespace PSol.Client
                         var weapId = Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(i => i.Slot == 7)?.ItemId;
                         if (weapId == null) break;
                         Types.Player[GameLogic.PlayerIndex].Weap1Charge = 0;
-                        Game1.ctcp.SendCombat(mob, weapId);
+                        Game1.ctcp.SendCombat(mob, 7);
                     }
                     break;
                 case 2:
@@ -74,7 +74,7 @@ namespace PSol.Client
                         Types.Player[GameLogic.PlayerIndex].Weap2Charge = 0;
                         var weapId = Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(i => i.Slot == 8)?.ItemId;
                         if (weapId == null) break;
-                        Game1.ctcp.SendCombat(mob, weapId);
+                        Game1.ctcp.SendCombat(mob, 8);
                     }
                     break;
                 case 3:
@@ -83,7 +83,7 @@ namespace PSol.Client
                         Types.Player[GameLogic.PlayerIndex].Weap3Charge = 0;
                         var weapId = Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(i => i.Slot == 9)?.ItemId;
                         if (weapId == null) break;
-                        Game1.ctcp.SendCombat(mob, weapId);
+                        Game1.ctcp.SendCombat(mob, 9);
                     }
                     break;
                 case 4:
@@ -92,7 +92,7 @@ namespace PSol.Client
                         Types.Player[GameLogic.PlayerIndex].Weap4Charge = 0;
                         var weapId = Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(i => i.Slot == 10)?.ItemId;
                         if (weapId == null) break;
-                        Game1.ctcp.SendCombat(mob, weapId);
+                        Game1.ctcp.SendCombat(mob, 10);
                     }
                     break;
                 case 5:
@@ -101,7 +101,7 @@ namespace PSol.Client
                         Types.Player[GameLogic.PlayerIndex].Weap5Charge = 0;
                         var weapId = Types.Player[GameLogic.PlayerIndex].Inventory.FirstOrDefault(i => i.Slot == 11)?.ItemId;
                         if (weapId == null) break;
-                        Game1.ctcp.SendCombat(mob, weapId);
+                        Game1.ctcp.SendCombat(mob, 11);
                     }
                     break;
             }

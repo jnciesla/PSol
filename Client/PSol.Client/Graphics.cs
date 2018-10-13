@@ -155,7 +155,8 @@ namespace PSol.Client
                 UserInterface.Active.SetCursor(Cursors[1]);
                 if (KC.DoubleClick())
                 {
-                    Game1.IGUI.PopulateLoot(loot);
+                    Globals.selectedLoot = loot.Id;
+                    Game1.IGUI.PopulateLoot(Globals.selectedLoot);
                     MenuManager.ChangeMenu(MenuManager.Menu.Loot);
                 }
             }
@@ -858,35 +859,35 @@ namespace PSol.Client
             {
                 if (weap1 != null)
                 {
-                    stat1 = Globals.status1 < 100 ? Globals.status1 + "%" : "1";
+                    //stat1 = Globals.status1 < 100 ? Globals.status1 + "%" : "1";
                     DrawBorder(new Rectangle(Globals.PreferredBackBufferWidth - 40, 14, 32, 32), 1, OL1);
                     DrawString(Globals.Font10, stat1, Globals.PreferredBackBufferWidth - 24, 25, true, Color.DarkGray);
                     DrawString(Globals.Font10, stat1, Globals.PreferredBackBufferWidth - 23, 25, true, Color.DarkGray);
                 }
                 if (weap2 != null)
                 {
-                    stat2 = Globals.status1 < 100 ? Globals.status1 + "%" : "2";
+                    //stat2 = Globals.status1 < 100 ? Globals.status1 + "%" : "2";
                     DrawBorder(new Rectangle(Globals.PreferredBackBufferWidth - 40, 49, 32, 32), 1, OL2);
                     DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 24, 60, true, Color.DarkGray);
                     DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 23, 60, true, Color.DarkGray);
                 }
                 if (weap3 != null)
                 {
-                    stat3 = Globals.status1 < 100 ? Globals.status1 + "%" : "3";
+                    //stat3 = Globals.status1 < 100 ? Globals.status1 + "%" : "3";
                     DrawBorder(new Rectangle(Globals.PreferredBackBufferWidth - 40, 84, 32, 32), 1, OL3);
                     DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 24, 95, true, Color.DarkGray);
                     DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 23, 95, true, Color.DarkGray);
                 }
                 if (weap4 != null)
                 {
-                    stat4 = Globals.status1 < 100 ? Globals.status1 + "%" : "4";
+                    //stat4 = Globals.status1 < 100 ? Globals.status1 + "%" : "4";
                     DrawBorder(new Rectangle(Globals.PreferredBackBufferWidth - 40, 119, 32, 32), 1, OL4);
                     DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 24, 130, true, Color.DarkGray);
                     DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 23, 130, true, Color.DarkGray);
                 }
                 if (weap5 != null)
                 {
-                    stat5 = Globals.status1 < 100 ? Globals.status1 + "%" : "5";
+                    //stat5 = Globals.status1 < 100 ? Globals.status1 + "%" : "5";
                     DrawBorder(new Rectangle(Globals.PreferredBackBufferWidth - 40, 154, 32, 32), 1, OL5);
                     DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 24, 165, true, Color.DarkGray);
                     DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 23, 165, true, Color.DarkGray);

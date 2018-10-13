@@ -2,12 +2,10 @@
 using GeonBit.UI.Entities;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
-
 namespace PSol.Client
 {
     internal class Globals
     {
-        public static int status1 = 50;
 
         public static bool Fullscreen = false;
         public static bool exitgame = false;
@@ -29,6 +27,7 @@ namespace PSol.Client
         public static bool scanner = true;
         public static bool details = true;
         public static bool newInventory = false;
+        public static string selectedLoot;
         public static int inventoryMode = 1;
         public static bool weaponsBar = true;
         public static bool equipWeapon = false;

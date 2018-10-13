@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using Bindings;
 using GeonBit.UI;
@@ -205,7 +206,7 @@ namespace PSol.Client
             particleEngine.Draw(spriteBatch);
             Graphics.RenderObjects();
             Graphics.RenderPlayers();
-            foreach (var explosion in Explosion)
+            foreach (var explosion in Explosion.ToList())
             {
                 explosion.Draw(spriteBatch);
             }
@@ -323,6 +324,8 @@ namespace PSol.Client
                     if (Globals.equipAmmo) { Globals.equipAmmo = false; return; }
                     if (Globals.equipWeapon) { Globals.equipWeapon = false; return; }
                     MenuManager.Clear();
+                    Globals.HoveringItem = false;
+                    Globals.HoveringMob = false;
                 }
             }
             if (KC.KeyPress(Keys.Enter)) { IGUI.Enter(); }

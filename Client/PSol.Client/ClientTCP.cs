@@ -138,7 +138,7 @@ namespace PSol.Client
         public void EquipItem(string id, int destSlot)
         {
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int) CEquipItem);
+            buffer.AddInteger((int)CEquipItem);
             buffer.AddString(id);
             buffer.AddInteger(destSlot);
             SendData(buffer.ToArray());
@@ -148,9 +148,20 @@ namespace PSol.Client
         public void TransactItem(string inventoryId, string recipientId)
         {
             var buffer = new PacketBuffer();
-            buffer.AddInteger((int) CItemTransaction);
+            buffer.AddInteger((int)CItemTransaction);
             buffer.AddString(inventoryId);
             buffer.AddString(recipientId);
+            SendData(buffer.ToArray());
+            buffer.Dispose();
+        }
+
+        public void ProcessLoot(int action, string lootId, int lootIndex = -1)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int)CLootTransaction);
+            buffer.AddInteger(action);
+            buffer.AddString(lootId);
+            buffer.AddInteger(lootIndex);
             SendData(buffer.ToArray());
             buffer.Dispose();
         }
@@ -185,12 +196,12 @@ namespace PSol.Client
             buffer.Dispose();
         }
 
-        public void SendCombat(string targetId, string weaponId)
+        public void SendCombat(string targetId, int weapon)
         {
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)CCombat);
             buffer.AddString(targetId);
-            buffer.AddString(weaponId);
+            buffer.AddInteger(weapon);
             SendData(buffer.ToArray());
             buffer.Dispose();
         }
