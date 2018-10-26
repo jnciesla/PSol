@@ -51,61 +51,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Migrations\201806201514556_Initial.cs" />
-    <Compile Include="Migrations\201806201514556_Initial.Designer.cs">
-      <DependentUpon>201806201514556_Initial.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201806241720555_Mobs2.cs" />
-    <Compile Include="Migrations\201806241720555_Mobs2.Designer.cs">
-      <DependentUpon>201806241720555_Mobs2.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201806241739436_Mobs3.cs" />
-    <Compile Include="Migrations\201806241739436_Mobs3.Designer.cs">
-      <DependentUpon>201806241739436_Mobs3.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201806270901213_planets.cs" />
-    <Compile Include="Migrations\201806270901213_planets.Designer.cs">
-      <DependentUpon>201806270901213_planets.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201808090706246_items.cs" />
-    <Compile Include="Migrations\201808090706246_items.Designer.cs">
-      <DependentUpon>201808090706246_items.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201808121548360_Inventory.cs" />
-    <Compile Include="Migrations\201808121548360_Inventory.Designer.cs">
-      <DependentUpon>201808121548360_Inventory.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201809091024373_Mob names.cs" />
-    <Compile Include="Migrations\201809091024373_Mob names.Designer.cs">
-      <DependentUpon>201809091024373_Mob names.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201809130552285_equipment.cs" />
-    <Compile Include="Migrations\201809130552285_equipment.Designer.cs">
-      <DependentUpon>201809130552285_equipment.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201809130631035_equipment &amp; planet classes.cs" />
-    <Compile Include="Migrations\201809130631035_equipment &amp; planet classes.Designer.cs">
-      <DependentUpon>201809130631035_equipment &amp; planet classes.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201809180834520_slot.cs" />
-    <Compile Include="Migrations\201809180834520_slot.Designer.cs">
-      <DependentUpon>201809180834520_slot.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201809261211244_mre inventory.cs" />
-    <Compile Include="Migrations\201809261211244_mre inventory.Designer.cs">
-      <DependentUpon>201809261211244_mre inventory.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201809290639252_plane inventory.cs" />
-    <Compile Include="Migrations\201809290639252_plane inventory.Designer.cs">
-      <DependentUpon>201809290639252_plane inventory.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201810010432079_improved user stats.cs" />
-    <Compile Include="Migrations\201810010432079_improved user stats.Designer.cs">
-      <DependentUpon>201810010432079_improved user stats.cs</DependentUpon>
-    </Compile>
-    <Compile Include="Migrations\201810091027443_fix.cs" />
-    <Compile Include="Migrations\201810091027443_fix.Designer.cs">
-      <DependentUpon>201810091027443_fix.cs</DependentUpon>
+    <Compile Include="Migrations\201810262014258_Initial.cs" />
+    <Compile Include="Migrations\201810262014258_Initial.Designer.cs">
+      <DependentUpon>201810262014258_Initial.cs</DependentUpon>
     </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Combat.cs" />
@@ -145,47 +93,8 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Migrations\201806201514556_Initial.resx">
-      <DependentUpon>201806201514556_Initial.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201806241720555_Mobs2.resx">
-      <DependentUpon>201806241720555_Mobs2.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201806241739436_Mobs3.resx">
-      <DependentUpon>201806241739436_Mobs3.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201806270901213_planets.resx">
-      <DependentUpon>201806270901213_planets.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201808090706246_items.resx">
-      <DependentUpon>201808090706246_items.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201808121548360_Inventory.resx">
-      <DependentUpon>201808121548360_Inventory.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201809091024373_Mob names.resx">
-      <DependentUpon>201809091024373_Mob names.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201809130552285_equipment.resx">
-      <DependentUpon>201809130552285_equipment.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201809130631035_equipment &amp; planet classes.resx">
-      <DependentUpon>201809130631035_equipment &amp; planet classes.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201809180834520_slot.resx">
-      <DependentUpon>201809180834520_slot.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201809261211244_mre inventory.resx">
-      <DependentUpon>201809261211244_mre inventory.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201809290639252_plane inventory.resx">
-      <DependentUpon>201809290639252_plane inventory.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201810010432079_improved user stats.resx">
-      <DependentUpon>201810010432079_improved user stats.cs</DependentUpon>
-    </EmbeddedResource>
-    <EmbeddedResource Include="Migrations\201810091027443_fix.resx">
-      <DependentUpon>201810091027443_fix.cs</DependentUpon>
+    <EmbeddedResource Include="Migrations\201810262014258_Initial.resx">
+      <DependentUpon>201810262014258_Initial.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Bindings\Bindings.projitems" Label="Shared" />

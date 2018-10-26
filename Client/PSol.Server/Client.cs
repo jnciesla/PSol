@@ -46,9 +46,10 @@ namespace PSol.Server
                     Stream.Read(data, 0, bytesInMessage);
                     OnReceiveData(data);
                 }
-                catch
+                catch (Exception e)
                 {
                     Console.WriteLine(@"Remote connection forcibly closed...");
+                    Console.WriteLine(e.Message);
                     CloseSocket(Index);
                 }
             }

@@ -163,7 +163,7 @@ namespace PSol.Data.Services
 
                 m.X += direction.X * 4f;
                 m.Y += direction.Y * 4f;
-                if (!(distance <= 50)) return;
+                if (distance.CompareTo(50F) > 0) return;
                 m.NavToX = null;
                 m.NavToY = null;
             });
