@@ -44,12 +44,12 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Actions.cs" />
-    <Compile Include="Camera.cs" />
     <Compile Include="ClientTCP.cs" />
     <Compile Include="Game1.cs" />
     <Compile Include="GameLogic.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="Graphics.cs" />
+    <Compile Include="Graphics\DamageText.cs" />
     <Compile Include="Graphics\ILaser.cs" />
     <Compile Include="Graphics\Laser.cs" />
     <Compile Include="Graphics\Particle.cs" />
@@ -59,19 +59,23 @@
     <Compile Include="InterfaceGUI.cs" />
     <Compile Include="KeyControl.cs" />
     <Compile Include="MenuManager.cs" />
+    <Compile Include="OrthographicCamera.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Validators\AlphaNumValidator.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="DataTypes, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GeonBit.UI.3.1.0.4\lib\geonbitui\DataTypes.dll</HintPath>
+      <HintPath>..\packages\GeonBit.UI.3.2.0\lib\geonbitui\DataTypes.dll</HintPath>
     </Reference>
     <Reference Include="GeonBit.UI, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\GeonBit.UI.3.1.0.4\lib\geonbitui\GeonBit.UI.dll</HintPath>
+      <HintPath>..\packages\GeonBit.UI.3.2.0\lib\geonbitui\GeonBit.UI.dll</HintPath>
     </Reference>
     <Reference Include="MonoGame.Extended, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <HintPath>..\packages\MonoGame.Extended.1.1.0\lib\portable-net45+win8+wpa81\MonoGame.Extended.dll</HintPath>
+    </Reference>
+    <Reference Include="MonoGame.Extended.Input, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\MonoGame.Extended.Input.1.1.0\lib\portable-net45+win8+wpa81\MonoGame.Extended.Input.dll</HintPath>
     </Reference>
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MonoGameInstallDirectory)\MonoGame\v3.0\Assemblies\DesktopGL\MonoGame.Framework.dll</HintPath>

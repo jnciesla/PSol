@@ -7,6 +7,8 @@ using GeonBit.UI;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using MonoGame.Extended;
+using MonoGame.Extended.ViewportAdapters;
 using PSol.Data.Models;
 
 namespace PSol.Client
@@ -17,15 +19,14 @@ namespace PSol.Client
         public static SpriteBatch spriteBatch;
         public static ParticleEngine particleEngine;
         public static List<SmallExplosion> Explosion = new List<SmallExplosion>();
+        public static List<DamageText> DamageTexts = new List<DamageText>();
+        private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
+        public static OrthographicCamera Camera;
         private Texture2D backGroundTexture;
-        private Texture2D splashScreen;
         private Vector2 backgroundPos;
         private RenderTarget2D renderTarget;
-
         public static ClientTCP ctcp;
         private ClientData chd;
-        private Camera camera;
-
         public static InterfaceGUI IGUI = new InterfaceGUI();
         private static readonly KeyControl KC = new KeyControl();
 
@@ -53,7 +54,6 @@ namespace PSol.Client
             graphics.PreferredBackBufferHeight = Globals.PreferredBackBufferHeight;
             graphics.ApplyChanges();
             renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
-            camera = new Camera(GraphicsDevice.Viewport);
             Graphics.InitializeGraphics(Content);
             graphics.ApplyChanges();
         }
@@ -79,7 +79,7 @@ namespace PSol.Client
             ctcp = new ClientTCP();
             chd = new ClientData();
             renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
-            camera = new Camera(GraphicsDevice.Viewport);
+            Camera = new OrthographicCamera(new BoxingViewportAdapter(Window, GraphicsDevice, Globals.PreferredBackBufferWidth, Globals.PreferredBackBufferHeight)) { Position = new Vector2(-1000, -1000) };
             chd.InitializeMessages();
             ctcp.ConnectToServer();
             Graphics.InitializeGraphics(Content);
@@ -99,7 +99,6 @@ namespace PSol.Client
             // Create a new SpriteBatch, which can be used to draw textures.
             spriteBatch = new SpriteBatch(GraphicsDevice);
             backGroundTexture = Content.Load<Texture2D>("stars3");
-            splashScreen = Content.Load<Texture2D>("Panels/Splash");
             backgroundPos = new Vector2(-Globals.PreferredBackBufferWidth / 2.0F, -Globals.PreferredBackBufferHeight / 2.0F);
 
             // Particle engine textures
@@ -132,6 +131,7 @@ namespace PSol.Client
         {
             if (Globals.exitgame) Exit();
             UserInterface.Active.Update(gameTime);
+            _fpsCounter.Update(gameTime);
             if (!Globals.cursorOverride) { UserInterface.Active.SetCursor(CursorType.Default); }
 
             if (GameLogic.PlayerIndex > -1)
@@ -141,7 +141,7 @@ namespace PSol.Client
                     setFullScreen();
                 }
                 particleEngine.EmitterLocation = new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y);
-                particleEngine.Update(Globals.DirUp);
+                particleEngine.Update();
             }
             IGUI.lblStatus.Text = ctcp.isOnline ? "Server status:{{GREEN}} online" : "Server status:{{RED}} offline";
             CheckKeys();
@@ -149,9 +149,14 @@ namespace PSol.Client
             {
                 Explosion[x].Update();
             }
-            camera.Update(gameTime, this);
-
+            for (var x = 0; x < DamageTexts.Count; x++)
+            {
+                DamageTexts[x].Update();
+            }
+            if (GameLogic.PlayerIndex != -1)    // Update camera position to follow player
+                Camera.Position = new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y) - new Vector2(Globals.PreferredBackBufferWidth / 2.0f, Globals.PreferredBackBufferHeight / 2.0f);
             IGUI.Update();
+
             Globals.strobe = (gameTime.TotalGameTime.Seconds % 2 == 0);
             base.Update(gameTime);
         }
@@ -162,6 +167,7 @@ namespace PSol.Client
         /// <param name="gameTime">Provides a snapshot of timing values.</param>
         protected override void Draw(GameTime gameTime)
         {
+            _fpsCounter.Draw(gameTime);
             DrawSceneToTexture(renderTarget, gameTime);
             GraphicsDevice.Clear(Color.Black);
             UserInterface.Active.Draw(spriteBatch);
@@ -169,6 +175,7 @@ namespace PSol.Client
             spriteBatch.Draw(renderTarget, new Rectangle(0, 0, Globals.PreferredBackBufferWidth, Globals.PreferredBackBufferHeight), Globals.Luminosity);
             spriteBatch.End();
             base.Draw(gameTime);
+            
         }
 
         /// <summary>
@@ -177,6 +184,7 @@ namespace PSol.Client
         /// <returns>A texture2D with the scene drawn in it.</returns>
         protected void DrawSceneToTexture(RenderTarget2D _renderTarget, GameTime gameTime)
         {
+            var fps = $"FPS: {_fpsCounter.FramesPerSecond}";
             // Set the render target
             GraphicsDevice.SetRenderTarget(_renderTarget);
             GraphicsDevice.DepthStencilState = new DepthStencilState { DepthBufferEnable = true };
@@ -194,8 +202,9 @@ namespace PSol.Client
                 WalkTimer = Tick + 15;
                 Globals.PlanetaryRotation += MathHelper.ToRadians(.01f);
             }
-
-            spriteBatch.Begin(SpriteSortMode.Deferred, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, Camera.transform);
+            
+            spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, Camera.GetViewMatrix());
+            
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
             Graphics.DrawBorder(Globals.playArea, 2, Color.DarkOliveGreen);
             if (GameLogic.Galaxy != null)
@@ -203,25 +212,33 @@ namespace PSol.Client
                 Graphics.DrawSystems();
             }
             Graphics.DrawWeapons(spriteBatch);
+            Graphics.RenderShadows();
             particleEngine.Draw(spriteBatch);
             Graphics.RenderObjects();
             Graphics.RenderPlayers();
+            
             foreach (var explosion in Explosion.ToList())
             {
                 explosion.Draw(spriteBatch);
             }
+            foreach (var DamageText in DamageTexts.ToList())
+            {
+                DamageText.Draw();
+            }
+            spriteBatch.DrawString(Globals.Font8, fps, new Vector2(0, -100), Color.White);
             spriteBatch.End();
+            
             Graphics.DrawHud(Content);
             Graphics.DrawWeaponsBar(Content);
             Graphics.DrawInfo(Content);
             UserInterface.Active.DrawMainRenderTarget(spriteBatch);
-
             // Drop the render target
             GraphicsDevice.SetRenderTarget(null);
         }
 
         private void CheckKeys()
         {
+            Globals.Flying = false;
             if (Globals.Control)
             {
                 if (KC.KeyPress(Keys.A))
@@ -270,6 +287,19 @@ namespace PSol.Client
                 {
                     Globals.weaponsBar = !Globals.weaponsBar;
                 }
+                if (KC.KeyPress(Keys.OemMinus))
+                {
+                    Camera.Zoom = Math.Abs(Camera.Zoom - 1.25f) < .1f ? 1 : .75f;
+                }
+                if (KC.KeyPress(Keys.OemPlus))
+                {
+                    Camera.Zoom = Math.Abs(Camera.Zoom - 0.75f) < .1f ? 1 : 1.25f;
+                }
+
+                if (KC.KeyPress(Keys.Space))
+                {
+                    Camera.Rotation += .01f;
+                }
             }
 
             Globals.Control = KC.CheckCtrl();
@@ -287,8 +317,9 @@ namespace PSol.Client
 
                 if (Mouse.GetState().LeftButton == ButtonState.Pressed)
                 {
-                    if (Globals.HoveringMob || Globals.HoveringItem) return;
+                    if (Globals.HoveringMob || Globals.HoveringItem || Globals.HoveringPlanet || Globals.HoveringGUI) return;
                     Types.Player[GameLogic.PlayerIndex].Rotation = (float)GameLogic.GetAngleFromPlayer(Mouse.GetState().Position);
+                    Globals.Flying = true;
                     Globals.DirUp = true;
                 }
 

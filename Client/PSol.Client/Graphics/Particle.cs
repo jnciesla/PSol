@@ -14,9 +14,10 @@ namespace PSol.Client
         public float Size { get; set; }
         public int TTL { get; set; }
         public float Opacity { get; set; }
+        public bool SteadyColor { get; set; }
 
         public Particle(Texture2D texture, Vector2 position, Vector2 velocity,
-            float angle, float angularVelocity, float size, int ttl, Color color)
+            float angle, float angularVelocity, float size, int ttl, Color color, bool steadyColor = false)
         {
             Texture = texture;
             Position = position;
@@ -27,12 +28,14 @@ namespace PSol.Client
             TTL = ttl;
             Opacity = 1f;
             Color = color;
+            SteadyColor = steadyColor;
         }
 
         public void Update()
         {
             Position += Velocity;
             Angle += AngularVelocity;
+            if (SteadyColor) return;
             Opacity -= (float)10 / TTL;
             if (Color.R <= 0) return;
             if (Color.G >= 1) { Color.G -= 15; } else { Color.R -= 5; }

@@ -20,13 +20,13 @@ namespace PSol.Client
             random = new Random();
         }
 
-        public void Update(bool moving)
+        public void Update()
         {
             var total = 30;
 
             for (var i = 0; i < total; i++)
             {
-                particles.Add(GenerateNewParticle(moving));
+                particles.Add(GenerateNewParticle());
             }
 
             for (var particle = 0; particle < particles.Count; particle++)
@@ -36,9 +36,15 @@ namespace PSol.Client
                 particles.RemoveAt(particle);
                 particle--;
             }
+            // Kill particles off a little bit faster when not moving
+            if (GameLogic.IsMoving()) return;
+            foreach (var P in particles)
+            {
+                P.Opacity -= (float)10 / P.TTL;
+            }
         }
 
-        private Particle GenerateNewParticle(bool moving)
+        private Particle GenerateNewParticle()
         {
             var texture = textures[random.Next(textures.Count)];
             var position = EmitterLocation;
@@ -47,7 +53,7 @@ namespace PSol.Client
 
             var size = (float)random.NextDouble();
             var ttl = 1;
-            if (moving)
+            if (Globals.DirUp)
             {
                 ttl = 200 + random.Next(100);
             }

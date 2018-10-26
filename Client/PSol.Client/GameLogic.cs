@@ -15,10 +15,12 @@ namespace PSol.Client
         public static string selectedPlanet = "";
         public static int selectedMapItem = -1;
         public static float distance;
+        public static float navAngle = -1;
         public static Vector2 Destination;
         public static bool Navigating;
         private static readonly ClientTCP ctcp = new ClientTCP();
         private static int messageTime;
+        private static int navTimer;
         public static List<Star> Galaxy;
         public static List<Planet> Planets = new List<Planet>();
         public static List<Item> Items;
@@ -26,31 +28,29 @@ namespace PSol.Client
         public static List<Combat> LocalCombat;
         public static List<Inventory> LocalLoot;
         public static List<Loot> RealLoot;
+
         private static Random random;
 
         public static bool IsMoving()
         {
-            if (Globals.DirUp || Globals.DirDn || Globals.DirLt || Globals.DirRt)
-            {
-                ctcp.XFerPlayer();
-                return true;
-            }
-            return false;
+            if (!Globals.DirUp && !Globals.DirDn && !Globals.DirLt && !Globals.DirRt) return false;
+            ctcp.XFerPlayer();
+            return true;
         }
 
-        public static void Rotate(int dir)
+        public static void Rotate(int dir, int amount = 4)
         {
             switch (dir)
             {
                 case 0:
-                    Types.Player[PlayerIndex].Rotation -= MathHelper.ToRadians(4f);
+                    Types.Player[PlayerIndex].Rotation -= MathHelper.ToRadians(amount);
                     if (Types.Player[PlayerIndex].Rotation <= 0)
                     {
                         Types.Player[PlayerIndex].Rotation += (float)Math.PI * 2;
                     }
                     break;
                 case 1:
-                    Types.Player[PlayerIndex].Rotation += MathHelper.ToRadians(4f);
+                    Types.Player[PlayerIndex].Rotation += MathHelper.ToRadians(amount);
                     if (Types.Player[PlayerIndex].Rotation >= (float)Math.PI * 2)
                     {
                         Types.Player[PlayerIndex].Rotation -= (float)Math.PI * 2;
@@ -69,25 +69,47 @@ namespace PSol.Client
             return rad;
         }
 
-        public static void Navigate()
+        public static void Navigate(bool initial = false)
         {
-            if (!Navigating) { return; }
+            if (!Navigating)
+            {
+                return;
+            }
             var start = new Vector2(Types.Player[PlayerIndex].X, Types.Player[PlayerIndex].Y);
             var direction = Vector2.Normalize(start - Destination);
             distance = Vector2.Distance(start, Destination);
-            var angle = (float)Math.Atan2(direction.Y, direction.X) - MathHelper.ToRadians(90);
-            if (angle <= 0) { angle += (float)Math.PI * 2; } else if (angle >= (float)Math.PI * 2) { angle -= (float)Math.PI * 2; }
-            if (Types.Player[PlayerIndex].Rotation != angle && Types.Player[PlayerIndex].Rotation <= angle)
-                Rotate(1);
-            else
-                Rotate(0);
-
-            Globals.DirUp = true;
-            if (distance <= 50)
+            if (navAngle == -1 && distance < 750)
             {
                 Navigating = false;
-                InterfaceGUI.AddChats(@"We've reached our destination", Color.BurlyWood);
+                InterfaceGUI.AddChats(@"Too close to engage autonavigation", Color.BurlyWood);
             }
+            if (navTimer + 1000 <= Game1.Tick)
+            {
+                navTimer = Game1.Tick;
+                navAngle = (float)Math.Atan2(direction.Y, direction.X) - MathHelper.ToRadians(90);
+                if (navAngle < 0)
+                {
+                    navAngle += (float)Math.PI * 2;
+                }
+                else if (navAngle > (float)Math.PI * 2)
+                {
+                    navAngle -= (float)Math.PI * 2;
+                }
+            }
+            Globals.DirUp = true;
+            Console.WriteLine(Math.Abs(Types.Player[PlayerIndex].Rotation - navAngle));
+            if (Math.Abs(Types.Player[PlayerIndex].Rotation - navAngle) <= .05F)
+            {
+                Types.Player[PlayerIndex].Rotation = navAngle;
+            }
+            else
+            {
+                Rotate(Math.Abs(Types.Player[PlayerIndex].Rotation - navAngle) >= 3.14 ? 1 : 0);
+            }
+
+            if (distance >= 150) return;
+            Navigating = false;
+            InterfaceGUI.AddChats(@"We've reached our destination", Color.BurlyWood);
         }
 
         public static void CheckMovement()
@@ -178,6 +200,8 @@ namespace PSol.Client
                     Game1.Explosion.Add(tempLarge);
                     tempLarge.Create(new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
                 }
+                var tempDamage = new DamageText(combat.WeaponDamage.ToString(), new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
+                Game1.DamageTexts.Add(tempDamage);
                 var tempSmall = new SmallExplosion(Graphics.smallExplosionTextures, Vector2.Zero);
                 Game1.Explosion.Add(tempSmall);
                 tempSmall.Create(new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));

@@ -50,10 +50,13 @@ namespace PSol.Client
         public static bool DirDn;
         public static bool DirLt;
         public static bool DirRt;
+        public static bool Flying = false;
 
         public static bool Attacking = false;
+        public static bool HoveringGUI = false;
         public static bool HoveringMob = false;
         public static bool HoveringItem = false;
+        public static bool HoveringPlanet = false;
 
         public static bool Details1;
         public static bool Details2;

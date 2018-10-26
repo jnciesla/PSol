@@ -214,6 +214,7 @@ namespace PSol.Client
 
                             AddChats(@"Navigating to " + X + "," + Y, Color.BurlyWood);
                             GameLogic.Destination = new Vector2(X, Y);
+                            GameLogic.navAngle = -1;
                             GameLogic.Navigating = true;
                         }
                         else
@@ -547,6 +548,7 @@ namespace PSol.Client
                 AddChats(@"Navigating to " + GameLogic.Galaxy[GameLogic.selectedMapItem].Name, Color.BurlyWood);
                 GameLogic.Destination = new Vector2(GameLogic.Galaxy[GameLogic.selectedMapItem].X,
                     GameLogic.Galaxy[GameLogic.selectedMapItem].Y);
+                GameLogic.navAngle = -1;
                 GameLogic.Navigating = true;
             };
 
@@ -602,9 +604,9 @@ namespace PSol.Client
             detailsBody = new MulticolorParagraph("", Anchor.TopLeft, Color.DarkGray, null, new Vector2(200, 10), new Vector2(0, 110))
             { FontOverride = Globals.Font10, OutlineOpacity = 0, AlignToCenter = true, WrapWords = true };
             invCloseBtn = new Image(closeIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.TopRight);
-            equipButton = new Image(button, new Vector2(90, 30), ImageDrawMode.Stretch, Anchor.BottomLeft, new Vector2(10, 12)) { Disabled = true, FillColor = Color.DarkGray };
+            equipButton = new Image(button, new Vector2(90, 30), ImageDrawMode.Stretch, Anchor.BottomLeft, new Vector2(10, 12)) { Enabled = false, FillColor = Color.DarkGray };
             equipLabel = new Paragraph("Install", Anchor.BottomLeft, null, new Vector2(20, 16)) { FillColor = Color.DarkGray, ClickThrough = true, FontOverride = Globals.Font12 };
-            jettButton = new Image(button, new Vector2(90, 30), ImageDrawMode.Stretch, Anchor.BottomLeft, new Vector2(120, 12)) { Disabled = true, FillColor = Color.DarkGray };
+            jettButton = new Image(button, new Vector2(90, 30), ImageDrawMode.Stretch, Anchor.BottomLeft, new Vector2(120, 12)) { Enabled = false, FillColor = Color.DarkGray };
             jettLabel = new Paragraph("Jettison", Anchor.BottomLeft, null, new Vector2(125, 16)) { FillColor = Color.DarkGray, ClickThrough = true, FontOverride = Globals.Font12 };
             qtyLbl = new Paragraph("Qty:", Anchor.BottomRight, Color.WhiteSmoke, null, null, new Vector2(340, 15)) { FontOverride = Globals.Font8 };
             qtyStr = new Paragraph("", Anchor.BottomRight, Color.WhiteSmoke, null, new Vector2(18, 8), new Vector2(300, 14)) { FontOverride = Globals.Font8, AlignToCenter = true };
@@ -649,8 +651,8 @@ namespace PSol.Client
             costStr.Text = "";
             selectedSlot = -1;
             selectedItem = new Item();
-            equipButton.Disabled = true;
-            jettButton.Disabled = true;
+            equipButton.Enabled = false;
+            jettButton.Enabled = false;
             equipButton.FillColor = Color.DarkGray;
             jettButton.FillColor = Color.DarkGray;
             equipLabel.Text = "Install";
@@ -863,7 +865,7 @@ namespace PSol.Client
                     {
                         DisplayDetails(temp);
                         equipLabel.Text = "Remove ";
-                        equipButton.Disabled = false;
+                        equipButton.Enabled = true;
                         equipButton.FillColor = Color.White;
                         selectedItem = temp;
                         selectedSlot = n;
@@ -919,9 +921,9 @@ namespace PSol.Client
                 ArrangeInventory(Types.Player[GameLogic.PlayerIndex].Inventory);
                 shopTab.FillColor = Color.DarkGray;
                 invTab.FillColor = Color.White;
-                equipButton.Disabled = true;
+                equipButton.Enabled = false;
                 equipButton.FillColor = Color.DarkGray;
-                jettButton.Disabled = true;
+                jettButton.Enabled = false;
                 jettButton.FillColor = Color.DarkGray;
             };
             shopTab.OnMouseEnter = tabEnter =>
@@ -944,9 +946,9 @@ namespace PSol.Client
                 ArrangeInventory(shopInventory);
                 invTab.FillColor = Color.DarkGray;
                 shopTab.FillColor = Color.White;
-                equipButton.Disabled = true;
+                equipButton.Enabled = false;
                 equipButton.FillColor = Color.DarkGray;
-                jettButton.Disabled = true;
+                jettButton.Enabled = false;
                 jettButton.FillColor = Color.DarkGray;
             };
             switch (Globals.inventoryMode)
@@ -987,9 +989,9 @@ namespace PSol.Client
             var dragging = false;
             for (var x = 0; x < 60; x++)
             {
-                if (invPanel.GetChildren().Contains(slot[x]))
+                if (invPanel.Children.Contains(slot[x]))
                     invPanel.RemoveChild(slot[x]);
-                if (invPanel.GetChildren().Contains(slotQty[x]))
+                if (invPanel.Children.Contains(slotQty[x]))
                     invPanel.RemoveChild(slotQty[x]);
             }
             if (Globals.inventoryMode == 2)
@@ -1023,7 +1025,7 @@ namespace PSol.Client
                     if (dragging) return;
                     Globals.equipAmmo = false;
                     Globals.equipWeapon = false;
-                    jettButton.Disabled = false;
+                    jettButton.Enabled = true;
                     jettButton.FillColor = Color.White;
                     selectedItem = ITEM;
                     selectedSlot = SLOT + 101;
@@ -1057,13 +1059,13 @@ namespace PSol.Client
                     DisplayDetails(ITEM);
                     if (ITEM?.Slot == 0) return;
                     if (!pInv && Globals.inventoryMode == 2) return;
-                    equipButton.Disabled = false;
+                    equipButton.Enabled = true;
                     equipButton.FillColor = Color.White;
                 };
             }
             for (var i = 0; i < 60; i++)
             {
-                if (!invPanel.GetChildren().Contains(slot[i])) continue;
+                if (!invPanel.Children.Contains(slot[i])) continue;
                 var z = i;
                 var dropTest = false;
                 slot[i].OnStartDrag = entity => { dragging = true; };
@@ -1185,7 +1187,7 @@ namespace PSol.Client
             var closeBtn = new Image(closeIcon, new Vector2(15, 15), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(-30, -29));
             starDetail = new Image(Graphics.Planets[0], new Vector2(175, 175), ImageDrawMode.Stretch, Anchor.TopRight, new Vector2(40, 10))
             {
-                Disabled = true,
+                Enabled = false,
                 Opacity = 100
             };
             galaxyMap.AddChild(starDetail);
@@ -1315,7 +1317,6 @@ namespace PSol.Client
                 Globals.selectedLoot = null;
                 return;
             }
-            DisplayLootDetails();
             for (var i = 0; i < 9; i++)
             {
                 if (loot.Items[i] == null) continue;
