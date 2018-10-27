@@ -30,7 +30,9 @@ namespace PSol.Client
                 {(int) SGalaxy, HandleGalaxy },
                 {(int) SItems, HandleItems },
                 {(int) SInventory, HandleInventory },
-                {(int)SPlayerUpdate, UpdateData }
+                {(int)SPlayerUpdate, UpdateData },
+                {(int)SLevelUp, HandleExperience },
+                {(int)SNebulae, HandleNebulae }
             };
         }
 
@@ -63,6 +65,9 @@ namespace PSol.Client
                     break;
                 case (int)MessageColors.Minor:
                     color = Color.DarkOliveGreen;
+                    break;
+                case (int)MessageColors.Announcement:
+                    color = Color.SkyBlue;
                     break;
                 default:
                     color = Color.DarkGray;
@@ -105,6 +110,7 @@ namespace PSol.Client
                 Rank = buffer.GetString(),
                 Credits = buffer.GetInteger(),
                 Exp = buffer.GetInteger(),
+                Level = buffer.GetInteger(),
                 Weap1Charge = buffer.GetInteger(),
                 Weap2Charge = buffer.GetInteger(),
                 Weap3Charge = buffer.GetInteger(),
@@ -210,6 +216,15 @@ namespace PSol.Client
             buffer.Dispose();
         }
 
+        private static void HandleNebulae(byte[] data)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            GameLogic.Nebulae = buffer.GetList<Nebula>();
+            buffer.Dispose();
+        }
+
         private static void HandleItems(byte[] data)
         {
             InterfaceGUI.AddChats(@"Item dictionary downloaded.", Color.DarkOliveGreen);
@@ -218,6 +233,27 @@ namespace PSol.Client
             buffer.GetInteger();
             GameLogic.Items = buffer.GetList<Item>();
             buffer.Dispose();
+        }
+
+        private static void HandleExperience(byte[] data)
+        {
+            var random = new Random();
+            var buffer = new PacketBuffer();
+            buffer.AddBytes(data);
+            buffer.GetInteger();
+            var tempLevel = buffer.GetInteger();
+            var tempXP = buffer.GetInteger();
+            var increase = tempXP - Types.Player[GameLogic.PlayerIndex].Exp;
+            if (tempLevel > Types.Player[GameLogic.PlayerIndex].Level)
+            {
+                Game1.LevelUp.Create(new Vector2(Types.Player[GameLogic.PlayerIndex].X - 20 + random.Next(40), Types.Player[GameLogic.PlayerIndex].Y - 20 + random.Next(40)));
+            }
+            Types.Player[GameLogic.PlayerIndex].Level = tempLevel;
+            Types.Player[GameLogic.PlayerIndex].Exp = tempXP;
+            Globals.minXP = buffer.GetInteger();     // XP requirement for current level
+            Globals.maxXP = buffer.GetInteger();     // XP requirement for next level
+            var tempDamage = new DamageText(increase.ToString(), new Vector2(Types.Player[GameLogic.PlayerIndex].X - 20 + random.Next(40), Types.Player[GameLogic.PlayerIndex].Y - 20 + random.Next(40)), 2);
+            Game1.DamageTexts.Add(tempDamage);
         }
 
         //

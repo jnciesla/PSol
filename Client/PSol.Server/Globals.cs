@@ -15,5 +15,6 @@ namespace PSol.Server
         public static ICollection<Item> Items;
         public static ICollection<Inventory> Inventory = new List<Inventory>();
         public static List<Loot> Loot = new List<Loot>();
+        public static List<Nebula> Nebulae = new List<Nebula>();
     }
 }

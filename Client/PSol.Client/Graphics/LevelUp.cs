@@ -6,15 +6,14 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace PSol.Client
 {
-    public class SmallExplosion
+    public class LevelUp
     {
         private readonly Random random;
         public Vector2 EmitterLocation { get; set; }
         private readonly List<Particle> particles;
         private readonly List<Texture2D> textures;
-        private bool final = false;
 
-        public SmallExplosion(List<Texture2D> textures, Vector2 location)
+        public LevelUp(List<Texture2D> textures, Vector2 location)
         {
             EmitterLocation = location;
             this.textures = textures;
@@ -24,21 +23,16 @@ namespace PSol.Client
 
         public void Update()
         {
-            for (var particle = final ? 1 : 0; particle < particles.Count; particle++)
+            for (var particle = 1; particle < particles.Count; particle++)
             {
                 particles[particle].Update();
                 particles[particle].Size -= .01F;
                 if (!(particles[particle].Opacity <= 0)) continue;
                 particles.RemoveAt(particle);
                 particle--;
-                if (particles.Count <= 1)
-                {
-                    // Remove from the list of explosions when it's over
-                    Game1.Explosion.Remove(this);
-                }
+                if (particles.Count <= 1) { particles.RemoveAt(0); }
             }
-
-            if (!final) return;
+            if (particles.Count <= 0) return;
             particles[0].Size += .4F;
             particles[0].Opacity -= .01F;
         }
@@ -48,18 +42,9 @@ namespace PSol.Client
             var total = 100 + random.Next(50); ;
             for (var i = 0; i < total; i++)
             {
-                particles.Add(GenerateNewParticle(position));
-            }
-        }
-
-        public void CreateFinal(Vector2 position)
-        {
-            var total = 100 + random.Next(50); ;
-            for (var i = 0; i < total; i++)
-            {
                 particles.Add(i == 0 ? GenerateShockwave(position) : GenerateNewParticle(position));
             }
-            final = true;
+
         }
 
         private Particle GenerateNewParticle(Vector2 position)
@@ -73,17 +58,14 @@ namespace PSol.Client
 
             var size = (float)random.NextDouble();
             var ttl = 750 + random.Next(500);
-            var Color = new Color { R = 255, G = 255, B = 0 };
-            if (textureInt == 0 && random.Next(2) == 1 && textures.Count > 1)
-            {
-                Color = Color.Black;
-            }
-            return new Particle(texture, position, velocity, 0, angularVelocity, size, ttl, Color);
+            var Color = new Color { R = 7, G = 241, B = 245 };
+
+            return new Particle(texture, position, velocity, 0, angularVelocity, size, ttl, Color, true);
         }
 
         private static Particle GenerateShockwave(Vector2 position)
         {
-            return new Particle(Graphics.shockwave, position, Vector2.Zero, 0, 0, 1, 1000, new Color(50,50,50) * .25F);
+            return new Particle(Graphics.shockwave, position, Vector2.Zero, 0, 0, 1, 1000, new Color(7, 241, 245) * .5F);
         }
 
         public void Draw(SpriteBatch spriteBatch)

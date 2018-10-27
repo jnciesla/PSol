@@ -10,7 +10,9 @@
         SGalaxy = 6,
         SItems = 7,
         SInventory = 8,
-        SPlayerUpdate = 9
+        SPlayerUpdate = 9,
+        SLevelUp = 10,
+        SNebulae = 11
     }
 
     public enum ClientPackets
@@ -32,6 +34,7 @@
         Chat = 1,
         Warning = 2,
         Notification = 3,
-        Minor = 4
+        Minor = 4,
+        Announcement = 5
     }
 }

@@ -52,6 +52,7 @@
     <Compile Include="Graphics\DamageText.cs" />
     <Compile Include="Graphics\ILaser.cs" />
     <Compile Include="Graphics\Laser.cs" />
+    <Compile Include="Graphics\LevelUp.cs" />
     <Compile Include="Graphics\Particle.cs" />
     <Compile Include="Graphics\ParticleEngine.cs" />
     <Compile Include="Graphics\SmallExplosion.cs" />

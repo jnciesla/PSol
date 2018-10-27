@@ -20,6 +20,7 @@ namespace PSol.Client
         public static ParticleEngine particleEngine;
         public static List<SmallExplosion> Explosion = new List<SmallExplosion>();
         public static List<DamageText> DamageTexts = new List<DamageText>();
+        public static LevelUp LevelUp;
         private readonly FramesPerSecondCounter _fpsCounter = new FramesPerSecondCounter();
         public static OrthographicCamera Camera;
         private Texture2D backGroundTexture;
@@ -45,7 +46,7 @@ namespace PSol.Client
             graphics.PreferredBackBufferHeight = Globals.PreferredBackBufferHeight;
         }
 
-        public void setFullScreen()
+        public void SetFullScreen()
         {
             Globals.graphicsChange = false;
             Globals.PreferredBackBufferHeight = GraphicsAdapter.DefaultAdapter.CurrentDisplayMode.Height;
@@ -56,6 +57,7 @@ namespace PSol.Client
             renderTarget = new RenderTarget2D(GraphicsDevice, GraphicsDevice.PresentationParameters.BackBufferWidth, GraphicsDevice.PresentationParameters.BackBufferHeight, false, GraphicsDevice.PresentationParameters.BackBufferFormat, DepthFormat.Depth24);
             Graphics.InitializeGraphics(Content);
             graphics.ApplyChanges();
+            Camera = new OrthographicCamera(new BoxingViewportAdapter(Window, GraphicsDevice, Globals.PreferredBackBufferWidth, Globals.PreferredBackBufferHeight));
         }
 
         /// <summary>
@@ -104,6 +106,7 @@ namespace PSol.Client
             // Particle engine textures
             var engineTextures = new List<Texture2D> { Graphics.spark };
             particleEngine = new ParticleEngine(engineTextures, Vector2.Zero);
+            LevelUp = new LevelUp(Graphics.levelUpTextures, Vector2.Zero);
         }
 
         /// <summary>
@@ -138,7 +141,7 @@ namespace PSol.Client
             {
                 if (Globals.graphicsChange)
                 {
-                    setFullScreen();
+                    SetFullScreen();
                 }
                 particleEngine.EmitterLocation = new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y);
                 particleEngine.Update();
@@ -153,6 +156,7 @@ namespace PSol.Client
             {
                 DamageTexts[x].Update();
             }
+            LevelUp.Update();
             if (GameLogic.PlayerIndex != -1)    // Update camera position to follow player
                 Camera.Position = new Vector2(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y) - new Vector2(Globals.PreferredBackBufferWidth / 2.0f, Globals.PreferredBackBufferHeight / 2.0f);
             IGUI.Update();
@@ -175,7 +179,7 @@ namespace PSol.Client
             spriteBatch.Draw(renderTarget, new Rectangle(0, 0, Globals.PreferredBackBufferWidth, Globals.PreferredBackBufferHeight), Globals.Luminosity);
             spriteBatch.End();
             base.Draw(gameTime);
-            
+
         }
 
         /// <summary>
@@ -202,9 +206,9 @@ namespace PSol.Client
                 WalkTimer = Tick + 15;
                 Globals.PlanetaryRotation += MathHelper.ToRadians(.01f);
             }
-            
+
             spriteBatch.Begin(SpriteSortMode.Immediate, BlendState.AlphaBlend, SamplerState.LinearWrap, null, null, null, Camera.GetViewMatrix());
-            
+
             spriteBatch.Draw(backGroundTexture, backgroundPos, Globals.mapSize, Color.White);
             Graphics.DrawBorder(Globals.playArea, 2, Color.DarkOliveGreen);
             if (GameLogic.Galaxy != null)
@@ -214,9 +218,10 @@ namespace PSol.Client
             Graphics.DrawWeapons(spriteBatch);
             Graphics.RenderShadows();
             particleEngine.Draw(spriteBatch);
+            LevelUp.Draw(spriteBatch);
             Graphics.RenderObjects();
             Graphics.RenderPlayers();
-            
+
             foreach (var explosion in Explosion.ToList())
             {
                 explosion.Draw(spriteBatch);
@@ -225,9 +230,34 @@ namespace PSol.Client
             {
                 DamageText.Draw();
             }
+            foreach (var Nebula in GameLogic.Nebulae)
+            {
+                Color color;
+                switch (Nebula.Type)
+                {
+                    case 0:
+                        color = Color.MediumPurple;
+                        break;
+                    case 1:
+                        color = Color.Crimson;
+                        break;
+                    case 2:
+                        color = Color.DarkGoldenrod;
+                        break;
+                    case 3:
+                        color = Color.DarkOrchid;
+                        break;
+                    case 4:
+                        color = Color.MidnightBlue;
+                        break;
+                    default:
+                        color = Color.Transparent;
+                        break;
+                }
+                spriteBatch.Draw(Graphics.nebula, new Vector2(Nebula.X, Nebula.Y), color);
+            }
             spriteBatch.DrawString(Globals.Font8, fps, new Vector2(0, -100), Color.White);
             spriteBatch.End();
-            
             Graphics.DrawHud(Content);
             Graphics.DrawWeaponsBar(Content);
             Graphics.DrawInfo(Content);

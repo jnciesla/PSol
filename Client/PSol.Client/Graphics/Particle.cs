@@ -35,9 +35,8 @@ namespace PSol.Client
         {
             Position += Velocity;
             Angle += AngularVelocity;
-            if (SteadyColor) return;
             Opacity -= (float)10 / TTL;
-            if (Color.R <= 0) return;
+            if (Color.R <= 0 || SteadyColor) return;
             if (Color.G >= 1) { Color.G -= 15; } else { Color.R -= 5; }
         }
 

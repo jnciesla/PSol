@@ -52,7 +52,7 @@ namespace PSol.Data.Migrations
                 Sprite = 2,
                 X = 1600,
                 Y = 1600,
-                Color = 1
+                Color = "1"
             });
 
             context.SaveChanges();
@@ -81,7 +81,7 @@ namespace PSol.Data.Migrations
                 Description = "The very first item added to the game.",
                 Type = "Biospecimen",
                 Image = 1,
-                Color = 0,
+                Color = "1",
                 Mass = 1,
                 Cost = 500,
                 Stack = true,
@@ -100,6 +100,34 @@ namespace PSol.Data.Migrations
                 Weapons = 0,
                 Special = 0,
                 Slot = 0
+            });
+
+            context.Items.AddOrUpdate(new Item
+            {
+                Id = "a53edcf0-1105-4edf-9c30-217279c3d286",
+                Name = "Laser MK1",
+                Description = "Basic laser",
+                Type = "Weapon",
+                Image = 1,
+                Color = "1",
+                Mass = 1,
+                Cost = 500,
+                Stack = true,
+                Level = 0,
+                Hull = 0,
+                Shield = 0,
+                Armor = 0,
+                Thrust = 0,
+                Power = 0,
+                Damage = 20,
+                Recharge = 20,
+                Repair = 0,
+                Defense = 0,
+                Offense = 0,
+                Capacity = 0,
+                Weapons = 0,
+                Special = 0,
+                Slot = 7
             });
 
             context.SaveChanges();

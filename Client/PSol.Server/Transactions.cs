@@ -24,8 +24,14 @@ namespace PSol.Server
             if (recipient != "X" && newOwner != null)
             {
                 var stacked = FindAvailableStack(newOwner.Id, temp);
-                if (stacked == 0) return true;
-                if (stacked == -1) return false;
+                switch (stacked)
+                {
+                    case 0:
+                        return true;
+                    case -1:
+                        return false;
+                }
+
                 temp.Quantity = stacked;
                 var newSlot = FindOpenSlot(recipient);
                 var newInv = new Inventory()
@@ -404,7 +410,7 @@ namespace PSol.Server
                 X = location.X,
                 Y = location.Y
             };
-            loot.Items[0] = "50521cfe-7d63-4495-a1cf-b900fb8d2251";
+            loot.Items[0] = "a53edcf0-1105-4edf-9c30-217279c3d286";
             loot.Items[1] = "50521cfe-7d63-4495-a1cf-b900fb8d225f";
             loot.Quantities[0] = 1;
             loot.Quantities[1] = 10;
@@ -454,6 +460,48 @@ namespace PSol.Server
                 Globals.Loot.Remove(Globals.Loot.FirstOrDefault(l => l.Id == lootId));
             }
             return true;
+        }
+
+        public static int GiveXP(int index, int XP)
+        {
+            var newLevels = 0;
+            Types.Player[index].Exp += XP;
+            while (Types.Player[index].Exp >= CheckLevel(Types.Player[index].Level + 1))
+            {
+
+                if (Types.Player[index].Level >= Constants.MAX_LEVEL)
+                {
+                    newLevels = -1;
+                }
+                else
+                {
+                    Types.Player[index].Level++;
+                    newLevels++;
+                }
+            }
+
+            return newLevels;
+        }
+
+        public static double CheckLevel(int level)
+        {
+            return Math.Floor(Constants.LVL_BASE * Math.Pow(level, Constants.LVL_EXPONENT));
+        }
+
+        public static void GenerateNebulae()
+        {
+            var random = new Random();
+            for (var i = 0; i < Constants.MAX_NEBULAE; i++)
+            {
+                var temp = new Nebula
+                {
+                    ID = Guid.NewGuid().ToString(),
+                    Type = 0,
+                    X = random.Next(500, Constants.PLAY_AREA_WIDTH - 1000),
+                    Y = random.Next(500, Constants.PLAY_AREA_HEIGHT - 1000)
+                };
+                Globals.Nebulae.Add(temp);
+            }
         }
     }
 }

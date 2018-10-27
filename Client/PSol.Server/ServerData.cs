@@ -88,6 +88,7 @@ namespace PSol.Server
             XFerLoad(index);
             SendGalaxy(index);
             SendItems(index);
+            SendNebulae(index);
             SendMessage(-1, Types.Player[index].Name + " has connected.", Notification);
             Globals.FullData = true;
             Console.WriteLine(username + @" logged in successfully.");
@@ -185,6 +186,18 @@ namespace PSol.Server
             buffer.Dispose();
         }
 
+        public void SendXP(int index)
+        {
+            var buffer = new PacketBuffer();
+            buffer.AddInteger((int)SLevelUp);
+            buffer.AddInteger(Types.Player[index].Level);
+            buffer.AddInteger(Types.Player[index].Exp);
+            buffer.AddInteger((int)Transactions.CheckLevel(Types.Player[index].Level));     // XP requirement for current level
+            buffer.AddInteger((int)Transactions.CheckLevel(Types.Player[index].Level + 1)); // XP requirement for next level
+            SendData(index, buffer.ToArray());
+            buffer.Dispose();
+        }
+
         public void XFerLoad(int index)
         {
             var buffer = new PacketBuffer();
@@ -203,6 +216,7 @@ namespace PSol.Server
             buffer.AddString(player.Rank);
             buffer.AddInteger(player.Credits);
             buffer.AddInteger(player.Exp);
+            buffer.AddInteger(player.Level);
             buffer.AddInteger(player.Weap1Charge);
             buffer.AddInteger(player.Weap2Charge);
             buffer.AddInteger(player.Weap3Charge);
@@ -348,7 +362,18 @@ namespace PSol.Server
             var combat = _combatService.DoAttack(targetId, Types.Player[index].Id, WEAPON, Types.Player.ToList());
             var targetPlayer = Types.Player.ToList().FirstOrDefault(p => p?.Id == combat.TargetId);
 
-            if (combat.TargetId == "dead") { Transactions.CreateLoot(index, new Vector2(combat.TargetX, combat.TargetY)); }
+            if (combat.TargetId == "dead")
+            {
+                Transactions.CreateLoot(index, new Vector2(combat.TargetX, combat.TargetY));
+                var newLevel = Transactions.GiveXP(index, 1000);
+
+                if (newLevel == -1) { SendMessage(index, "You have already reached the maximum level!", Announcement); }
+                if (newLevel > 0)
+                {
+                    SendMessage(index, "Congratulations, you have reached level " + (Types.Player[index].Level) + "!", Announcement);
+                }
+                SendXP(index);
+            }
 
             if (targetPlayer == null) return;
             targetPlayer.Shield -= combat.WeaponDamage;
@@ -475,6 +500,33 @@ namespace PSol.Server
             buffer.AddArray(Globals.Galaxy.ToArray());
             SendData(index, buffer.ToArray());
             buffer.Dispose();
+        }
+
+        public void SendNebulae(int index = -1)
+        {
+            if (index == -1)
+            {
+                for (var i = 0; i < Constants.MAX_PLAYERS; i++)
+                {
+                    if (ServerTCP.Clients[i].Socket != null && ServerTCP.tempPlayer[i].inGame &&
+                        ServerTCP.tempPlayer[i].receiving)
+                    {
+                        var buffer = new PacketBuffer();
+                        buffer.AddInteger((int)SNebulae);
+                        buffer.AddArray(Globals.Nebulae.ToArray());
+                        SendData(i, buffer.ToArray());
+                        buffer.Dispose();
+                    }
+                }
+            }
+            else
+            {
+                var buffer = new PacketBuffer();
+                buffer.AddInteger((int)SNebulae);
+                buffer.AddArray(Globals.Nebulae.ToArray());
+                SendData(index, buffer.ToArray());
+                buffer.Dispose();
+            }
         }
 
         public void SendItems(int index)

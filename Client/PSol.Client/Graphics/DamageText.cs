@@ -7,15 +7,19 @@ namespace PSol.Client
     {
         public string Str { get; set; }
         public Vector2 Pos { get; set; }
+        public int Type { get; set; }
 
         private float Opacity { get; set; }
         private float Angle { get;}
+        private readonly Color[] C = {Color.Red, Color.LimeGreen, Color.SkyBlue };
+        private readonly Color[] S = { Color.DarkRed, Color.ForestGreen, Color.DarkBlue };
 
-        public DamageText(string str, Vector2 pos)
+        public DamageText(string str, Vector2 pos, int type)
         {
             var random = new Random();
             Str = str;
             Pos = pos;
+            Type = type;
             Opacity = 3.5f;
             Angle = (float)random.NextDouble() * (random.Next(0, 1) * 2 - 1);
         }
@@ -32,8 +36,8 @@ namespace PSol.Client
 
         public void Draw()
         {
-            Graphics.DrawString(Globals.Font10, Str,Pos.X,Pos.Y,false, Color.DarkRed * Opacity);
-            Graphics.DrawString(Globals.Font10, Str, Pos.X - 1, Pos.Y, false, Color.Red * Opacity);
+            Graphics.DrawString(Globals.Font10, Str,Pos.X,Pos.Y,false, C[Type] * Opacity);
+            Graphics.DrawString(Globals.Font10, Str, Pos.X - 1, Pos.Y, false, S[Type] * Opacity);
         }
     }
 }

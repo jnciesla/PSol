@@ -51,7 +51,6 @@ namespace PSol.Data.Services
                 combat.TargetY = targetMob.Y;
             }
 
-
             locale = sourcePlayer != null ? new Vector2(sourcePlayer.X, sourcePlayer.Y) : locale;
             locale = sourceMob != null ? new Vector2(sourceMob.X, sourceMob.Y) : locale;
             combat.X = (int)locale.X;

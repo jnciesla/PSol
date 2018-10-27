@@ -39,7 +39,8 @@ namespace PSol.Data.Services
                 MaxHealth = 100,
                 Shield = 100,
                 MaxShield = 100,
-                Rank = "2LT"
+                Rank = "2LT",
+                Credits = 1000
             };
             _userRepo.Add(newUser);
             return newUser;

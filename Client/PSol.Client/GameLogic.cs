@@ -22,6 +22,7 @@ namespace PSol.Client
         private static int messageTime;
         private static int navTimer;
         public static List<Star> Galaxy;
+        public static List<Nebula> Nebulae = new List<Nebula>();
         public static List<Planet> Planets = new List<Planet>();
         public static List<Item> Items;
         public static List<Mob> LocalMobs;
@@ -198,15 +199,14 @@ namespace PSol.Client
                 {
                     var tempLarge = new SmallExplosion(Graphics.largeExplosionTextures, Vector2.Zero);
                     Game1.Explosion.Add(tempLarge);
-                    tempLarge.Create(new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
+                    tempLarge.CreateFinal(new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
                 }
-                var tempDamage = new DamageText(combat.WeaponDamage.ToString(), new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
+                var tempDamage = new DamageText(combat.WeaponDamage.ToString(), new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)), 0);
                 Game1.DamageTexts.Add(tempDamage);
                 var tempSmall = new SmallExplosion(Graphics.smallExplosionTextures, Vector2.Zero);
                 Game1.Explosion.Add(tempSmall);
                 tempSmall.Create(new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
             }
         }
-
     }
 }

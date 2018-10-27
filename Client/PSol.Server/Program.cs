@@ -59,6 +59,12 @@ namespace PSol.Server
                     Transactions.Charge(Types.Player.ToList());
                 }, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(500));
 
+            var nebulaTimer = new Timer(e =>
+            {
+                Transactions.GenerateNebulae();
+                shd.SendNebulae();
+            }, null, TimeSpan.Zero, TimeSpan.FromMinutes(30));
+
             var pulseTimer = new Timer(e =>
                 {
                     shd.PreparePulseBroadcast();
@@ -93,6 +99,8 @@ namespace PSol.Server
                     Console.WriteLine(@"Unknown Command");
                 }
             }
+
+            nebulaTimer.Dispose();
             saveTimer.Dispose();
             pulseTimer.Dispose();
             debrisTimer.Dispose();

@@ -9,7 +9,7 @@
         public string Type { get; set; }
         public string Description { get; set; }
         public int Image { get; set; }
-        public int Color { get; set; }
+        public string Color { get; set; }       // RRRGGGBBB.  < 9 characters will result in no coloration
         public int Mass { get; set; }
         public int Cost { get; set; }
         public bool Stack { get; set; }

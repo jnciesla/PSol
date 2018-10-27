@@ -1010,7 +1010,7 @@ namespace PSol.Client
                 var ITEM = GameLogic.Items.FirstOrDefault(i => i.Id == invItem.ItemId);
                 slot[SLOT] = new Image(Graphics.Objects[ITEM?.Image ?? 0], new Vector2(32, 32), ImageDrawMode.Stretch, Anchor.TopLeft,
                     new Vector2(slotBounds[SLOT].X, slotBounds[SLOT].Y))
-                { Draggable = true };
+                { Draggable = true, FillColor = Graphics.COLOR(ITEM?.Color) };
                 if (Globals.inventoryMode == 2 && !pInv) { slot[SLOT].Draggable = false; }
                 invPanel.AddChild(slot[SLOT]);
                 if (invItem.Quantity > 1)
@@ -1323,6 +1323,7 @@ namespace PSol.Client
                 var temp = GameLogic.Items.FirstOrDefault(itm => itm.Id == loot.Items[i]);
                 lootItem[i].Visible = true;
                 lootItem[i].Texture = Graphics.Objects[temp?.Image ?? 0];
+                lootItem[i].FillColor = Graphics.COLOR(temp?.Color);
                 var i1 = i;
                 lootItem[i].OnClick = e =>
                 {
@@ -1434,6 +1435,7 @@ namespace PSol.Client
             }
             ColorInstruction.AddCustomColor("DARKGRAY", Color.DarkGray);
             detailsImage.Texture = Graphics.Objects[item.Image];
+            detailsImage.FillColor = Graphics.COLOR(item.Color);
             detailsImage.Visible = true;
             detailsHeader.Text = item.Name + "\n";
             detailsSubHeader.Text = "Level " + item.Level + " " + item.Type + "\n Cost: ¢" + item.Cost;

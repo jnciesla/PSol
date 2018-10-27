@@ -55,6 +55,10 @@
     <Compile Include="Migrations\201810262014258_Initial.Designer.cs">
       <DependentUpon>201810262014258_Initial.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201810270930554_Colors.cs" />
+    <Compile Include="Migrations\201810270930554_Colors.Designer.cs">
+      <DependentUpon>201810270930554_Colors.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\Combat.cs" />
     <Compile Include="Models\Inventory.cs" />
@@ -62,6 +66,7 @@
     <Compile Include="Models\Loot.cs" />
     <Compile Include="Models\MobType.cs" />
     <Compile Include="Models\Mob.cs" />
+    <Compile Include="Models\Nebula.cs" />
     <Compile Include="Models\Planet.cs" />
     <Compile Include="Models\Star.cs" />
     <Compile Include="Models\User.cs" />
@@ -95,6 +100,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201810262014258_Initial.resx">
       <DependentUpon>201810262014258_Initial.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201810270930554_Colors.resx">
+      <DependentUpon>201810270930554_Colors.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <Import Project="..\Bindings\Bindings.projitems" Label="Shared" />
