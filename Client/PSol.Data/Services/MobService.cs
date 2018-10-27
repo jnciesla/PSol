@@ -156,11 +156,11 @@ namespace PSol.Data.Services
             GetMobs().Where(m => m.TargettingId == null && m.NavToX != null).ToList().ForEach(m =>
             {
                 var start = new Vector2(m.X, m.Y);
-                var destination = new Vector2(m.NavToX ?? m.X, m.NavToY ?? m.Y);
+                var destination = new Vector2(m.NavToX ?? m.X - 0.1f, m.NavToY ?? m.Y - 0.1f);
                 var direction = Vector2.Normalize(destination - start);
                 var distance = Vector2.Distance(start, destination);
                 m.Rotation = (float)Math.Atan2(direction.Y, direction.X) + MathHelper.ToRadians(90);
-
+                
                 m.X += direction.X * 4f;
                 m.Y += direction.Y * 4f;
                 if (distance.CompareTo(50F) > 0) return;
