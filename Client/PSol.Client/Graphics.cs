@@ -439,7 +439,6 @@ namespace PSol.Client
         private static void DrawMobs()
         {
             if (GameLogic.PlayerIndex <= -1) return;
-            Console.WriteLine(GameLogic.LocalMobs.Count);
             foreach (var mob in GameLogic.LocalMobs)
             {
                 var spriteNum = mob.MobType.Sprite;

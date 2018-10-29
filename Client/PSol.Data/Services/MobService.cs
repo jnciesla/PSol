@@ -80,7 +80,7 @@ namespace PSol.Data.Services
                 Console.WriteLine(@"Spawning " + mob.MobType.Name);
 
                 // Determine if he's going to be special
-                if (rnd.Next(0, 10) == 7) { mob.Special = true; }
+                mob.Special = rnd.Next(0, 10) == 7;
 
                 mob.Alive = true;
                 mob.Health = mob.MobType.MaxHealth;
@@ -94,13 +94,12 @@ namespace PSol.Data.Services
                 mob.Y = mob.MobType.Star.Y + yMod;
                 mob.Y = mob.Y < 0 ? mob.Y * -1 : mob.Y;
                 mob.Name = GenerateName(mob.Special);
-                _mobs.Add(mob);
             }
         }
 
         private void AddDeadMob(MobType type)
         {
-            var mob = new Mob()
+            var mob = new Mob
             {
                 Id = Guid.NewGuid().ToString(),
                 Alive = false,
@@ -221,7 +220,8 @@ namespace PSol.Data.Services
                     m.TargettingId = null;
                     return;
                 }
-
+                //TODO: I feel like sometimes they come hump me and my health doesnt decrease until I quit and come back and suddenly I'm dead.  Does this health -= damage work
+                //TODO: Like this or does it need to be applied directly to the _userService instance instead of a locally copied var?
                 // Actually attack
                 var damage = rnd.Next(0, 5);
                 target.Health -= damage;
