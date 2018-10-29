@@ -153,9 +153,11 @@ namespace PSol.Client
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger();
-            for (var i = 1; i != Constants.MAX_PLAYERS; i++)
+            var numPlayers = buffer.GetInteger();
+            for (var i = 0; i != numPlayers; i++)
             {
-                Types.Player[i].Name = buffer.GetString();
+                var index = buffer.GetInteger();
+                Types.Player[index].Name = buffer.GetString();
             }
             buffer.Dispose();
         }
@@ -165,9 +167,11 @@ namespace PSol.Client
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
             buffer.GetInteger(); // Packet Type
+            var numPlayers = buffer.GetInteger();
             Globals.serverTime = BitConverter.ToInt64(buffer.GetBytes(8), 0);
-            for (var i = 1; i != Constants.MAX_PLAYERS; i++)
+            for (var i = 0; i != numPlayers; i++)
             {
+                var index = buffer.GetInteger();
                 var Id = buffer.GetString();
                 var X = buffer.GetFloat();
                 var Y = buffer.GetFloat();
@@ -178,15 +182,15 @@ namespace PSol.Client
                 var MaxShield = buffer.GetInteger();
                 var inGame = BitConverter.ToBoolean(buffer.GetBytes(1), 0);
                 // If the buffer is not ourselves, skip the update - need to do not in game characters to remove logged out users
-                if (i == GameLogic.PlayerIndex) continue;
-                Types.Player[i].Id = Id;
-                Types.Player[i].X = X;
-                Types.Player[i].Y = Y;
-                Types.Player[i].Rotation = Rotation;
-                Types.Player[i].Health = Health;
-                Types.Player[i].MaxHealth = MaxHealth;
-                Types.Player[i].Shield = Shield;
-                Types.Player[i].MaxShield = MaxShield;
+                if (index == GameLogic.PlayerIndex) continue;
+                Types.Player[index].Id = Id;
+                Types.Player[index].X = X;
+                Types.Player[index].Y = Y;
+                Types.Player[index].Rotation = Rotation;
+                Types.Player[index].Health = Health;
+                Types.Player[index].MaxHealth = MaxHealth;
+                Types.Player[index].Shield = Shield;
+                Types.Player[index].MaxShield = MaxShield;
             }
             GameLogic.LocalMobs = buffer.GetList<Mob>();
             GameLogic.LocalCombat = buffer.GetList<Combat>();

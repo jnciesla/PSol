@@ -1,4 +1,5 @@
-﻿using System.Security.Cryptography;
+﻿using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 using PSol.Data.Models;
 using PSol.Data.Repositories.Interfaces;
@@ -8,6 +9,7 @@ namespace PSol.Data.Services
 {
     public class UserService : IUserService
     {
+        public List<User> ActiveUsers { get; set; } = new List<User>();
         private readonly IUserRepository _userRepo;
 
         public UserService(IUserRepository userRepo)
@@ -24,6 +26,7 @@ namespace PSol.Data.Services
         {
             _userRepo.SavePlayer(user);
         }
+
 
         public User RegisterUser(string username, string password)
         {
