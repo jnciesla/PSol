@@ -13,11 +13,13 @@ namespace PSol.Data.Services
     {
         private static readonly Random rnd = new Random();
         private readonly IMobRepository _mobRepo;
+        private readonly IUserService _userService;
         private ICollection<Mob> _mobs = new List<Mob>();
 
-        public MobService(IMobRepository mobRepo)
+        public MobService(IMobRepository mobRepo, IUserService userService)
         {
             _mobRepo = mobRepo;
+            _userService = userService;
             _mobs = _mobRepo.GetAllMobs();
         }
 
@@ -120,8 +122,8 @@ namespace PSol.Data.Services
 
         public void WanderMobs()
         {
-            // Go through mobs that aren't in combat or already wandering and wander them a little within their spawn radius
-            GetMobs().Where(m => m.TargettingId == null && m.NavToX == null).ToList().ForEach(m =>
+            // Go through mobs that aren't already wandering and wander them a little within their spawn radius
+            GetMobs().Where(m => m.NavToX == null).ToList().ForEach(m =>
             {
                 // 0.2% chance to wander
                 if (rnd.Next(0, 999) > 1) return;
@@ -153,14 +155,14 @@ namespace PSol.Data.Services
             });
 
             // Actually wander them
-            GetMobs().Where(m => m.TargettingId == null && m.NavToX != null).ToList().ForEach(m =>
+            GetMobs().Where(m => m.NavToX != null).ToList().ForEach(m =>
             {
                 var start = new Vector2(m.X, m.Y);
                 var destination = new Vector2(m.NavToX ?? m.X - 0.1f, m.NavToY ?? m.Y - 0.1f);
                 var direction = Vector2.Normalize(destination - start);
                 var distance = Vector2.Distance(start, destination);
                 m.Rotation = (float)Math.Atan2(direction.Y, direction.X) + MathHelper.ToRadians(90);
-                
+
                 m.X += direction.X * 4f;
                 m.Y += direction.Y * 4f;
                 if (distance.CompareTo(50F) > 0) return;
@@ -171,12 +173,58 @@ namespace PSol.Data.Services
 
         public void CheckAggro()
         {
+            // Get mobs not in combat and see if any players are close enough to agro
+            GetMobs().Where(m => m.TargettingId == null).ToList().ForEach(CheckSingleAggro);
+        }
 
+        private void CheckSingleAggro(Mob m)
+        {
+            m.TargettingId = null;
+            var players = _userService.ActiveUsers.Where(p => p.X > m.X - 100 && p.X < m.X + 100 && p.Y > m.Y - 100 && p.Y < m.Y + 100).ToList();
+            if (players.Count == 0) return;
+            var ndx = 0;
+            if (players.Count > 1)
+            {
+                // Pick a random player to agro
+                ndx = rnd.Next(0, players.Count - 1);
+            }
+            m.TargettingId = players[ndx].Id;
+            // Nav to them - gets us close
+            m.NavToX = players[ndx].X;
+            m.NavToY = players[ndx].Y;
         }
 
         public void DoCombat()
         {
+            GetMobs().Where(m => m.TargettingId != null && m.Alive).ToList().ForEach(m =>
+            {
+                // Check if target is still alive
+                var target = _userService.ActiveUsers.Find(p => p.Id == m.TargettingId);
+                if (target.Health <= 0)
+                {
+                    // Target isnt alive, check for a new one
+                    CheckSingleAggro(m);
+                    target = _userService.ActiveUsers.Find(p => p.Id == m.TargettingId);
+                }
+                // Set wander towards mob if they're not too far away from home
+                if (target != null && target.Health > 0 && Math.Abs(target.X - m.MobType.Star.X) < 1000 && Math.Abs(target.Y - m.MobType.Star.Y) < 1000)
+                {
+                    m.NavToX = target.X;
+                    m.NavToY = target.Y;
+                }
+                else
+                {
+                    // Wander home
+                    m.NavToX = m.MobType.Star.X + rnd.Next(m.MobType.SpawnRadius * -1, m.MobType.SpawnRadius);
+                    m.NavToY = m.MobType.Star.Y + rnd.Next(m.MobType.SpawnRadius * -1, m.MobType.SpawnRadius);
+                    m.TargettingId = null;
+                    return;
+                }
 
+                // Actually attack
+                var damage = rnd.Next(0, 5);
+                target.Health -= damage;
+            });
         }
 
         public string GenerateName(bool special)

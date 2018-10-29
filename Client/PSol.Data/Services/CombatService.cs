@@ -10,23 +10,25 @@ namespace PSol.Data.Services
     public class CombatService : ICombatService
     {
         private readonly IMobService _mobService;
+        private readonly IUserService _userService;
         private List<Combat> _pendingCombats;
         private List<Combat> _readyCombats;
         private const int CombatDistance = 2000;
 
-        public CombatService(IMobService mobService)
+        public CombatService(IMobService mobService, IUserService userService)
         {
             _pendingCombats = new List<Combat>();
             _readyCombats = new List<Combat>();
             _mobService = mobService;
+            _userService = userService;
         }
 
-        public Combat DoAttack(string targetId, string attackerId, Item weapon, List<User> allPlayers)
+        public Combat DoAttack(string targetId, string attackerId, Item weapon)
         {
             var mobs = _mobService.GetMobs().ToList();
             var combat = new Combat { SourceId = attackerId, TargetId = targetId, Weapon = weapon };
             var locale = new Vector2(0, 0);
-            var sourcePlayer = allPlayers.Find(p => p?.Id == combat.SourceId);
+            var sourcePlayer = _userService.ActiveUsers.Find(p => p?.Id == combat.SourceId);
             var sourceMob = mobs.Find(m => m.Id == combat.SourceId);
             var targetMob = mobs.Find(m => m.Id == combat.TargetId);
             combat.WeaponDamage = new Random().Next(weapon.Damage - (int)Math.Ceiling(weapon.Damage * .2), weapon.Damage + (int)Math.Ceiling(weapon.Damage * .2));

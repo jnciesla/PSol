@@ -27,7 +27,6 @@ namespace PSol.Server
 			{
 				ServerTCP.Clients[i] = new Client(_shd, _kernel);
 				ServerTCP.tempPlayer[i] = new TempPlayer();
-			    Types.Player[i] = new User {Inventory = new List<Inventory>()};
 			}
 			_stcp.InitializeNetwork();
 		    Console.WriteLine(@"*********************************************");

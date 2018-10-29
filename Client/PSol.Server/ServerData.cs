@@ -83,13 +83,15 @@ namespace PSol.Server
                 return;
             }
 
-            Types.Player[index] = _userService.LoadPlayer(username);
+            var player = _userService.LoadPlayer(username);
+            Types.PlayerIds[index] = player.Id;
+            _userService.ActiveUsers.Add(player);
             ServerTCP.tempPlayer[index].inGame = true;
             XFerLoad(index);
             SendGalaxy(index);
             SendItems(index);
             SendNebulae(index);
-            SendMessage(-1, Types.Player[index].Name + " has connected.", Notification);
+            SendMessage(-1, player.Name + " has connected.", Notification);
             Globals.FullData = true;
             Console.WriteLine(username + @" logged in successfully.");
             ServerTCP.tempPlayer[index].receiving = true;
@@ -106,8 +108,9 @@ namespace PSol.Server
             var exists = _userService.AccountExists(username);
             if (!exists)
             {
-                Types.Player[index] = new User();
-                Types.Player[index] = _userService.RegisterUser(username, password);
+                var player = _userService.RegisterUser(username, password);
+                Types.PlayerIds[index] = player.Id;
+                _userService.ActiveUsers.Add(player);
                 AcknowledgeRegister(index);
             }
             else
@@ -116,7 +119,7 @@ namespace PSol.Server
             }
         }
 
-        private static void RecvPlayer(int index, byte[] data)
+        private void RecvPlayer(int index, byte[] data)
         {
             var buffer = new PacketBuffer();
             buffer.AddBytes(data);
@@ -124,9 +127,10 @@ namespace PSol.Server
             var posX = buffer.GetFloat();
             var posY = buffer.GetFloat();
             var rot = buffer.GetFloat();
-            Types.Player[index].Rotation = rot;
-            Types.Player[index].X = posX;
-            Types.Player[index].Y = posY;
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+            player.Rotation = rot;
+            player.X = posX;
+            player.Y = posY;
         }
 
         public void SendData(int index, byte[] data)
@@ -190,10 +194,11 @@ namespace PSol.Server
         {
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)SLevelUp);
-            buffer.AddInteger(Types.Player[index].Level);
-            buffer.AddInteger(Types.Player[index].Exp);
-            buffer.AddInteger((int)Transactions.CheckLevel(Types.Player[index].Level));     // XP requirement for current level
-            buffer.AddInteger((int)Transactions.CheckLevel(Types.Player[index].Level + 1)); // XP requirement for next level
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+            buffer.AddInteger(player.Level);
+            buffer.AddInteger(player.Exp);
+            buffer.AddInteger((int)Transactions.CheckLevel(player.Level));     // XP requirement for current level
+            buffer.AddInteger((int)Transactions.CheckLevel(player.Level + 1)); // XP requirement for next level
             SendData(index, buffer.ToArray());
             buffer.Dispose();
         }
@@ -201,7 +206,7 @@ namespace PSol.Server
         public void XFerLoad(int index)
         {
             var buffer = new PacketBuffer();
-            var player = Types.Player[index];
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
             buffer.AddInteger((int)SPlayerData);
             buffer.AddInteger(index);
             buffer.AddString(player.Id);
@@ -230,7 +235,7 @@ namespace PSol.Server
         public void UpdatePlayer(int index)
         {
             var buffer = new PacketBuffer();
-            var player = Types.Player[index];
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
             buffer.AddInteger((int)SPlayerUpdate);
             buffer.AddInteger(player.Health);
             buffer.AddInteger(player.MaxHealth);
@@ -256,27 +261,31 @@ namespace PSol.Server
                 {
                     var buffer = new PacketBuffer();
                     buffer.AddInteger((int)SPulse);
+                    buffer.AddInteger(_userService.ActiveUsers.Count);
                     buffer.AddBytes(BitConverter.GetBytes(DateTime.UtcNow.ToBinary()));
-                    for (var j = 1; j < Constants.MAX_PLAYERS; j++)
+                    _userService.ActiveUsers.ForEach(p =>
                     {
-                        buffer.AddString(Types.Player[j].Id);
-                        buffer.AddFloat(Types.Player[j].X);
-                        buffer.AddFloat(Types.Player[j].Y);
-                        buffer.AddFloat(Types.Player[j].Rotation);
-                        buffer.AddInteger(Types.Player[j].Health);
-                        buffer.AddInteger(Types.Player[j].MaxHealth);
-                        buffer.AddInteger(Types.Player[j].Shield);
-                        buffer.AddInteger(Types.Player[j].MaxShield);
-                        buffer.AddBytes(BitConverter.GetBytes(ServerTCP.tempPlayer[j].inGame));
-                    }
-                    var minX = (int)Types.Player[i].X - mobRange;
-                    var minY = (int)Types.Player[i].Y - mobRange;
-                    var maxX = (int)Types.Player[i].X + mobRange;
-                    var maxY = (int)Types.Player[i].Y + mobRange;
+                        var ndx = Array.IndexOf(Types.PlayerIds, p.Id);
+                        buffer.AddInteger(ndx);
+                        buffer.AddString(p.Id);
+                        buffer.AddFloat(p.X);
+                        buffer.AddFloat(p.Y);
+                        buffer.AddFloat(p.Rotation);
+                        buffer.AddInteger(p.Health);
+                        buffer.AddInteger(p.MaxHealth);
+                        buffer.AddInteger(p.Shield);
+                        buffer.AddInteger(p.MaxShield);
+                        buffer.AddBytes(BitConverter.GetBytes(ServerTCP.tempPlayer[ndx].inGame));
+                    });
+                    var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[i]);
+                    var minX = (int)player.X - mobRange;
+                    var minY = (int)player.Y - mobRange;
+                    var maxX = (int)player.X + mobRange;
+                    var maxY = (int)player.Y + mobRange;
                     buffer.AddArray(_mobService.GetMobs(minX, maxX, minY, maxY).ToArray());
-                    buffer.AddArray(_combatService.GetCombats((int)Types.Player[i].X, (int)Types.Player[i].Y).ToArray());
+                    buffer.AddArray(_combatService.GetCombats((int)player.X, (int)player.Y).ToArray());
                     buffer.AddArray(Globals.Inventory.Where(m => m.X >= minX && m.X <= maxX && m.Y >= minY && m.Y <= maxY).ToArray());
-                    buffer.AddArray(Globals.Loot.Where(L => L.X >= minX && L.X <= maxX && L.Y >= minY && L.Y <= maxY && L.Owner == Types.Player[i].Id).ToArray());
+                    buffer.AddArray(Globals.Loot.Where(L => L.X >= minX && L.X <= maxX && L.Y >= minY && L.Y <= maxY && L.Owner == player.Id).ToArray());
                     SendData(i, buffer.ToArray());
                     buffer.Dispose();
                 }
@@ -288,10 +297,13 @@ namespace PSol.Server
             Globals.FullData = false;
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)SFullData);
-            for (var i = 1; i < Constants.MAX_PLAYERS; i++)
+            buffer.AddInteger(_userService.ActiveUsers.Count);
+            _userService.ActiveUsers.ForEach(player =>
             {
-                buffer.AddString(Types.Player[i].Name ?? "");
-            }
+                var ndx = Array.IndexOf(Types.PlayerIds, player.Id);
+                buffer.AddInteger(ndx);
+                buffer.AddString(player.Name ?? "");
+            });
             BroadcastData(buffer.ToArray());
             buffer.Dispose();
         }
@@ -300,8 +312,9 @@ namespace PSol.Server
         {
             var buffer = new PacketBuffer();
             buffer.AddInteger((int)SInventory);
-            buffer.AddArray(Types.Player[index].Inventory.ToArray());
-            buffer.AddInteger(Types.Player[index].Credits);
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+            buffer.AddArray(player.Inventory.ToArray());
+            buffer.AddInteger(player.Credits);
             SendData(index, buffer.ToArray());
             buffer.Dispose();
         }
@@ -321,7 +334,8 @@ namespace PSol.Server
         public void RelayChat(int index, string str)
         {
             var buffer = new PacketBuffer();
-            var newString = Types.Player[index].Name + ": " + str;
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+            var newString = player.Name + ": " + str;
             buffer.AddInteger((int)SMessage);
             buffer.AddInteger((int)Chat);
             buffer.AddString(newString);
@@ -336,41 +350,42 @@ namespace PSol.Server
             buffer.GetInteger();
             var targetId = buffer.GetString();
             var weapon = buffer.GetInteger();
-            var weaponId = Types.Player[index].Inventory.FirstOrDefault(i => i.Slot == weapon);
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+            var weaponId = player.Inventory.FirstOrDefault(i => i.Slot == weapon);
             if (weaponId == null) return;
             var WEAPON = Globals.Items.FirstOrDefault(w => w.Id == weaponId?.ItemId);
             if (WEAPON == null) return;
             switch (weaponId.Slot)
             {
                 case 7:
-                    Types.Player[index].Weap1Charge = 0;
+                    player.Weap1Charge = 0;
                     break;
                 case 8:
-                    Types.Player[index].Weap2Charge = 0;
+                    player.Weap2Charge = 0;
                     break;
                 case 9:
-                    Types.Player[index].Weap3Charge = 0;
+                    player.Weap3Charge = 0;
                     break;
                 case 10:
-                    Types.Player[index].Weap4Charge = 0;
+                    player.Weap4Charge = 0;
                     break;
                 case 11:
-                    Types.Player[index].Weap5Charge = 0;
+                    player.Weap5Charge = 0;
                     break;
 
             }
-            var combat = _combatService.DoAttack(targetId, Types.Player[index].Id, WEAPON, Types.Player.ToList());
-            var targetPlayer = Types.Player.ToList().FirstOrDefault(p => p?.Id == combat.TargetId);
+            var combat = _combatService.DoAttack(targetId, player.Id, WEAPON);
+            var targetPlayer = _userService.ActiveUsers.FirstOrDefault(p => p?.Id == combat.TargetId);
 
             if (combat.TargetId == "dead")
             {
-                Transactions.CreateLoot(index, new Vector2(combat.TargetX, combat.TargetY));
-                var newLevel = Transactions.GiveXP(index, 1000);
+                Transactions.CreateLoot(player, new Vector2(combat.TargetX, combat.TargetY));
+                var newLevel = Transactions.GiveXP(player, 1000);
 
                 if (newLevel == -1) { SendMessage(index, "You have already reached the maximum level!", Announcement); }
                 if (newLevel > 0)
                 {
-                    SendMessage(index, "Congratulations, you have reached level " + (Types.Player[index].Level) + "!", Announcement);
+                    SendMessage(index, "Congratulations, you have reached level " + player.Level + "!", Announcement);
                 }
                 SendXP(index);
             }
@@ -388,21 +403,23 @@ namespace PSol.Server
             buffer.AddBytes(data);
             buffer.GetInteger();
             var id = buffer.GetString();
-            var recipient = buffer.GetString();
+            var recipientId = buffer.GetString();
             buffer.Dispose();
-            if (recipient == Types.Player[index].Id)
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+            if (recipientId == player.Id)
             {
-                if (Transactions.ReceiveFromGlobal(id, index))
+                if (Transactions.ReceiveFromGlobal(id, player))
                     SendInventory(index);
                 else
                     SendMessage(index, "The object no longer exists", Minor);
             }
             else
             {
-                if (!Transactions.TransferItem(id, index, recipient)) return;
+                var recipient = _userService.ActiveUsers.Find(p => p.Id == recipientId);
+                if (!Transactions.TransferItem(id, player, recipient)) return;
                 SendInventory(index);
-                if (recipient == "X") return;
-                var recipientIndex = Array.FindIndex(Types.Player, row => row.Id == recipient);
+                if (recipientId == "X") return;
+                var recipientIndex = Array.IndexOf(Types.PlayerIds, recipient);
                 SendInventory(recipientIndex);
             }
         }
@@ -415,7 +432,8 @@ namespace PSol.Server
             var id = buffer.GetString();
             var destSlot = buffer.GetInteger();
             buffer.Dispose();
-            var result = Transactions.EquipItem(id, index, destSlot);
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+            var result = Transactions.EquipItem(id, player, destSlot);
             switch (result)
             {
                 case 1:
@@ -440,7 +458,8 @@ namespace PSol.Server
             var id = buffer.GetString();
             var qty = buffer.GetInteger();
             buffer.Dispose();
-            var result = mode == 1 ? Transactions.BuyItem(id, qty, index) : Transactions.SellItem(id, qty, index);
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+            var result = mode == 1 ? Transactions.BuyItem(id, qty, player) : Transactions.SellItem(id, qty, player);
 
             switch (result)
             {
@@ -467,7 +486,8 @@ namespace PSol.Server
             var from = buffer.GetString();
             var to = buffer.GetString();
             buffer.Dispose();
-            if (Transactions.StackItems(from, to, index) == -1)
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+            if (Transactions.StackItems(from, to, player) == -1)
             {
                 SendMessage(index, "Invalid item, item cannot stack, or stack is full.", Warning);
             };
@@ -488,7 +508,8 @@ namespace PSol.Server
             }
             else
             {
-                if (Transactions.CollectLoot(lootId, itemIndex, index))
+                var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+                if (Transactions.CollectLoot(lootId, itemIndex, player))
                     SendInventory(index, true);
             }
         }

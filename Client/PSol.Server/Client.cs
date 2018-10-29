@@ -19,11 +19,13 @@ namespace PSol.Server
         public NetworkStream Stream;
         private readonly ServerData _shd;
         private readonly IGameService _gameService;
+        private readonly IUserService _userService;
 
         public Client(ServerData shd, IResolutionRoot kernel)
         {
             _shd = shd;
             _gameService = kernel.Get<IGameService>();
+            _userService = kernel.Get<IUserService>();
         }
 
         public void Start()
@@ -69,13 +71,15 @@ namespace PSol.Server
         private void CloseSocket(int index)
         {
             Console.WriteLine(@"Connection from " + IP + @" has been terminated.");
-            _shd.SendMessage(-1, Types.Player[index].Name + @" has disconnected.", Notification);
-            _gameService.SaveGame(new List<User> { Types.Player[index] });
+            var player = _userService.ActiveUsers.Find(p => p.Id == Types.PlayerIds[index]);
+            _shd.SendMessage(-1, player.Name + @" has disconnected.", Notification);
+            _gameService.SaveGame(new List<User> { player });
             ServerTCP.tempPlayer[index].inGame = false;
             ServerTCP.tempPlayer[index].receiving = false;
             Socket.Close();
             Socket = null;
-            Types.Player[index] = Types.Default;
+            Types.PlayerIds[index] = null;
+            _userService.ActiveUsers.Remove(player);
         }
 
     }
