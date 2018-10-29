@@ -95,6 +95,7 @@ namespace PSol.Client
             buffer.AddBytes(data);
             buffer.GetInteger();
             GameLogic.PlayerIndex = buffer.GetInteger(); // Index on server side
+            var suppress = buffer.GetInteger();
             var i = GameLogic.PlayerIndex;
             Types.Player[i] = new User
             {
@@ -119,6 +120,7 @@ namespace PSol.Client
                 Inventory = buffer.GetList<Inventory>()
             };
             buffer.Dispose();
+            if (suppress == 1) return;
             MenuManager.Clear(1);
             Globals.graphicsChange = Globals.Fullscreen;
             InterfaceGUI.AddChats(@"User data downloaded.", Color.DarkOliveGreen);
@@ -135,6 +137,7 @@ namespace PSol.Client
             Types.Player[GameLogic.PlayerIndex].Shield = buffer.GetInteger();
             Types.Player[GameLogic.PlayerIndex].MaxShield = buffer.GetInteger();
             Types.Player[GameLogic.PlayerIndex].Exp = buffer.GetInteger();
+            Types.Player[GameLogic.PlayerIndex].Level = buffer.GetInteger();
             Types.Player[GameLogic.PlayerIndex].Weap1Charge = buffer.GetInteger();
             Types.Player[GameLogic.PlayerIndex].Weap2Charge = buffer.GetInteger();
             Types.Player[GameLogic.PlayerIndex].Weap3Charge = buffer.GetInteger();
@@ -250,8 +253,6 @@ namespace PSol.Client
             }
             Types.Player[GameLogic.PlayerIndex].Level = tempLevel;
             Types.Player[GameLogic.PlayerIndex].Exp = tempXP;
-            Globals.minXP = buffer.GetInteger();     // XP requirement for current level
-            Globals.maxXP = buffer.GetInteger();     // XP requirement for next level
             var tempDamage = new DamageText(increase.ToString(), new Vector2(Types.Player[GameLogic.PlayerIndex].X - 20 + random.Next(40), Types.Player[GameLogic.PlayerIndex].Y - 20 + random.Next(40)), 2);
             Game1.DamageTexts.Add(tempDamage);
         }

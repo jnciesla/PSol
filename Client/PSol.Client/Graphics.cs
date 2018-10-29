@@ -23,6 +23,7 @@ namespace PSol.Client
         public static List<Texture2D> smallExplosionTextures;
         public static List<Texture2D> largeExplosionTextures;
         public static List<Texture2D> levelUpTextures;
+        public static Texture2D experienceBar;
         public static Texture2D detailsGfx;
         public static Texture2D details;
         public static Texture2D scanner;
@@ -64,6 +65,7 @@ namespace PSol.Client
             lootContainer = manager.Load<Texture2D>("Objects/loot");
             shockwave = manager.Load<Texture2D>("Particles/shockwave");
             nebula = manager.Load<Texture2D>("Overlays/Nebula");
+            experienceBar = manager.Load<Texture2D>("Panels/XPBar");
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
             // Particle small explosion textures
@@ -282,6 +284,43 @@ namespace PSol.Client
                             planet.Y - (int)(Planets[planet.Sprite].Height * scale) / 2.0F - 20), Color.AntiqueWhite);
                 }
 
+            }
+        }
+
+        public static void DrawNebulae()
+        {
+            Globals.Nebula = "";
+            foreach (var Nebula in GameLogic.Nebulae)
+            {
+                Color color;
+                switch (Nebula.Type)
+                {
+                    case 0:
+                        color = Color.MediumPurple;
+                        break;
+                    case 1:
+                        color = Color.Crimson;
+                        break;
+                    case 2:
+                        color = Color.DarkGoldenrod;
+                        break;
+                    case 3:
+                        color = Color.DarkOrchid;
+                        break;
+                    case 4:
+                        color = Color.MidnightBlue;
+                        break;
+                    default:
+                        color = Color.Transparent;
+                        break;
+                }
+                Game1.spriteBatch.Draw(nebula, new Vector2(Nebula.X, Nebula.Y), color);
+                var nebRect = new Rectangle(Nebula.X, Nebula.Y, nebula.Width, nebula.Height);
+                if (nebRect.Contains(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y))
+                {
+                    Globals.Nebula = Nebula.ID;
+                    Console.WriteLine(Globals.Nebula);
+                }
             }
         }
 
@@ -523,7 +562,11 @@ namespace PSol.Client
                     }
                     if (ms.RightButton == ButtonState.Pressed && GameLogic.Selected == mob.Id)
                     {
-                        Actions.Attack(1, mob.Id);
+                        if (Types.Player[GameLogic.PlayerIndex].Weap1Charge >= 100) { Actions.Attack(1, mob.Id); }
+                        if (Types.Player[GameLogic.PlayerIndex].Weap2Charge >= 100) { Actions.Attack(2, mob.Id); }
+                        if (Types.Player[GameLogic.PlayerIndex].Weap3Charge >= 100) { Actions.Attack(3, mob.Id); }
+                        if (Types.Player[GameLogic.PlayerIndex].Weap4Charge >= 100) { Actions.Attack(4, mob.Id); }
+                        if (Types.Player[GameLogic.PlayerIndex].Weap5Charge >= 100) { Actions.Attack(5, mob.Id); }
                     }
                 }
                 if (GameLogic.Selected == mob.Id)
@@ -675,11 +718,18 @@ namespace PSol.Client
                     {
                         //if (PLAYER.Id != Types.Player[GameLogic.PlayerIndex].Id)
                         {
+                            var min = GameLogic.CheckLevel(PLAYER.Level);
+                            var max = GameLogic.CheckLevel(PLAYER.Level + 1);
+                            var percent = (float)(PLAYER.Exp - min) / (float)(max - min);
+                            Console.WriteLine(percent);
                             DrawString(Globals.Font12, PLAYER.Rank + " " + PLAYER.Name, 200 + offsetX, Globals.PreferredBackBufferHeight - 175, true, Color.DarkGray);
                             DrawString(Globals.Font12, PLAYER.Rank + " " + PLAYER.Name, 201 + offsetX, Globals.PreferredBackBufferHeight - 175, true, Color.DarkGray);
                             DrawString(Globals.Font10, "Level: " + PLAYER.Level, 20 + offsetX, Globals.PreferredBackBufferHeight - 160, false, Color.DarkGray);
                             DrawString(Globals.Font10, "Credits: " + PLAYER.Credits, 20 + offsetX, Globals.PreferredBackBufferHeight - 145, false, Color.DarkGray);
-                            DrawString(Globals.Font10, "Exp: " + PLAYER.Exp, 20 + offsetX, Globals.PreferredBackBufferHeight - 130, false, Color.DarkGray);
+                            Game1.spriteBatch.Draw(experienceBar, new Vector2(26 + offsetX, Globals.PreferredBackBufferHeight - 35), Color.White);
+                            Game1.spriteBatch.Draw(pixel, new Vector2(27 + offsetX, Globals.PreferredBackBufferHeight - 34), null, Color.MidnightBlue * .65F, 0, Vector2.Zero, new Vector2(348 * percent, 8), SpriteEffects.None, 0);
+                            DrawString(Globals.Font8, PLAYER.Exp + "/" + max, 201 + offsetX, Globals.PreferredBackBufferHeight - 36, true, Color.Black);
+                            DrawString(Globals.Font8, PLAYER.Exp + "/" + max, 200 + offsetX, Globals.PreferredBackBufferHeight - 36, true, Color.White);
                         }
                     }
                 }
@@ -872,7 +922,7 @@ namespace PSol.Client
                 {
                     Game1.spriteBatch.Draw(Objects[weap2.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 49), null, COLOR(weap2.Color), 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
                     if (P.Weap2Charge < 100)
-                        Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 14), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
+                        Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 49), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
                     DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 24, 60, true, Color.DarkGray);
                     DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 23, 60, true, Color.DarkGray);
                 }
@@ -880,7 +930,7 @@ namespace PSol.Client
                 {
                     Game1.spriteBatch.Draw(Objects[weap3.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 84), null, COLOR(weap3.Color), 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
                     if (P.Weap3Charge < 100)
-                        Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 14), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
+                        Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 84), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
                     DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 24, 95, true, Color.DarkGray);
                     DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 23, 95, true, Color.DarkGray);
                 }
@@ -888,7 +938,7 @@ namespace PSol.Client
                 {
                     Game1.spriteBatch.Draw(Objects[weap4.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 119), null, COLOR(weap4.Color), 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
                     if (P.Weap4Charge < 100)
-                        Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 14), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
+                        Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 119), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
                     DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 24, 130, true, Color.DarkGray);
                     DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 23, 130, true, Color.DarkGray);
                 }
@@ -896,7 +946,7 @@ namespace PSol.Client
                 {
                     Game1.spriteBatch.Draw(Objects[weap5.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 154), null, COLOR(weap5.Color), 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
                     if (P.Weap5Charge < 100)
-                        Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 14), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
+                        Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 154), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
                     DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 24, 165, true, Color.DarkGray);
                     DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 23, 165, true, Color.DarkGray);
                 }

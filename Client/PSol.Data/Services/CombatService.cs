@@ -20,7 +20,6 @@ namespace PSol.Data.Services
             _readyCombats = new List<Combat>();
             _mobService = mobService;
         }
-
         public Combat DoAttack(string targetId, string attackerId, Item weapon, List<User> allPlayers)
         {
             var mobs = _mobService.GetMobs().ToList();

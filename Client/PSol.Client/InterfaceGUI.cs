@@ -205,6 +205,11 @@ namespace PSol.Client
                                 resultX = int.TryParse(temp.Substring(0, temp.IndexOf(',')), out X);
                                 resultY = int.TryParse(temp.Substring(temp.IndexOf(',') + 1), out Y);
                             }
+                            if (temp.Contains(":"))
+                            {
+                                resultX = int.TryParse(temp.Substring(0, temp.IndexOf(':')), out X);
+                                resultY = int.TryParse(temp.Substring(temp.IndexOf(':') + 1), out Y);
+                            }
 
                             if (!resultX || !resultY)
                             {
@@ -299,6 +304,7 @@ namespace PSol.Client
 
             // Add Entities
             panel.AddChild(splash);
+            Windows[0].BringToFront();
             panel.AddChild(image);
             panel.AddChild(txtUser);
             panel.AddChild(txtPass);
@@ -401,6 +407,7 @@ namespace PSol.Client
 
             // Add Entities
             panel.AddChild(splash);
+            Windows[0].BringToFront();
             panel.AddChild(image);
             panel.AddChild(txtUserReg);
             panel.AddChild(txtPassReg);

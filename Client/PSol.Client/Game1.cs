@@ -230,32 +230,7 @@ namespace PSol.Client
             {
                 DamageText.Draw();
             }
-            foreach (var Nebula in GameLogic.Nebulae)
-            {
-                Color color;
-                switch (Nebula.Type)
-                {
-                    case 0:
-                        color = Color.MediumPurple;
-                        break;
-                    case 1:
-                        color = Color.Crimson;
-                        break;
-                    case 2:
-                        color = Color.DarkGoldenrod;
-                        break;
-                    case 3:
-                        color = Color.DarkOrchid;
-                        break;
-                    case 4:
-                        color = Color.MidnightBlue;
-                        break;
-                    default:
-                        color = Color.Transparent;
-                        break;
-                }
-                spriteBatch.Draw(Graphics.nebula, new Vector2(Nebula.X, Nebula.Y), color);
-            }
+            Graphics.DrawNebulae();
             spriteBatch.DrawString(Globals.Font8, fps, new Vector2(0, -100), Color.White);
             spriteBatch.End();
             Graphics.DrawHud(Content);

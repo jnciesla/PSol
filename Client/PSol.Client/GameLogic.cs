@@ -98,7 +98,6 @@ namespace PSol.Client
                 }
             }
             Globals.DirUp = true;
-            Console.WriteLine(Math.Abs(Types.Player[PlayerIndex].Rotation - navAngle));
             if (Math.Abs(Types.Player[PlayerIndex].Rotation - navAngle) <= .05F)
             {
                 Types.Player[PlayerIndex].Rotation = navAngle;
@@ -207,6 +206,10 @@ namespace PSol.Client
                 Game1.Explosion.Add(tempSmall);
                 tempSmall.Create(new Vector2(target.X - 20 + random.Next(40), target.Y - 20 + random.Next(40)));
             }
+        }
+        public static double CheckLevel(int level)
+        {
+            return Math.Floor(Constants.LVL_BASE * Math.Pow(level, Constants.LVL_EXPONENT));
         }
     }
 }

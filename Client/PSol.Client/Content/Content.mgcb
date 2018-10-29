@@ -6967,3 +6967,15 @@
 /processorParam:TextureFormat=Color
 /build:Overlays/Nebula.png
 
+#begin Panels/XPBar.png
+/importer:TextureImporter
+/processor:TextureProcessor
+/processorParam:ColorKeyColor=255,0,255,255
+/processorParam:ColorKeyEnabled=True
+/processorParam:GenerateMipmaps=False
+/processorParam:PremultiplyAlpha=True
+/processorParam:ResizeToPowerOfTwo=False
+/processorParam:MakeSquare=False
+/processorParam:TextureFormat=Color
+/build:Panels/XPBar.png
+

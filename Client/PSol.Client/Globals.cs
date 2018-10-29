@@ -60,6 +60,7 @@ namespace PSol.Client
         public static bool HoveringMob = false;
         public static bool HoveringItem = false;
         public static bool HoveringPlanet = false;
+        public static string Nebula = "";
 
         public static bool Details1;
         public static bool Details2;

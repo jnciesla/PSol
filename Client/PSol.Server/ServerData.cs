@@ -192,18 +192,17 @@ namespace PSol.Server
             buffer.AddInteger((int)SLevelUp);
             buffer.AddInteger(Types.Player[index].Level);
             buffer.AddInteger(Types.Player[index].Exp);
-            buffer.AddInteger((int)Transactions.CheckLevel(Types.Player[index].Level));     // XP requirement for current level
-            buffer.AddInteger((int)Transactions.CheckLevel(Types.Player[index].Level + 1)); // XP requirement for next level
             SendData(index, buffer.ToArray());
             buffer.Dispose();
         }
 
-        public void XFerLoad(int index)
+        public void XFerLoad(int index, int suppress = 0)
         {
             var buffer = new PacketBuffer();
             var player = Types.Player[index];
             buffer.AddInteger((int)SPlayerData);
             buffer.AddInteger(index);
+            buffer.AddInteger(suppress);
             buffer.AddString(player.Id);
             buffer.AddString(player.Name);
             buffer.AddFloat(player.X);
@@ -237,6 +236,7 @@ namespace PSol.Server
             buffer.AddInteger(player.Shield);
             buffer.AddInteger(player.MaxShield);
             buffer.AddInteger(player.Exp);
+            buffer.AddInteger(player.Level);
             buffer.AddInteger(player.Weap1Charge);
             buffer.AddInteger(player.Weap2Charge);
             buffer.AddInteger(player.Weap3Charge);
@@ -315,6 +315,12 @@ namespace PSol.Server
             if (str.ToLower().StartsWith("/c"))
             {
                 RelayChat(index, str.Substring(3));
+            }
+            if (str.ToLower().StartsWith(">>"))
+            {
+                var result = Transactions.AdminCommand(index, str.Substring(2).TrimStart());
+                SendMessage(index,result,Notification);
+                XFerLoad(index, 1);
             }
         }
 

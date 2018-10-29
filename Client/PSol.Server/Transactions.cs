@@ -5,7 +5,6 @@ using System.Linq;
 using Bindings;
 using Microsoft.Xna.Framework;
 using PSol.Data.Models;
-using Inventory = PSol.Data.Models.Inventory;
 
 namespace PSol.Server
 {
@@ -197,6 +196,29 @@ namespace PSol.Server
                         }
                         Types.Player[index].Inventory.FirstOrDefault(i => i.Id == id).Slot = destSlot;
                         IN = inv.ItemId;
+                        switch (destSlot)
+                        {
+                            case 7:
+                                Types.Player[index].Weap1Charge = 0;
+                                Types.Player[index].Weap1ChargeRate = itm.Recharge;
+                                break;
+                            case 8:
+                                Types.Player[index].Weap2Charge = 0;
+                                Types.Player[index].Weap2ChargeRate = itm.Recharge;
+                                break;
+                            case 9:
+                                Types.Player[index].Weap3Charge = 0;
+                                Types.Player[index].Weap3ChargeRate = itm.Recharge;
+                                break;
+                            case 10:
+                                Types.Player[index].Weap4Charge = 0;
+                                Types.Player[index].Weap4ChargeRate = itm.Recharge;
+                                break;
+                            case 11:
+                                Types.Player[index].Weap5Charge = 0;
+                                Types.Player[index].Weap5ChargeRate = itm.Recharge;
+                                break;
+                        }
                     }
                     break;
             }
@@ -297,29 +319,6 @@ namespace PSol.Server
                 Types.Player[index].Shield += _IN?.Shield ?? 0;
                 Types.Player[index].MaxShield += _IN?.Shield ?? 0;
                 Types.Player[index].Thrust += _IN?.Thrust ?? 0;
-                switch (_IN?.Slot)
-                {
-                    case 7:
-                        Types.Player[index].Weap1Charge = 0;
-                        Types.Player[index].Weap1ChargeRate = _IN.Recharge;
-                        break;
-                    case 8:
-                        Types.Player[index].Weap2Charge = 0;
-                        Types.Player[index].Weap2ChargeRate = _IN.Recharge;
-                        break;
-                    case 9:
-                        Types.Player[index].Weap3Charge = 0;
-                        Types.Player[index].Weap3ChargeRate = _IN.Recharge;
-                        break;
-                    case 10:
-                        Types.Player[index].Weap4Charge = 0;
-                        Types.Player[index].Weap4ChargeRate = _IN.Recharge;
-                        break;
-                    case 11:
-                        Types.Player[index].Weap5Charge = 0;
-                        Types.Player[index].Weap5ChargeRate = _IN.Recharge;
-                        break;
-                }
             }
             if (OUT == null) return;
             var _OUT = Globals.Items.FirstOrDefault(n => n.Id == OUT);
@@ -363,7 +362,7 @@ namespace PSol.Server
                 if (user.Weap1Charge < 100 && user.Weap1ChargeRate > 0)
                 {
                     up = true;
-                    user.Weap1Charge += user.Weap1ChargeRate;
+                    user.Weap1Charge += user.Weap1ChargeRate / 2;
                     if (user.Weap1Charge > 100) user.Weap1Charge = 100;
                 }
                 if (user.Weap2Charge < 100 && user.Weap2ChargeRate > 0)
@@ -502,6 +501,76 @@ namespace PSol.Server
                 };
                 Globals.Nebulae.Add(temp);
             }
+        }
+
+        public static string AdminCommand(int index, string command)
+        {
+            if (ServerTCP.Clients[index].IP.Substring(0, 9) != "127.0.0.1") return "";
+            if (command.ToLower().StartsWith("give $"))
+            {
+                Types.Player[index].Credits += int.Parse(command.Substring(6));
+                return "You've been given " + command.Substring(6) + " credits";
+            }
+            if (command.ToLower().StartsWith("give xp "))
+            {
+                GiveXP(index, int.Parse(command.Substring(8)));
+                return "You've been given " + command.Substring(8) + " experience point";
+            }
+            if (command.ToLower().StartsWith("give lvl "))
+            {
+                Types.Player[index].Level = int.Parse(command.Substring(9));
+                Types.Player[index].Exp = (int)CheckLevel(int.Parse(command.Substring(9)));
+                return "You've been awarded level " + command.Substring(9);
+            }
+            if (command.ToLower().StartsWith("goto "))
+            {
+                int X = 0, Y = 0;
+                bool resultX = false, resultY = false;
+                var temp = command.Substring(5);
+                if (temp.Contains(","))
+                {
+                    resultX = int.TryParse(temp.Substring(0, temp.IndexOf(',')), out X);
+                    resultY = int.TryParse(temp.Substring(temp.IndexOf(',') + 1), out Y);
+                }
+                if (temp.Contains(":"))
+                {
+                    resultX = int.TryParse(temp.Substring(0, temp.IndexOf(':')), out X);
+                    resultY = int.TryParse(temp.Substring(temp.IndexOf(':') + 1), out Y);
+                }
+
+                if (!resultX || !resultY)
+                {
+                    return "Invalid destination input";
+                }
+                Types.Player[index].X = X;
+                Types.Player[index].Y = Y;
+                return "You've been teleported to " + command.Substring(5);
+            }
+            if (command.ToLower().StartsWith("healme"))
+            {
+                Types.Player[index].Health = Types.Player[index].MaxHealth;
+                Types.Player[index].Shield = Types.Player[index].MaxShield;
+                return "You have been healed";
+            }
+            if (command.ToLower().StartsWith("chargeme"))
+            {
+                Types.Player[index].Weap1Charge = 100;
+                Types.Player[index].Weap2Charge = 100;
+                Types.Player[index].Weap3Charge = 100;
+                Types.Player[index].Weap4Charge = 100;
+                Types.Player[index].Weap5Charge = 100;
+                return "Your weapons have been charged";
+            }
+            if (command.ToLower().StartsWith("find neb"))
+            {
+                var NebLocations = "Nebulae at: ";
+                foreach (var Nebula in Globals.Nebulae)
+                {
+                    NebLocations += Nebula.X + ":" + Nebula.Y + " ";
+                }
+                return NebLocations;
+            }
+            return "";
         }
     }
 }
