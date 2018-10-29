@@ -16,7 +16,7 @@ namespace PSol.Server
 
             if (recipient != null)
             {
-                var stacked = FindAvailableStack(recipient.Id, temp);
+                var stacked = FindAvailableStack(recipient, temp);
                 switch (stacked)
                 {
                     case 0:
@@ -67,7 +67,7 @@ namespace PSol.Server
             if (temp != null)
             {
                 Globals.Inventory.Remove(temp);
-                var stacked = FindAvailableStack(player.Id, temp);
+                var stacked = FindAvailableStack(player, temp);
                 if (stacked == 0) return true;
                 if (stacked == -1) return false;
                 temp.Quantity = stacked;
@@ -122,9 +122,9 @@ namespace PSol.Server
             return -1;
         }
 
-        public static int FindAvailableStack(string player, Inventory itm)
+        public static int FindAvailableStack(User player, Inventory itm)
         {
-            var inv = Types.Player.FirstOrDefault(p => p.Id == player)?.Inventory;
+            var inv = player.Inventory;
             if (inv == null) return -1;
             foreach (var stack in inv.Where(i => i.ItemId == itm.ItemId && i.Slot > 100))
             {
@@ -162,8 +162,28 @@ namespace PSol.Server
                         installed.Slot = inv.Slot;
                         OUT = installed.ItemId;
                     }
-                    player.Inventory.FirstOrDefault(i => i.Id == id).Slot = itm.Slot;
-                    IN = inv.ItemId;
+                    // Make sure only one is installed
+                    if (inv.Quantity == 1)
+                    {
+                        player.Inventory.FirstOrDefault(i => i.Id == id).Slot = itm.Slot;
+                        IN = inv.ItemId;
+                    }
+                    else
+                    {
+                        player.Inventory.FirstOrDefault(i => i.Id == id).Quantity -= 1;
+                        player.Inventory.Add(new Inventory()
+                        {
+                            Id = Guid.NewGuid().ToString(),
+                            Dropped = DateTime.UtcNow,
+                            ItemId = itm.Id,
+                            Quantity = 1,
+                            Slot = itm.Slot,
+                            UserId = player.Id,
+                            X = 0,
+                            Y = 0
+                        });
+                    }
+
                     break;
                 case -1: // Unequip
                     // TODO: Make it so unequipping an item tries to stack it first
@@ -188,8 +208,26 @@ namespace PSol.Server
                             _installed.Slot = inv.Slot;
                             OUT = _installed.ItemId;
                         }
-                        player.Inventory.FirstOrDefault(i => i.Id == id).Slot = destSlot;
-                        IN = inv.ItemId;
+                        if (inv.Quantity == 1)
+                        {
+                            player.Inventory.FirstOrDefault(i => i.Id == id).Slot = destSlot;
+                            IN = inv.ItemId;
+                        }
+                        else
+                        {
+                            player.Inventory.FirstOrDefault(i => i.Id == id).Quantity -= 1;
+                            player.Inventory.Add(new Inventory()
+                            {
+                                Id = Guid.NewGuid().ToString(),
+                                Dropped = DateTime.UtcNow,
+                                ItemId = itm.Id,
+                                Quantity = 1,
+                                Slot = destSlot,
+                                UserId = player.Id,
+                                X = 0,
+                                Y = 0
+                            });
+                        }
                         switch (destSlot)
                         {
                             case 7:
@@ -239,7 +277,7 @@ namespace PSol.Server
                     X = 0,
                     Y = 0
                 };
-                var stacked = FindAvailableStack(player.Id, newInv);
+                var stacked = FindAvailableStack(player, newInv);
                 if (stacked == 0) return -1;
                 if (stacked == -1) return 2;
                 newInv.Quantity = stacked;
@@ -313,29 +351,6 @@ namespace PSol.Server
                 player.Shield += _IN?.Shield ?? 0;
                 player.MaxShield += _IN?.Shield ?? 0;
                 player.Thrust += _IN?.Thrust ?? 0;
-                switch (_IN?.Slot)
-                {
-                    case 7:
-                        player.Weap1Charge = 0;
-                        player.Weap1ChargeRate = _IN.Recharge;
-                        break;
-                    case 8:
-                        player.Weap2Charge = 0;
-                        player.Weap2ChargeRate = _IN.Recharge;
-                        break;
-                    case 9:
-                        player.Weap3Charge = 0;
-                        player.Weap3ChargeRate = _IN.Recharge;
-                        break;
-                    case 10:
-                        player.Weap4Charge = 0;
-                        player.Weap4ChargeRate = _IN.Recharge;
-                        break;
-                    case 11:
-                        player.Weap5Charge = 0;
-                        player.Weap5ChargeRate = _IN.Recharge;
-                        break;
-                }
             }
             if (OUT == null) return;
             var _OUT = Globals.Items.FirstOrDefault(n => n.Id == OUT);
@@ -373,6 +388,7 @@ namespace PSol.Server
 
         public static void Charge(List<User> users)
         {
+
             var up = false;
             users.Where(u => u?.Id != null).ToList().ForEach(user =>
             {
@@ -409,7 +425,7 @@ namespace PSol.Server
 
                 if (up)
                 {
-                    Program.shd.UpdatePlayer(Array.FindIndex(Types.Player, u => u.Id == user.Id));
+                    Program.shd.UpdatePlayer(Array.IndexOf(Types.PlayerIds, user.Id));
                 }
             });
         }
@@ -424,7 +440,8 @@ namespace PSol.Server
                 Items = new string[9],
                 Quantities = new int[9],
                 X = location.X,
-                Y = location.Y
+                Y = location.Y,
+                credits = 500
             };
             loot.Items[0] = "a53edcf0-1105-4edf-9c30-217279c3d286";
             loot.Items[1] = "50521cfe-7d63-4495-a1cf-b900fb8d225f";
@@ -448,7 +465,7 @@ namespace PSol.Server
                 X = 0,
                 Y = 0
             };
-            var stacked = FindAvailableStack(player.Id, newInv);
+            var stacked = FindAvailableStack(player, newInv);
             if (stacked == 0)
             {
                 Globals.Loot.FirstOrDefault(l => l.Id == lootId).Items[lootIndex] = null;
@@ -471,7 +488,7 @@ namespace PSol.Server
                         MessageColors.Notification);
                 }
             }
-            if (temp.Items.All(i => i == null) == true) // All item strings are null.  Destroy it
+            if (temp.Items.All(i => i == null)) // All item strings are null.  Destroy it
             {
                 Globals.Loot.Remove(Globals.Loot.FirstOrDefault(l => l.Id == lootId));
             }

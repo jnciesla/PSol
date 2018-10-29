@@ -8,10 +8,11 @@ namespace PSol.Data.Models
         // Classification information
         public string Id { get; set; }
         public string Owner { get; set; }
-        public string[] Items { get; set; }
 
         // General
+        public string[] Items { get; set; }
         public int[] Quantities { get; set; }
+        public int credits;
 
         // Global dropped inventory data
         public DateTime Dropped { get; set; }

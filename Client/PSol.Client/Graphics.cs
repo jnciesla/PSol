@@ -16,6 +16,7 @@ namespace PSol.Client
     {
         private static readonly ClientTCP ctcp = new ClientTCP();
         private static readonly KeyControl KC = new KeyControl();
+        private static DateTime doubleClick;
 
         public static Texture2D[] Characters = new Texture2D[3];
         public static Texture2D[] Planets = new Texture2D[5];
@@ -66,6 +67,7 @@ namespace PSol.Client
             shockwave = manager.Load<Texture2D>("Particles/shockwave");
             nebula = manager.Load<Texture2D>("Overlays/Nebula");
             experienceBar = manager.Load<Texture2D>("Panels/XPBar");
+            Shield = manager.Load<Texture2D>("Shield");
             pixel = new Texture2D(Game1.graphics.GraphicsDevice, 1, 1, false, SurfaceFormat.Color);
             pixel.SetData(new[] { Color.White });
             // Particle small explosion textures
@@ -73,13 +75,11 @@ namespace PSol.Client
             {
                 fire, spark, spark, spark, spark, spark, spark, spark, spark, spark, spark, spark
             };
-
             // Particle large explosion textures
             largeExplosionTextures = new List<Texture2D>
             {
                 fire, fire, spark, spark, spark
             };
-
             // Particle level up textures
             levelUpTextures = new List<Texture2D>
             {
@@ -224,15 +224,14 @@ namespace PSol.Client
             var ms = Mouse.GetState();
             var position = Game1.Camera.ScreenToWorld(new Vector2(ms.X, ms.Y));
             if (Globals.cursorOverride || Globals.Flying || Globals.HoveringGUI) position = Vector2.Zero;
-
             const float scale = .3F;
-            for (var i = 0; i != GameLogic.Galaxy.Count; i++)
+            foreach (var Star in GameLogic.Galaxy)
             {
                 var origin = new Vector2(Planets[4].Width / 2f, Planets[4].Height / 2f);
-                DrawPlanet(4, new Vector2(GameLogic.Galaxy[i].X, GameLogic.Galaxy[i].Y), origin, scale);
+                DrawPlanet(4, new Vector2(Star.X, Star.Y), origin, scale);
                 // OnClick
-                var Bound = new Rectangle((int)GameLogic.Galaxy[i].X - (int)(Planets[4].Width * scale) / 2,
-                    (int)GameLogic.Galaxy[i].Y - (int)(Planets[4].Height * scale) / 2, (int)(Planets[4].Width * scale),
+                var Bound = new Rectangle((int)Star.X - (int)(Planets[4].Width * scale) / 2,
+                    (int)Star.Y - (int)(Planets[4].Height * scale) / 2, (int)(Planets[4].Width * scale),
                     (int)(Planets[4].Height * scale));
                 if (Bound.Contains(position) && !Globals.windowOpen && !Globals.HoveringMob && !Globals.HoveringItem)
                 {
@@ -240,24 +239,22 @@ namespace PSol.Client
                     UserInterface.Active.SetCursor(Cursors[1]);
                     if (KC.Click())
                     {
-                        GameLogic.selectedPlanet = GameLogic.Galaxy[i].Id;
+                        GameLogic.selectedPlanet = Star.Id;
                         GameLogic.Selected = "";
                         GameLogic.SelectedType = "";
                     }
                 }
-                if (GameLogic.selectedPlanet == GameLogic.Galaxy[i].Id)
+                if (GameLogic.selectedPlanet == Star.Id)
                 {
                     DrawBorder(Bound, 1, Color.DarkGray * .25F);
-                    Game1.spriteBatch.DrawString(Globals.Font10, GameLogic.Galaxy[i].Name,
-                        new Vector2(GameLogic.Galaxy[i].X - Globals.Font10.MeasureString(GameLogic.Galaxy[i].Name).X / 2,
-                            GameLogic.Galaxy[i].Y - (int)(Planets[4].Height * scale) / 2.0F - 20), Color.AntiqueWhite);
+                    DrawString(Globals.Font10, Star.Name, Star.X, Star.Y - (int)(Planets[4].Height * scale) / 2.0F - 20, true, Color.AntiqueWhite);
                 }
                 // Get orbiting planets
-                foreach (var planet in GameLogic.Galaxy[i].Planets)
+                foreach (var planet in Star.Planets)
                 {
                     var _origin = new Vector2(Planets[planet.Sprite].Width / 2f, Planets[planet.Sprite].Height / 2f);
-                    var orbitalX = planet.Orbit * Math.Cos(MathHelper.TwoPi * DateTime.UtcNow.TimeOfDay.TotalMilliseconds / Math.Pow(10, 7)) + GameLogic.Galaxy[i].X;
-                    var orbitalY = planet.Orbit * Math.Sin(MathHelper.TwoPi * DateTime.UtcNow.TimeOfDay.TotalMilliseconds / Math.Pow(10, 7)) + GameLogic.Galaxy[i].Y;
+                    var orbitalX = planet.Orbit * Math.Cos(MathHelper.TwoPi * DateTime.UtcNow.TimeOfDay.TotalMilliseconds / Math.Pow(10, 7)) + Star.X;
+                    var orbitalY = planet.Orbit * Math.Sin(MathHelper.TwoPi * DateTime.UtcNow.TimeOfDay.TotalMilliseconds / Math.Pow(10, 7)) + Star.Y;
                     planet.X = (float)orbitalX;
                     planet.Y = (float)orbitalY;
                     DrawPlanet(planet.Sprite, new Vector2((float)orbitalX, (float)orbitalY), _origin, scale);
@@ -274,16 +271,17 @@ namespace PSol.Client
                             GameLogic.selectedPlanet = planet.Id;
                             GameLogic.Selected = "";
                             GameLogic.SelectedType = "";
+                            if (DateTime.UtcNow - TimeSpan.FromMilliseconds(500) < doubleClick)
+                            {
+                                Actions.Trade();
+                            }
+                            doubleClick = DateTime.UtcNow;
                         }
                     }
-
                     if (GameLogic.selectedPlanet != planet.Id) continue;
                     DrawBorder(_Bound, 1, Color.DarkGray * .25F);
-                    Game1.spriteBatch.DrawString(Globals.Font10, planet.Name,
-                        new Vector2(planet.X - Globals.Font10.MeasureString(planet.Name).X / 2,
-                            planet.Y - (int)(Planets[planet.Sprite].Height * scale) / 2.0F - 20), Color.AntiqueWhite);
+                    DrawString(Globals.Font10, planet.Name, planet.X, planet.Y - (int)(Planets[planet.Sprite].Height * scale) / 2.0F - 20, true, Color.AntiqueWhite);
                 }
-
             }
         }
 
@@ -319,7 +317,6 @@ namespace PSol.Client
                 if (nebRect.Contains(Types.Player[GameLogic.PlayerIndex].X, Types.Player[GameLogic.PlayerIndex].Y))
                 {
                     Globals.Nebula = Nebula.ID;
-                    Console.WriteLine(Globals.Nebula);
                 }
             }
         }
@@ -348,10 +345,7 @@ namespace PSol.Client
                             Color.LightBlue * 0.25f, Types.Player[i].Rotation * -1,
                             new Vector2(Shield.Width / 2f, Shield.Height / 2f), 1, SpriteEffects.None, 0);
                     }
-
-                    var h = Characters[SpriteNum].Height / 2;
-                    Game1.spriteBatch.DrawString(Globals.Font10, Types.Player[i].Name, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(Types.Player[i].Name).X / 2, Types.Player[i].Y - h - 10), Color.AntiqueWhite);
-
+                    DrawString(Globals.Font10, Types.Player[i].Name, Types.Player[i].X, Types.Player[i].Y - Characters[SpriteNum].Height / 2F - 10, true, Color.AntiqueWhite);
                     // Health
                     var HealthColor1 = Color.Green;
                     var HealthColor2 = Color.DarkGreen;
@@ -372,8 +366,7 @@ namespace PSol.Client
                         HealthColor1 = Color.Green;
                         HealthColor2 = Color.DarkGreen;
                     }
-                    var healthRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2.0F,
-                        Types.Player[i].Y + Characters[SpriteNum].Height / 2.0F, Characters[SpriteNum].Width, 6);
+                    var healthRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2.0F, Types.Player[i].Y + Characters[SpriteNum].Height / 2.0F, Characters[SpriteNum].Width, 6);
                     Game1.spriteBatch.DrawLine(healthRect.Left + 2, healthRect.Bottom - 2, healthRect.Right - Characters[SpriteNum].Width * percentHealth, healthRect.Bottom - 2, HealthColor1, 4F);
                     Game1.spriteBatch.DrawRectangle(healthRect, HealthColor2, 2F);
                     var HealthDisplay = "";
@@ -385,16 +378,13 @@ namespace PSol.Client
                     {
                         HealthDisplay = (int)((float)Types.Player[i].Health / Types.Player[i].MaxHealth * 100) + "%";
                     }
-
-                    Game1.spriteBatch.DrawString(Globals.Font10, HealthDisplay, new Vector2(Types.Player[i].X - Globals.Font10.MeasureString(HealthDisplay).X / 2, healthRect.Bottom + 8), HealthColor2);
-
+                    DrawString(Globals.Font10, HealthDisplay, Types.Player[i].X, healthRect.Bottom + 8, true, HealthColor2);
                     // Shield
                     var shieldRect = new RectangleF(Types.Player[i].X - Characters[SpriteNum].Width / 2.0F,
                         Types.Player[i].Y + Characters[SpriteNum].Height / 2.0F + 7, Characters[SpriteNum].Width, 6);
                     if (Types.Player[i].Shield > 0 && Types.Player[i].MaxShield > 0)
                     {
-                        var percentShield = (Types.Player[i].MaxShield - Types.Player[i].Shield) /
-                                              (float)Types.Player[i].MaxShield;
+                        var percentShield = (Types.Player[i].MaxShield - Types.Player[i].Shield) / (float)Types.Player[i].MaxShield;
                         Game1.spriteBatch.DrawLine(shieldRect.Left + 2, shieldRect.Bottom - 2,
                             shieldRect.Right - Characters[SpriteNum].Width * percentShield, shieldRect.Bottom - 2,
                             Color.Goldenrod, 4F);
@@ -408,15 +398,11 @@ namespace PSol.Client
                         {
                             ShieldDisplay = (int)((float)Types.Player[i].Shield / Types.Player[i].MaxShield * 100) + "%";
                         }
-
-                        Game1.spriteBatch.DrawString(Globals.Font8, ShieldDisplay,
-                            new Vector2(Types.Player[i].X - Globals.Font8.MeasureString(ShieldDisplay).X / 2,
-                                shieldRect.Bottom + 13), Color.Goldenrod);
+                        DrawString(Globals.Font8, ShieldDisplay, Types.Player[i].X, shieldRect.Bottom + 13, true, Color.Goldenrod);
                     }
                     else if (Types.Player[i].Shield <= 0 && Types.Player[i].MaxShield > 0)
                     {
-                        Game1.spriteBatch.DrawString(Globals.Font8, "Shield depleted", new Vector2(Types.Player[i].X - Globals.Font8.MeasureString("Shield Depleted!").X / 2,
-                            shieldRect.Bottom + 13), Color.DarkGoldenrod);
+                        DrawString(Globals.Font8, "Shield depleted", Types.Player[i].X, shieldRect.Bottom + 13, true, Color.Goldenrod);
                     }
                 }
 
@@ -453,6 +439,7 @@ namespace PSol.Client
         private static void DrawMobs()
         {
             if (GameLogic.PlayerIndex <= -1) return;
+            Console.WriteLine(GameLogic.LocalMobs.Count);
             foreach (var mob in GameLogic.LocalMobs)
             {
                 var spriteNum = mob.MobType.Sprite;
@@ -473,8 +460,8 @@ namespace PSol.Client
                     }
 
                     var height = Characters[spriteNum].Height / 2;
-                    Game1.spriteBatch.DrawString(Globals.Font10, mob.MobType.Name, new Vector2(mob.X - Globals.Font10.MeasureString(mob.MobType.Name).X / 2,
-                        mob.Y - height - 10), Color.AntiqueWhite);
+                    DrawString(Globals.Font8, "(" + mob.MobType.Name + ")", mob.X, mob.Y - height - 12, true, Color.AntiqueWhite);
+                    DrawString(Globals.Font10, mob.Name, mob.X, mob.Y - height - 24, true, Color.AntiqueWhite);
 
                     // Health
                     var healthColor1 = Color.Green;
@@ -496,10 +483,8 @@ namespace PSol.Client
                         healthColor1 = Color.Green;
                         healthColor2 = Color.DarkGreen;
                     }
-                    var healthRect = new RectangleF(mob.X - Characters[spriteNum].Width / 2.0F,
-                        mob.Y + Characters[spriteNum].Height / 2.0F, Characters[spriteNum].Width, 6);
-                    Game1.spriteBatch.DrawLine(healthRect.Left + 2, healthRect.Bottom - 2, healthRect.Right - Characters[spriteNum].Width * percentHealth,
-                        healthRect.Bottom - 2, healthColor1, 4F);
+                    var healthRect = new RectangleF(mob.X - Characters[spriteNum].Width / 2.0F, mob.Y + Characters[spriteNum].Height / 2.0F, Characters[spriteNum].Width, 6);
+                    Game1.spriteBatch.DrawLine(healthRect.Left + 2, healthRect.Bottom - 2, healthRect.Right - Characters[spriteNum].Width * percentHealth, healthRect.Bottom - 2, healthColor1, 4F);
                     Game1.spriteBatch.DrawRectangle(healthRect, healthColor2, 2F);
                     var healthDisplay = "";
                     if (Globals.Details1 || GameLogic.Selected == mob.Id)
@@ -510,13 +495,10 @@ namespace PSol.Client
                     {
                         healthDisplay = mob.Health / mob.MobType.MaxHealth * 100 + "%";
                     }
-
-                    Game1.spriteBatch.DrawString(Globals.Font10, healthDisplay, new Vector2(mob.X - Globals.Font10.MeasureString(healthDisplay).X / 2,
-                        healthRect.Bottom + 8), healthColor2);
+                    DrawString(Globals.Font10, healthDisplay, mob.X, healthRect.Bottom, true, healthColor2);
 
                     // Shield
-                    var shieldRect = new RectangleF(mob.X - Characters[spriteNum].Width / 2.0F,
-                        mob.Y + Characters[spriteNum].Height / 2.0F + 7, Characters[spriteNum].Width, 6);
+                    var shieldRect = new RectangleF(mob.X - Characters[spriteNum].Width / 2.0F, mob.Y + Characters[spriteNum].Height / 2.0F + 7, Characters[spriteNum].Width, 6);
                     if (mob.Shield > 0 && mob.MobType.MaxShield > 0)
                     {
                         var percentShield = (mob.MobType.MaxShield - mob.Shield) / mob.MobType.MaxShield;
@@ -533,15 +515,11 @@ namespace PSol.Client
                         {
                             shieldDisplay = (int)(mob.Shield / mob.MobType.MaxShield * 100) + "%";
                         }
-
-                        Game1.spriteBatch.DrawString(Globals.Font8, shieldDisplay,
-                            new Vector2(mob.X - Globals.Font8.MeasureString(shieldDisplay).X / 2,
-                                shieldRect.Bottom + 13), Color.Goldenrod);
+                        DrawString(Globals.Font8, shieldDisplay, mob.X, shieldRect.Bottom + 13, true, Color.Goldenrod);
                     }
                     else if (mob.Shield <= 0 && mob.MobType.MaxShield > 0)
                     {
-                        Game1.spriteBatch.DrawString(Globals.Font8, "Shield depleted", new Vector2(mob.X - Globals.Font8.MeasureString("Shield Depleted!").X / 2,
-                            shieldRect.Bottom + 13), Color.DarkGoldenrod);
+                        DrawString(Globals.Font8, "Shield depleted", mob.X, shieldRect.Bottom + 13, true, Color.Goldenrod);
                     }
                 }
                 // OnClick
@@ -582,8 +560,6 @@ namespace PSol.Client
             {
                 Characters[i] = manager.Load<Texture2D>("Characters/" + i);
             }
-
-            Shield = manager.Load<Texture2D>("Shield");
         }
 
         private static void LoadPlanets(ContentManager manager)
@@ -721,7 +697,6 @@ namespace PSol.Client
                             var min = GameLogic.CheckLevel(PLAYER.Level);
                             var max = GameLogic.CheckLevel(PLAYER.Level + 1);
                             var percent = (float)(PLAYER.Exp - min) / (float)(max - min);
-                            Console.WriteLine(percent);
                             DrawString(Globals.Font12, PLAYER.Rank + " " + PLAYER.Name, 200 + offsetX, Globals.PreferredBackBufferHeight - 175, true, Color.DarkGray);
                             DrawString(Globals.Font12, PLAYER.Rank + " " + PLAYER.Name, 201 + offsetX, Globals.PreferredBackBufferHeight - 175, true, Color.DarkGray);
                             DrawString(Globals.Font10, "Level: " + PLAYER.Level, 20 + offsetX, Globals.PreferredBackBufferHeight - 160, false, Color.DarkGray);
@@ -923,32 +898,32 @@ namespace PSol.Client
                     Game1.spriteBatch.Draw(Objects[weap2.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 49), null, COLOR(weap2.Color), 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
                     if (P.Weap2Charge < 100)
                         Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 49), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
-                    DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 24, 60, true, Color.DarkGray);
-                    DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 23, 60, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 24, 60, true, Color.White);
+                    DrawString(Globals.Font10, stat2, Globals.PreferredBackBufferWidth - 23, 60, true, Color.White);
                 }
                 if (weap3 != null)
                 {
                     Game1.spriteBatch.Draw(Objects[weap3.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 84), null, COLOR(weap3.Color), 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
                     if (P.Weap3Charge < 100)
                         Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 84), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
-                    DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 24, 95, true, Color.DarkGray);
-                    DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 23, 95, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 24, 95, true, Color.White);
+                    DrawString(Globals.Font10, stat3, Globals.PreferredBackBufferWidth - 23, 95, true, Color.White);
                 }
                 if (weap4 != null)
                 {
                     Game1.spriteBatch.Draw(Objects[weap4.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 119), null, COLOR(weap4.Color), 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
                     if (P.Weap4Charge < 100)
                         Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 119), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
-                    DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 24, 130, true, Color.DarkGray);
-                    DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 23, 130, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 24, 130, true, Color.White);
+                    DrawString(Globals.Font10, stat4, Globals.PreferredBackBufferWidth - 23, 130, true, Color.White);
                 }
                 if (weap5 != null)
                 {
                     Game1.spriteBatch.Draw(Objects[weap5.Image], new Vector2(Globals.PreferredBackBufferWidth - 40, 154), null, COLOR(weap5.Color), 0, Vector2.Zero, .5F, SpriteEffects.None, 0);
                     if (P.Weap5Charge < 100)
                         Game1.spriteBatch.Draw(pixel, new Vector2(Globals.PreferredBackBufferWidth - 40, 154), null, Color.Black * .5F, 0, Vector2.Zero, new Vector2(32, 32), SpriteEffects.None, 0);
-                    DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 24, 165, true, Color.DarkGray);
-                    DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 23, 165, true, Color.DarkGray);
+                    DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 24, 165, true, Color.White);
+                    DrawString(Globals.Font10, stat5, Globals.PreferredBackBufferWidth - 23, 165, true, Color.White);
                 }
             }
             else

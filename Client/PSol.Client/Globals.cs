@@ -16,9 +16,6 @@ namespace PSol.Client
         public static int PreferredBackBufferHeight = 768;
         public static bool graphicsChange = false;
 
-        public static int minXP;
-        public static int maxXP;
-
         public static float PlanetaryRotation = 0;
         public static long serverTime = 0;
         public static bool strobe = true;

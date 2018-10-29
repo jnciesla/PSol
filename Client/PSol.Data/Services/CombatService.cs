@@ -14,6 +14,7 @@ namespace PSol.Data.Services
         private List<Combat> _pendingCombats;
         private List<Combat> _readyCombats;
         private const int CombatDistance = 2000;
+        private Random random = new Random();
 
         public CombatService(IMobService mobService, IUserService userService)
         {
@@ -30,7 +31,7 @@ namespace PSol.Data.Services
             var sourcePlayer = _userService.ActiveUsers.Find(p => p?.Id == combat.SourceId);
             var sourceMob = mobs.Find(m => m.Id == combat.SourceId);
             var targetMob = mobs.Find(m => m.Id == combat.TargetId);
-            combat.WeaponDamage = new Random().Next(weapon.Damage - (int)Math.Ceiling(weapon.Damage * .2), weapon.Damage + (int)Math.Ceiling(weapon.Damage * .2));
+            combat.WeaponDamage = random.Next(weapon.Damage - (int)Math.Ceiling(weapon.Damage * .2), weapon.Damage + (int)Math.Ceiling(weapon.Damage * .2));
             // If target was a mob, do combat here. Otherwise do it in calling method cause players are annoying
             if (targetMob != null)
             {

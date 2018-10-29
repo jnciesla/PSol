@@ -15,6 +15,7 @@ namespace PSol.Server
         public static ServerData shd;
         private static IGameService _gameService;
         private static IMobService _mobService;
+        private static IUserService _userService;
         private static bool pause = true;
 
         private static void Main(string[] args)
@@ -22,6 +23,7 @@ namespace PSol.Server
             IKernel kernel = new StandardKernel(new ServerModule());
             _gameService = kernel.Get<IGameService>();
             _mobService = kernel.Get<IMobService>();
+            _userService = kernel.Get<IUserService>();
             dataLoader = new DataLoader();
             general = new General(kernel);
 
@@ -37,7 +39,7 @@ namespace PSol.Server
         {
             var saveTimer = new Timer(e =>
                 {
-                    if (!pause) { _gameService.SaveGame(Types.Player.ToList()); }
+                    if (!pause) { _gameService.SaveGame(_userService.ActiveUsers.ToList()); }
                     else { pause = !pause; }
                 },
                 null,
@@ -56,7 +58,7 @@ namespace PSol.Server
 
             var rechargeTimer = new Timer(e =>
                 {
-                    Transactions.Charge(Types.Player.ToList());
+                    Transactions.Charge(_userService.ActiveUsers.ToList());
                 }, null, TimeSpan.Zero, TimeSpan.FromMilliseconds(500));
 
             var nebulaTimer = new Timer(e =>
@@ -92,7 +94,7 @@ namespace PSol.Server
                 if (command == "save")
                 {
                     Console.SetCursorPosition(0, Console.CursorTop - 1);
-                    _gameService.SaveGame(Types.Player.ToList());
+                    _gameService.SaveGame(_userService.ActiveUsers.ToList());
                 }
                 else if (command != "end" && command != "e" && command != "exit" && command != "q" && command != "quit")
                 {
@@ -107,7 +109,7 @@ namespace PSol.Server
             repopTimer.Dispose();
             mobLogicTimer.Dispose();
             rechargeTimer.Dispose();
-            _gameService.SaveGame(Types.Player.ToList());
+            _gameService.SaveGame(_userService.ActiveUsers.ToList());
         }
     }
 }

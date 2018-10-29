@@ -23,6 +23,7 @@ namespace PSol.Client
         public TextInput txtPassReg;
         public TextInput txtPas2Reg;
         public static TextInput messageText;
+        private static DateTime doubleClick;
 
         // Map stuff
         public static Image mapPlayer;
@@ -69,6 +70,8 @@ namespace PSol.Client
 
         // Loot
         readonly Image[] lootItem = new Image[9];
+        private static Panel LootPanel;
+        private static readonly Paragraph[] lootQty = new Paragraph[9];
         private static Paragraph detailsHeaderLoot;
         private static Paragraph detailsSubHeaderLoot;
         private static Paragraph detailsBodyLoot;
@@ -1267,7 +1270,7 @@ namespace PSol.Client
 
         public void CreateLoot()
         {
-            var panel = new Panel(new Vector2(451, 287), PanelSkin.None, Anchor.AutoCenter) { Draggable = true, Padding = Vector2.Zero };
+            LootPanel = new Panel(new Vector2(451, 287), PanelSkin.None, Anchor.AutoCenter) { Draggable = true, Padding = Vector2.Zero };
             var image = new Image(lootPanel, new Vector2(451, 287), ImageDrawMode.Stretch, Anchor.TopLeft);
             var dPanel = new Panel(new Vector2(219, 218), PanelSkin.None, Anchor.TopLeft, new Vector2(10, 10))
             { Padding = Vector2.Zero, PanelOverflowBehavior = PanelOverflowBehavior.VerticalScroll };
@@ -1289,18 +1292,18 @@ namespace PSol.Client
             { FontOverride = Globals.Font8, OutlineOpacity = 0, AlignToCenter = true };
             detailsBodyLoot = new MulticolorParagraph("", Anchor.TopLeft, Color.DarkGray, null, new Vector2(200, 10), new Vector2(0, 50))
             { FontOverride = Globals.Font10, OutlineOpacity = 0, AlignToCenter = true, WrapWords = true };
-            UserInterface.Active.AddEntity(panel);
-            panel.AddChild(image);
+            UserInterface.Active.AddEntity(LootPanel);
+            LootPanel.AddChild(image);
             for (var i = 0; i < 9; i++)
             {
-                panel.AddChild(lootItem[i]);
+                LootPanel.AddChild(lootItem[i]);
                 lootItem[i].OnMouseEnter = e => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
                 lootItem[i].OnMouseLeave = e => { UserInterface.Active.SetCursor(CursorType.Default); };
             }
-            panel.AddChild(destroyBtn);
-            panel.AddChild(destroyLbl);
-            panel.AddChild(closeButton);
-            panel.AddChild(dPanel);
+            LootPanel.AddChild(destroyBtn);
+            LootPanel.AddChild(destroyLbl);
+            LootPanel.AddChild(closeButton);
+            LootPanel.AddChild(dPanel);
             dPanel.AddChild(detailsHeaderLoot);
             dPanel.AddChild(detailsSubHeaderLoot);
             dPanel.AddChild(detailsBodyLoot);
@@ -1309,14 +1312,17 @@ namespace PSol.Client
             closeButton.OnClick = e => { MenuManager.Clear(7); };
             destroyBtn.OnMouseEnter = e => { UserInterface.Active.SetCursor(Graphics.Cursors[2], 32, new Point(-4, 0)); };
             destroyBtn.OnMouseLeave = e => { UserInterface.Active.SetCursor(CursorType.Default); };
-            CreateWindow(panel);
+            CreateWindow(LootPanel);
         }
 
         public void PopulateLoot(string lootId)
         {
             for (var i = 0; i < 9; i++)
+            {
                 lootItem[i].Visible = false;
-
+                if (LootPanel.Children.Contains(lootQty[i]))
+                    LootPanel.RemoveChild(lootQty[i]);
+            }
             var loot = GameLogic.RealLoot.FirstOrDefault(L => L.Id == lootId);
             if (loot == null)
             {
@@ -1331,10 +1337,17 @@ namespace PSol.Client
                 lootItem[i].Visible = true;
                 lootItem[i].Texture = Graphics.Objects[temp?.Image ?? 0];
                 lootItem[i].FillColor = Graphics.COLOR(temp?.Color);
+                if (loot.Quantities[i] > 1)
+                {
+                    lootQty[i] = new Paragraph(loot.Quantities[i].ToString(), Anchor.TopLeft, Color.DarkGray * .75F,
+                            null, new Vector2(64, 10), new Vector2(lootItem[i].GetRelativeOffset().X, lootItem[i].GetRelativeOffset().Y + 54))
+                        { FontOverride = Globals.Font8, OutlineOpacity = 0, AlignToCenter = true };
+                    LootPanel.AddChild(lootQty[i]);
+                }
                 var i1 = i;
                 lootItem[i].OnClick = e =>
                 {
-                    if (new KeyControl().CheckCtrl())
+                    if (new KeyControl().CheckCtrl() || DateTime.UtcNow - TimeSpan.FromMilliseconds(500) < doubleClick)
                     {
                         ctcp.ProcessLoot(2, loot.Id, i1);
                     }
@@ -1342,7 +1355,9 @@ namespace PSol.Client
                     {
                         DisplayLootDetails(temp);
                     }
+                    doubleClick = DateTime.UtcNow;
                 };
+
             }
             destroyBtn.OnClick = e =>
             {

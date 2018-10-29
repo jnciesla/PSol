@@ -14,7 +14,7 @@ namespace PSol.Data.Services
         private static readonly Random rnd = new Random();
         private readonly IMobRepository _mobRepo;
         private readonly IUserService _userService;
-        private ICollection<Mob> _mobs = new List<Mob>();
+        private readonly ICollection<Mob> _mobs;
 
         public MobService(IMobRepository mobRepo, IUserService userService)
         {
@@ -106,7 +106,8 @@ namespace PSol.Data.Services
                 Alive = false,
                 KilledDate = DateTime.UtcNow,
                 MobTypeId = type.Id,
-                MobType = type
+                MobType = type,
+                Special = false
             };
             _mobs.Add(mob);
         }
@@ -200,7 +201,7 @@ namespace PSol.Data.Services
             {
                 // Check if target is still alive
                 var target = _userService.ActiveUsers.Find(p => p.Id == m.TargettingId);
-                if (target.Health <= 0)
+                if (target?.Health <= 0)
                 {
                     // Target isnt alive, check for a new one
                     CheckSingleAggro(m);
